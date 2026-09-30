@@ -62,6 +62,29 @@ CATEGORIES = {  # ISD item -> phrases (from the questionnaire's own examples)
     "natural": ("ssi04", ["birds singing", "flowing water", "wind in the trees and leaves",
                           "a water fountain", "birdsong in a park"]),
 }
+# Robustness: two further phrase sets, fixed before their results were seen.
+# "alternative" = different everyday wording of the same sources; "labels" =
+# the ISD category names alone. Only ISD source scores are written for these
+# (isd_source_scores_<set>.csv), plus a one-line recognition check each;
+# 07_hybrid_isd.py reruns the hybrid models on them.
+ALT_PHRASES = {
+    "alternative": {
+        "traffic": ["a busy road with cars", "a motorcycle accelerating", "a tram passing by",
+                    "heavy traffic on a highway", "an idling bus engine"],
+        "other_noise": ["an ambulance siren", "a drill", "machines at a building site",
+                        "a lorry being unloaded", "a generator humming"],
+        "human": ["a group of people chatting", "a child shouting", "people walking on the pavement",
+                  "voices in a busy square", "someone laughing loudly"],
+        "natural": ["a bird chirping", "a stream of water", "leaves rustling in the wind",
+                    "a fountain splashing", "birds in a garden"],
+    },
+    "labels": {
+        "traffic": ["traffic noise"],
+        "other_noise": ["other noise such as sirens, construction and industry"],
+        "human": ["sounds from human beings"],
+        "natural": ["natural sounds"],
+    },
+}
 ARAUS_CLASS = {"traffic": "traffic", "construction": "other_noise",
                "bird": "natural", "water": "natural", "wind": "natural"}
 
@@ -80,12 +103,13 @@ rng = np.random.default_rng(0)
 
 # ---- text embeddings ------------------------------------------------------------
 @torch.no_grad()
-def text_embeddings():
+def text_embeddings(phrase_sets=None):
     from transformers import ClapModel, ClapProcessor
     model = ClapModel.from_pretrained(a.model).eval()
     tok = ClapProcessor.from_pretrained(a.model).tokenizer
     res = {}
-    for cat, (_, phrases) in CATEGORIES.items():
+    phrase_sets = phrase_sets or {c: ph for c, (_, ph) in CATEGORIES.items()}
+    for cat, phrases in phrase_sets.items():
         inp = tok([f"the sound of {p}" for p in phrases], padding=True, return_tensors="pt")
         o = model.get_text_features(**inp)
         e = (o if torch.is_tensor(o) else o.pooler_output).numpy()
@@ -134,6 +158,11 @@ rec = (ratings[ratings.has_audio].groupby("GroupID")
             **{s: (s, "mean") for s in ssi}))
 isd = rec.join(S_isd, how="inner").dropna(subset=ssi)
 S_isd.to_csv(out / "isd_source_scores.csv")
+S_isd.to_csv(out / "isd_source_scores_questionnaire.csv")
+alt_scores = {}
+for name, phrases in ALT_PHRASES.items():
+    alt_scores[name] = scores(emb, text_embeddings(phrases)).set_index(ids)
+    alt_scores[name].to_csv(out / f"isd_source_scores_{name}.csv")
 
 print(f"A. Recognition on ISD ({len(isd)} rated recordings, {isd.LocationID.nunique()} locations)")
 print("   r between CLAP score and rated dominance; 95 % CI by location bootstrap")
@@ -153,6 +182,15 @@ M = pd.DataFrame({c: [np.corrcoef(isd[c + "_rel"], isd[s])[0, 1] for s in ssi] f
 M.to_csv(out / "isd_recognition_matrix.csv")
 print("\n   Matrix: rows = rated item, columns = CLAP relative score (diagonal should be highest)")
 print(M.round(2).to_string())
+
+print("\n   Other phrase sets: r (relative score vs rated item), recording level")
+rows_ps = []
+for name, S in [("questionnaire", S_isd), *alt_scores.items()]:
+    j = rec.join(S, how="inner").dropna(subset=ssi)
+    rows_ps.append({"phrase_set": name, **{c: np.corrcoef(j[c + "_rel"], j[CATEGORIES[c][0]])[0, 1] for c in cats}})
+PS = pd.DataFrame(rows_ps)
+PS.to_csv(out / "recognition_by_phrase_set.csv", index=False)
+print(PS.round(3).to_string(index=False))
 
 # ---- ARAUS lab check ----------------------------------------------------------------
 a_ids, a_emb = load_audio("araus")
