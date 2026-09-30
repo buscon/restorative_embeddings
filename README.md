@@ -121,8 +121,13 @@ the low-dimensional sets. Hyper-parameters are tuned on ARAUS folds 1–5
 unchanged to ARAUS fold 0 and to ISD.
 
 **Evaluation on ISD** at three levels: individual ratings, recording means and
-location means. R² is reported with Pearson r and the mean bias, because a
-lab-to-field shift in the mean lowers R² even when the ranking is right. The
+location means. ISD is rated clearly more pleasant than ARAUS (mean
+ISOPleasant +0.30 vs +0.03), and R² counts that offset as error. So R² is
+reported together with Pearson r, the mean bias, and a *centred* R² (both
+series minus their own ISD mean). Centred R² asks whether the order is right,
+plain R² whether the level is right. Because it uses the ISD means, centred R²
+is a diagnostic of the transfer, not a clean out-of-sample score. ARAUS fold 0
+(48 stimuli × the same 5 raters) is scored per response and per stimulus mean. The
 recording-level r has a 95 % CI from a bootstrap over locations. For
 ISOPleasant, the correlation with two restoration-adjacent ISD items is also
 reported: overall soundscape quality (`sss01`) and wish to revisit (`sss05`).

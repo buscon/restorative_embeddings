@@ -18,9 +18,17 @@ refitted on folds 1-5 and then applied, unchanged, to
 ISD is scored at three levels, because one rating per person makes the
 individual level very noisy (location ICC ~0.30, see docs/session_handoff.md):
     individual ratings, recording means, location means (18 locations).
-R^2 on ISD is sensitive to a lab-vs-field offset in the mean, so Pearson r and
-the mean bias are reported next to it. 95 % CIs for recording-level r come
-from a bootstrap over locations.
+R^2 on ISD is sensitive to a lab-vs-field offset in the mean (ISD is rated
+clearly more pleasant than ARAUS), so three further numbers are reported:
+Pearson r, the mean bias, and R^2 after removing the mean offset
+("centred": observed and predicted values each minus their own ISD mean).
+Centred R^2 answers "is the order right?", plain R^2 "is the level right?".
+Centred R^2 uses one statistic from the test data (the means), so it is a
+descriptive diagnostic of the transfer, not a clean out-of-sample score.
+95 % CIs for recording-level r come from a bootstrap over locations.
+
+ARAUS test fold 0 has only 48 stimuli, each rated by the same 5 people. It is
+scored per response and per stimulus (mean of the 5 ratings).
 
     python scripts/03_train_evaluate.py
 """
@@ -101,6 +109,12 @@ def models(n_features):
             learning_rate=0.05, max_iter=500, early_stopping=True, random_state=0)), HGB_GRID
 
 
+def centred_r2(obs, pred):
+    """R^2 after subtracting each series' own mean: removes a constant offset only."""
+    obs, pred = np.asarray(obs, float), np.asarray(pred, float)
+    return r2_score(obs - obs.mean(), pred - pred.mean())
+
+
 def r_and_ci(pred, obs, groups):
     r = pearsonr(pred, obs)[0]
     g = np.asarray(groups)
@@ -131,6 +145,8 @@ for fs_name, cols in FEATURE_SETS.items():
             model = gs.best_estimator_  # already refitted on folds 1-5
             joblib.dump(model, out / f"model_{fs_name}_{m_name}_{t}.joblib")
 
+            p_te = model.predict(te[cols].values)
+            te_stim = te.assign(pred=p_te).groupby("stimulus_id")[[t, "pred"]].mean()
             p_isd = pd.Series(model.predict(isd[cols].values), index=isd.GroupID)
             ind = ratings.assign(pred=ratings.GroupID.map(p_isd)).dropna(subset=["pred"])
             rec = isd.assign(pred=p_isd.values)
@@ -143,10 +159,13 @@ for fs_name, cols in FEATURE_SETS.items():
                 "features": fs_name, "model": m_name, "target": t,
                 "best_params": json.dumps({k.split("__")[1]: float(v) for k, v in gs.best_params_.items()}),
                 "araus_cv_r2": r2_score(tr[t], oof),
-                "araus_test_r2": r2_score(te[t], model.predict(te[cols].values)),
+                "araus_test_r2": r2_score(te[t], p_te),
+                "araus_test_stim_r2": r2_score(te_stim[t], te_stim.pred),
+                "n_test_stimuli": len(te_stim),
                 "araus_target_var": tr[t].var(),
                 "isd_indiv_r2": r2_score(ind[t], ind.pred), "isd_indiv_r": pearsonr(ind.pred, ind[t])[0],
-                "isd_rec_r2": r2_score(rec[t], rec.pred), "isd_rec_r": r_rec, "isd_rec_r_lo": lo, "isd_rec_r_hi": hi,
+                "isd_indiv_r2_centred": centred_r2(ind[t], ind.pred),
+                "isd_rec_r2": r2_score(rec[t], rec.pred), "isd_rec_r2_centred": centred_r2(rec[t], rec.pred), "isd_rec_r": r_rec, "isd_rec_r_lo": lo, "isd_rec_r_hi": hi,
                 "isd_loc_r": pearsonr(loc.pred, loc[t])[0], "isd_loc_rho": spearmanr(loc.pred, loc[t])[0],
                 "isd_bias": rec.pred.mean() - rec[t].mean(),
                 "n_train": len(tr), "n_isd_recordings": len(rec), "n_isd_ratings": len(ind),
@@ -157,13 +176,14 @@ for fs_name, cols in FEATURE_SETS.items():
                     ok = rec[proxy].notna()
                     row[f"isd_r_{proxy}"] = pearsonr(rec.pred[ok], rec[proxy][ok])[0]
             rows.append(row)
-            print(f"{fs_name:12s} {m_name:5s} {t:11s} CV R2 {row['araus_cv_r2']:.3f} | test {row['araus_test_r2']:.3f} | "
-                  f"ISD rec r {r_rec:.2f} [{lo:.2f},{hi:.2f}] R2 {row['isd_rec_r2']:.3f} | loc r {row['isd_loc_r']:.2f}")
+            print(f"{fs_name:12s} {m_name:5s} {t:11s} CV R2 {row['araus_cv_r2']:.3f} | test {row['araus_test_stim_r2']:.3f} (stim) | "
+                  f"ISD rec r {r_rec:.2f} [{lo:.2f},{hi:.2f}] R2 {row['isd_rec_r2']:.3f} "
+                  f"centred {row['isd_rec_r2_centred']:.3f} bias {row['isd_bias']:+.2f} | loc r {row['isd_loc_r']:.2f}")
 
 res = pd.DataFrame(rows)
 res.to_csv(out / "metrics.csv", index=False)
 preds_out.to_csv(out / "isd_predictions.csv", index=False)
-show = ["features", "model", "target", "araus_cv_r2", "araus_test_r2", "isd_indiv_r2", "isd_rec_r2",
-        "isd_rec_r", "isd_rec_r_lo", "isd_rec_r_hi", "isd_loc_r", "isd_bias"]
+show = ["features", "model", "target", "araus_cv_r2", "araus_test_r2", "araus_test_stim_r2",
+        "isd_indiv_r2", "isd_rec_r2", "isd_rec_r2_centred", "isd_rec_r", "isd_rec_r_lo", "isd_rec_r_hi", "isd_loc_r", "isd_bias"]
 (out / "metrics.md").write_text(res[show].round(3).to_markdown(index=False))
 print(f"\nwrote {out/'metrics.csv'}, {out/'metrics.md'}, {out/'isd_predictions.csv'}")
