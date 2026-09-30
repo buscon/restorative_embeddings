@@ -104,7 +104,8 @@ def make_isd(root: Path):
                 rec += 1
                 ps = psycho(60 + 10 * (base < 0) + rng.normal(0, 3))
                 rows.append({"LocationID": loc, "SessionID": f"{loc}1", "GroupID": gid, "RecordID": rec,
-                             **paq_from(base + rng.normal(0, 0.5)), "sss01": 3, "sss05": int(rng.integers(1, 6)),
+                             **paq_from(base + rng.normal(0, 0.5)), "sss01": 3,
+                             **{f"ssi0{k}": int(rng.integers(1, 6)) for k in range(1, 5)}, "sss05": int(rng.integers(1, 6)),
                              "LAeq_L50(A)": ps["LA50"], "LAeq_L10(A)": ps["LA10"], "LAeq_L90(A)": ps["LA90"],
                              "LCeq_L50(C)": ps["LC50"], "N_N5": ps["N5"], "R_R": ps["R"], "FS_F": ps["F"],
                              "T_TonalityHMS": ps["T"]})
@@ -146,6 +147,9 @@ if __name__ == "__main__":
         run("scripts/05_listening_sample.py", "--processed", P, "--clusters", R + "/clusters",
             "--araus", str(tmp / "araus"), "--out", R + "/listening", "--per-cluster", "2",
             "--araus-per-cluster", "1", env=env)
+        if env["RSD_FAKE_EMBED"] == "0":  # needs real CLAP text embeddings
+            run("scripts/06_source_recognition.py", "--processed", P, "--features", F, "--out", R + "/sources",
+                "--n-boot", "200", env=env)
         ind = pd.read_csv(Path(F) / "isd_indices.csv")
         assert ind.drop(columns="id").notna().all().all(), "NaN in ISD indices"
         assert ind.duration_s.min() < 10, "short recording missing from test"
