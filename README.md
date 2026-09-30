@@ -131,7 +131,15 @@ reported together with Pearson r, the mean bias, and a *centred* R² (both
 series minus their own ISD mean). Centred R² asks whether the order is right,
 plain R² whether the level is right. Because it uses the ISD means, centred R²
 is a diagnostic of the transfer, not a clean out-of-sample score. ARAUS fold 0
-(48 stimuli × the same 5 raters) is scored per response and per stimulus mean. The
+(48 stimuli × the same 5 raters) is scored per response and per stimulus mean.
+
+**Comparing feature sets.** Differences are tested with a paired cluster
+bootstrap: both models are scored on the same resampled units, so noise they
+share cancels out. In ARAUS cross-validation the unit is the participant
+(ΔR² of out-of-fold predictions); on ISD it is the location (Δr at the recording
+level). Every model is compared with the psychoacoustic ridge baseline, and
+`clap+level` / `clap+psycho` with plain `clap`
+(`results/paired_differences.csv`, also in `metrics.md`). The
 recording-level r has a 95 % CI from a bootstrap over locations. For
 ISOPleasant, the correlation with two restoration-adjacent ISD items is also
 reported: overall soundscape quality (`sss01`) and wish to revisit (`sss05`).
