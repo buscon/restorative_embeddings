@@ -150,6 +150,7 @@ if __name__ == "__main__":
         if env["RSD_FAKE_EMBED"] == "0":  # needs real CLAP text embeddings
             run("scripts/06_source_recognition.py", "--processed", P, "--features", F, "--out", R + "/sources", "--results", R,
                 "--n-boot", "200", env=env)
+            run("scripts/07_hybrid_isd.py", "--results", R, "--out", R + "/hybrid", "--n-boot", "200", env=env)
         ind = pd.read_csv(Path(F) / "isd_indices.csv")
         assert ind.drop(columns="id").notna().all().all(), "NaN in ISD indices"
         assert ind.duration_s.min() < 10, "short recording missing from test"

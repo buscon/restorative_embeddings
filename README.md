@@ -56,6 +56,7 @@ scripts/03_train_evaluate.py     train on ARAUS, test on ARAUS fold 0 and on ISD
 scripts/04_clusters.py           unsupervised: k-means on ARAUS, ISD assigned; HDBSCAN on ISD
 scripts/05_listening_sample.py   stratified, blinded listening set per cluster
 scripts/06_source_recognition.py CLAP zero-shot source scores vs. ISD source ratings (ssi01-04)
+scripts/07_hybrid_isd.py         ARAUS model + zero-shot source scores, leave-one-location-out on ISD
 tests/smoke_test.py              runs everything on synthetic data (no downloads)
 ```
 
@@ -83,6 +84,7 @@ python scripts/03_train_evaluate.py
 python scripts/04_clusters.py          # or --k 10
 python scripts/05_listening_sample.py --per-cluster 6 --araus-per-cluster 2
 python scripts/06_source_recognition.py
+python scripts/07_hybrid_isd.py
 ```
 
 `02_embed.py` resumes where it stopped. For ARAUS the stimuli are rebuilt in
