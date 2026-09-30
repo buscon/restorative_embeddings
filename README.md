@@ -93,13 +93,17 @@ usually the bottleneck, so give it as many `--workers` as you have cores.
 ## Method details
 
 **Audio preparation (both datasets).** Binaural → mono (channel mean), 48 kHz,
-first 30 s, RMS-normalised to −26 dBFS. Normalisation is needed because ISD
+at most the first 30 s, RMS-normalised to −26 dBFS. About 70 ISD recordings are
+shorter than 30 s (down to a few seconds). They are not padded with silence;
+the three 10 s CLAP windows overlap to cover them instead, and recordings under
+10 s are repeated to fill one window. Their length is saved as `duration_s` in
+`isd_indices.csv`, so they can be excluded in a sensitivity check. Normalisation is needed because ISD
 files are calibrated in pascal while ARAUS mixes are digital playback signals.
 Absolute level is removed from the audio and supplied separately as calibrated
 LA50 (`clap+level` feature set).
 
-**Embeddings.** `laion/clap-htsat-unfused`. There are three non-overlapping 10 s
-windows per recording, and their embeddings are averaged. Using exactly 10 s
+**Embeddings.** `laion/clap-htsat-unfused`. There are three 10 s windows per
+recording (non-overlapping for 30 s input), and their embeddings are averaged. Using exactly 10 s
 windows avoids CLAP's random cropping, so the embeddings are deterministic.
 
 **Ecoacoustic indices** (scikit-maad): NDSI, BI, ACI, ADI, H, plus spectral

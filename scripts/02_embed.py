@@ -86,8 +86,9 @@ class Items(Dataset):
             else:
                 x, sr = read(row["wav"])
                 rid = row["GroupID"]
+            duration = len(x) / sr
             y = prepare(x, sr)
-            ind = {} if a.no_indices else compute_indices(y, TARGET_SR)
+            ind = {} if a.no_indices else {"duration_s": duration, **compute_indices(y, TARGET_SR)}
             return rid, windows(y), ind, None
         except Exception as e:  # keep going; report at the end
             return row.get("stimulus_id", row.get("GroupID")), None, None, repr(e)

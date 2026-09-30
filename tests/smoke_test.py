@@ -116,6 +116,10 @@ def make_isd(root: Path):
     d = root / "WAV_City_1" / "Park"
     sf.write(str(d / "PK900.wav"), 0.02 * tone_noise(sr, 35, 2000, 0.1, 2), sr, subtype="FLOAT")
     rows.append({**rows[0], "GroupID": "XX1", "RecordID": 9999})
+    # short recordings (ISD has ~70 under 30 s, some under 10 s)
+    for gid, secs in [("PK901", 20.6), ("PK902", 7.5)]:
+        sf.write(str(d / f"{gid}.wav"), 0.02 * tone_noise(sr, secs, 2200, 0.1, 2), sr, subtype="FLOAT")
+        rows.append({**rows[0], "GroupID": gid, "RecordID": rows[-1]["RecordID"] + 1})
     pd.DataFrame(rows).to_csv(root / "ISD v1.0 Data.csv", index=False)
 
 
@@ -142,6 +146,9 @@ if __name__ == "__main__":
         run("scripts/05_listening_sample.py", "--processed", P, "--clusters", R + "/clusters",
             "--araus", str(tmp / "araus"), "--out", R + "/listening", "--per-cluster", "2",
             "--araus-per-cluster", "1", env=env)
+        ind = pd.read_csv(Path(F) / "isd_indices.csv")
+        assert ind.drop(columns="id").notna().all().all(), "NaN in ISD indices"
+        assert ind.duration_s.min() < 10, "short recording missing from test"
         n = len(pd.read_csv(Path(R) / "metrics.csv"))
         assert n > 0, "no metrics written"
         print(f"\nSMOKE TEST PASSED ({n} metric rows)")

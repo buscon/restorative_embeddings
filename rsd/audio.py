@@ -5,7 +5,8 @@ computed:
 
 * binaural -> mono (mean of the two channels; CLAP is a mono model),
 * resampled to 48 kHz (CLAP's training rate),
-* first 30 s kept (ARAUS stimuli are 30 s; ISD recordings are ~30-35 s),
+* at most the first 30 s kept (ARAUS stimuli are 30 s; most ISD recordings
+  are 30-35 s, but ~70 are shorter, down to a few seconds),
 * RMS-normalised to a fixed digital level.
 
 The level normalisation is deliberate. ISD WAVs are calibrated in pascal,
@@ -50,21 +51,31 @@ def normalise_rms(y: np.ndarray, dbfs: float = TARGET_RMS_DBFS) -> np.ndarray:
 
 
 def prepare(x: np.ndarray, sr: int) -> np.ndarray:
-    """Multichannel or mono array -> normalised mono 30 s float32 at 48 kHz."""
+    """Multichannel or mono array -> normalised mono float32 at 48 kHz, at most
+    30 s long. Shorter recordings are NOT padded: silence would distort both the
+    embedding and the indices (it made temporal entropy NaN, for example)."""
     y = resample(to_mono(np.asarray(x, dtype=np.float64)), sr)
-    n = CLIP_SECONDS * TARGET_SR
-    if len(y) >= n:
-        y = y[:n]
-    else:  # rare: pad short files with silence rather than looping them
-        y = np.pad(y, (0, n - len(y)))
-    return normalise_rms(y).astype(np.float32)
+    return normalise_rms(y[: CLIP_SECONDS * TARGET_SR]).astype(np.float32)
 
 
-def windows(y: np.ndarray) -> np.ndarray:
-    """(30 s,) -> (3, 10 s). Exactly 10 s per window, so CLAP never crops
-    randomly (its feature extractor uses random truncation for longer input)."""
+def windows(y: np.ndarray, n: int = CLIP_SECONDS // WINDOW_SECONDS) -> np.ndarray:
+    """Signal -> (3, 10 s) windows, always exactly 10 s so CLAP never crops
+    randomly (its feature extractor uses random truncation for longer input).
+
+    * 30 s: three adjacent windows (0-10, 10-20, 20-30 s).
+    * 10-30 s: three evenly spaced windows that overlap and cover the whole
+      recording, e.g. 20 s -> 0-10, 5-15, 10-20 s.
+    * under 10 s: the recording is repeated to fill 10 s (as CLAP itself does
+      for short input), and that one window is used three times.
+    A fixed number of windows keeps batching simple; with 30 s input the result
+    is identical to plain non-overlapping splitting.
+    """
     w = WINDOW_SECONDS * TARGET_SR
-    return y[: (len(y) // w) * w].reshape(-1, w)
+    if len(y) < w:
+        y = np.tile(y, int(np.ceil(w / len(y))))[:w]
+        return np.repeat(y[None, :], n, axis=0)
+    starts = np.linspace(0, len(y) - w, n).round().astype(int)
+    return np.stack([y[s:s + w] for s in starts])
 
 
 def read(path: str | Path) -> tuple[np.ndarray, int]:
