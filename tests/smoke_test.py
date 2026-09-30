@@ -148,7 +148,7 @@ if __name__ == "__main__":
             "--araus", str(tmp / "araus"), "--out", R + "/listening", "--per-cluster", "2",
             "--araus-per-cluster", "1", env=env)
         if env["RSD_FAKE_EMBED"] == "0":  # needs real CLAP text embeddings
-            run("scripts/06_source_recognition.py", "--processed", P, "--features", F, "--out", R + "/sources",
+            run("scripts/06_source_recognition.py", "--processed", P, "--features", F, "--out", R + "/sources", "--results", R,
                 "--n-boot", "200", env=env)
         ind = pd.read_csv(Path(F) / "isd_indices.csv")
         assert ind.drop(columns="id").notna().all().all(), "NaN in ISD indices"

@@ -18,6 +18,13 @@ separates two questions:
      ISOPleasant the same in ARAUS and ISD? A source-only model trained on
      ARAUS is also applied to ISD.
 
+  C. Follow-ups on ISD (descriptive, fitted within ISD):
+     C1 how well CLAP's "natural" score and the ecoacoustic indices (NDSI,
+        BI, ACI, ADI, H) track rated natural-sound dominance (ssi04);
+     C2 how strongly the source scores overlap with level (LA50);
+     C3 whether source scores relate to ISOPleasant beyond the psychoacoustic
+        model's prediction (partial correlation).
+
 If A holds but B differs, CLAP "hears" the field correctly and the problem is
 how ARAUS ties sources to pleasantness. If A fails, the embeddings themselves
 do not transfer well to field recordings.
@@ -62,6 +69,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--processed", default="data/processed")
 ap.add_argument("--features", default="data/features")
 ap.add_argument("--out", default="results/sources")
+ap.add_argument("--results", default="results", help="where 03_train_evaluate.py wrote isd_predictions.csv")
 ap.add_argument("--model", default=DEFAULT_MODEL)
 ap.add_argument("--n-boot", type=int, default=2000)
 a = ap.parse_args()
@@ -178,12 +186,64 @@ B.to_csv(out / "source_pleasantness.csv", index=False)
 print(B.round(3).to_string(index=False))
 print("   (isd_r_rated_item uses the people's own source ratings - the field 'truth')")
 
-X = [c + "_rel" for c in cats]
+# The four relative scores sum to zero, so one must be left out for the
+# coefficients to be identifiable: "human" is the reference category.
+X = [c + "_rel" for c in cats if c != "human"]
 tr = stim[stim.fold.between(1, 5)]
 oof = cross_val_predict(LinearRegression(), tr[X], tr.ISOPleasant, cv=PredefinedSplit(tr.fold.values - 1))
 m = LinearRegression().fit(tr[X], tr.ISOPleasant)
 r, lo, hi = r_ci(m.predict(isd[X]), isd.ISOPleasant, isd.LocationID.values)
 print(f"\n   Source-only model (4 scores): ARAUS CV R2 {r2_score(tr.ISOPleasant, oof):.3f} (stimulus means) | "
       f"ISD recording r {r:.2f} [{lo:.2f}, {hi:.2f}]")
-print(f"   coefficients: " + ", ".join(f"{c} {v:+.2f}" for c, v in zip(cats, m.coef_)))
+print("   coefficients (relative to human sounds): "
+      + ", ".join(f"{c.replace('_rel', '')} {v:+.2f}" for c, v in zip(X, m.coef_)))
+
+# ---- C: follow-ups within ISD ----------------------------------------------------------
+print("\nC1. Tracking rated natural-sound dominance (ssi04), recording level")
+recs = pd.read_csv(proc / "isd_recordings.csv").set_index("GroupID")
+isd = isd.join(recs[["LA50"]], how="left")
+ind_path = feat / "isd_indices.csv"
+cand = {"CLAP natural (relative)": isd["natural_rel"]}
+if ind_path.exists():
+    ind = pd.read_csv(ind_path).set_index("id")
+    for col in ["NDSI", "BI", "ACI", "ADI", "H"]:
+        if col in ind:
+            cand[col] = ind[col].reindex(isd.index)
+rowsC1 = []
+for name, x in cand.items():
+    ok = x.notna()
+    r, lo, hi = r_ci(x[ok], isd.loc[ok, "ssi04"], isd.loc[ok, "LocationID"].values)
+    rowsC1.append({"measure": name, "r_ssi04": r, "lo": lo, "hi": hi, "n": int(ok.sum())})
+C1 = pd.DataFrame(rowsC1)
+C1.to_csv(out / "naturalness_measures.csv", index=False)
+print(C1.round(3).to_string(index=False))
+
+print("\nC2. Overlap of source scores with level: r with LA50")
+print("   " + ", ".join(f"{c} {np.corrcoef(isd[c + '_rel'], isd.LA50)[0, 1]:+.2f}" for c in cats)
+      + f" | rated: " + ", ".join(f"{CATEGORIES[c][0]} {np.corrcoef(isd[CATEGORIES[c][0]], isd.LA50)[0, 1]:+.2f}"
+                                  for c in cats))
+
+pred_path = Path(a.results) / "isd_predictions.csv"
+if pred_path.exists():
+    pp = pd.read_csv(pred_path).set_index("GroupID")["pred_ISOPleasant_psycho_ridge"]
+    d = isd.join(pp.rename("psy"), how="inner").dropna(subset=["psy"])
+
+    def partial(x, y, z):
+        rx = x - np.polyval(np.polyfit(z, x, 1), z)
+        ry = y - np.polyval(np.polyfit(z, y, 1), z)
+        return np.corrcoef(rx, ry)[0, 1]
+
+    print("\nC3. Partial r with ISOPleasant, controlling for the psychoacoustic model's prediction")
+    rowsC3 = []
+    for c in cats:
+        x, y, z = d[c + "_rel"].values, d.ISOPleasant.values, d.psy.values
+        bs = [partial(x[t], y[t], z[t]) for t in draws(d.LocationID.values)]
+        lo, hi = np.nanpercentile(bs, [2.5, 97.5])
+        rowsC3.append({"category": c, "r_raw": np.corrcoef(x, y)[0, 1], "r_partial": partial(x, y, z),
+                       "lo": lo, "hi": hi, "n": len(d)})
+    C3 = pd.DataFrame(rowsC3)
+    C3.to_csv(out / "partial_beyond_psycho.csv", index=False)
+    print(C3.round(3).to_string(index=False))
+else:
+    print(f"\n(C3 skipped: {pred_path} not found - run 03_train_evaluate.py first)")
 print(f"\nwrote {out}/")
