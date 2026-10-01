@@ -88,8 +88,12 @@ def bin_pleasantness(x):
     return "neutral"
 
 
-def captions_araus(proc_root):
+def captions_araus(proc_root, scenes_df=None):
     """Generate captions for ARAUS stimuli.
+
+    Args:
+        proc_root: Path to processed data directory
+        scenes_df: Optional DataFrame with [soundscape, scene_description] from scene mapping
 
     Returns:
         DataFrame with [stimulus_id, caption, ISOPleasant, bin, n_ratings, LA50]
@@ -102,10 +106,13 @@ def captions_araus(proc_root):
     # Filter out silence maskers (no acoustic information to model)
     stim = stim[stim.masker_type != "silence"].copy()
 
-    # Add scene descriptions from soundscape metadata
-    # For now, use a simple heuristic: group by soundscape base
-    # Real implementation would join with USotW_metadata.csv
-    stim["scene"] = stim.soundscape.str.replace(r"_segment.*", "", regex=True)
+    # Add scene descriptions from CLAP-based scene mapping
+    if scenes_df is not None and not scenes_df.empty:
+        stim = stim.merge(scenes_df[["soundscape", "scene_description"]], on="soundscape", how="left")
+        stim["scene"] = stim["scene_description"].fillna("soundscape")
+    else:
+        # Fallback: use soundscape ID
+        stim["scene"] = stim.soundscape.str.replace(r"_segment.*", "", regex=True)
 
     # Add source descriptions from masker type
     stim["source"] = stim.masker_type.map(SOURCE_DESC).fillna(stim.masker_type)
@@ -177,8 +184,17 @@ if __name__ == "__main__":
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
 
+    # Try to load scene mappings from output directory
+    scenes_path = out / "araus_scenes.csv"
+    scenes_df = None
+    if scenes_path.exists():
+        scenes_df = pd.read_csv(scenes_path)
+        print(f"Loaded scene mappings from {scenes_path}")
+    else:
+        print(f"Note: Scene mappings not found at {scenes_path}. Run 03_scene_mapping.py first for better descriptions.")
+
     # Generate captions for both datasets
-    araus = captions_araus(a.processed)
+    araus = captions_araus(a.processed, scenes_df=scenes_df)
     isd = captions_isd(a.processed)
 
     # Combine and save
