@@ -11,7 +11,7 @@ combined ARAUS + ISD response distributions to balance class sizes:
 * very pleasant: ISOPleasant ≥ +0.50
 
 Caption template:
-    "{scene} with {source}. Loudness: {loudness} (LA50: {LA50} dB). Pleasantness: {pleasantness_label} (ISOPleasant: {ISOPleasant})."
+    "{scene}. Loudness: {loudness} (LA50: {LA50} dB). Pleasantness: {pleasantness_label} (ISOPleasant: {ISOPleasant})."
 
 Examples:
     "Urban park with birdsong. Loudness: moderately loud (LA50: 65.3 dB). Pleasantness: pleasant (ISOPleasant: 0.28)."
@@ -88,12 +88,12 @@ def bin_pleasantness(x):
     return "neutral"
 
 
-def captions_araus(proc_root, soundscape_captions_df=None):
-    """Generate captions for ARAUS stimuli using audio-analyzed soundscape descriptions.
+def captions_araus(proc_root, scenes_df=None):
+    """Generate captions for ARAUS stimuli.
 
     Args:
         proc_root: Path to processed data directory
-        soundscape_captions_df: Optional DataFrame with [soundscape, caption] from audio analysis
+        scenes_df: Optional DataFrame with [soundscape, scene_description] from scene mapping
 
     Returns:
         DataFrame with [stimulus_id, caption, ISOPleasant, bin, n_ratings, LA50]
@@ -106,34 +106,44 @@ def captions_araus(proc_root, soundscape_captions_df=None):
     # Filter out silence maskers (no acoustic information to model)
     stim = stim[stim.masker_type != "silence"].copy()
 
-    # Add soundscape descriptions from audio captioning
-    has_soundscape_captions = False
-    if soundscape_captions_df is not None and not soundscape_captions_df.empty:
-        stim = stim.merge(soundscape_captions_df[["soundscape", "caption"]], on="soundscape", how="left")
-        stim["soundscape_desc"] = stim["caption"]
-        has_soundscape_captions = True
+    # Add scene descriptions from rule-based scene mapping
+    has_scene_mapping = False
+    if scenes_df is not None and not scenes_df.empty:
+        stim = stim.merge(scenes_df[["soundscape", "scene_description"]], on="soundscape", how="left")
+        stim["scene"] = stim["scene_description"]
+        has_scene_mapping = True
     else:
         # Fallback: use soundscape ID
-        stim["soundscape_desc"] = stim.soundscape.str.replace(r"_segment.*", "", regex=True) + " soundscape"
+        stim["scene"] = stim.soundscape.str.replace(r"_segment.*", "", regex=True)
 
-    # Add masker descriptions
-    stim["masker_desc"] = stim.masker_type.map(SOURCE_DESC).fillna(stim.masker_type)
+    # Add source descriptions from masker type (only needed if no scene mapping)
+    stim["source"] = stim.masker_type.map(SOURCE_DESC).fillna(stim.masker_type)
     stim["loudness"] = stim.LA50.apply(loudness_desc)
 
     # Bin pleasantness
     stim["bin"] = stim.ISOPleasant.apply(bin_pleasantness)
     stim["pleasantness_label"] = stim.bin.map(PLEASANTNESS_LABELS)
 
-    # Caption template: Combine soundscape description + masker + acoustic properties
-    # Format: "{soundscape_with_masker}. Loudness: {loudness}. Pleasantness: {label}."
-    stim["caption"] = (
-        stim.soundscape_desc + " with added " +
-        stim.masker_desc + ". " +
-        "Loudness: " + stim.loudness +
-        " (LA50: " + stim.LA50.round(1).astype(str) + " dB). " +
-        "Pleasantness: " + stim.pleasantness_label +
-        " pleasantness soundscape (ISOPleasant: " + stim.ISOPleasant.round(2).astype(str) + ")."
-    )
+    # Caption template: if using scene mapping (which includes source context),
+    # just use scene description. Otherwise, append source to scene.
+    if has_scene_mapping:
+        stim["caption"] = (
+            stim.scene + ". " +
+            "Loudness: " + stim.loudness +
+            " (LA50: " + stim.LA50.round(1).astype(str) + " dB). " +
+            "Pleasantness: " + stim.pleasantness_label +
+            " (ISOPleasant: " + stim.ISOPleasant.round(2).astype(str) + ")."
+        )
+    else:
+        # Fallback: expand with source type
+        stim["caption"] = (
+            stim.scene + " with " +
+            stim.source + ". " +
+            "Loudness: " + stim.loudness +
+            " (LA50: " + stim.LA50.round(1).astype(str) + " dB). " +
+            "Pleasantness: " + stim.pleasantness_label +
+            " (ISOPleasant: " + stim.ISOPleasant.round(2).astype(str) + ")."
+        )
 
     return stim[["stimulus_id", "caption", "ISOPleasant", "bin", "n_ratings", "LA50"]].rename(
         columns={"stimulus_id": "id"}
@@ -187,19 +197,17 @@ if __name__ == "__main__":
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
 
-    # Try to load soundscape captions from audio analysis
-    soundscape_path = out / "soundscape_captions.csv"
-    soundscape_captions_df = None
-    if soundscape_path.exists():
-        soundscape_captions_df = pd.read_csv(soundscape_path)
-        print(f"Loaded audio-analyzed soundscape captions from {soundscape_path}")
+    # Try to load scene mappings from output directory
+    scenes_path = out / "araus_scenes.csv"
+    scenes_df = None
+    if scenes_path.exists():
+        scenes_df = pd.read_csv(scenes_path)
+        print(f"Loaded scene mappings from {scenes_path}")
     else:
-        print(f"Note: Audio-analyzed soundscape captions not found at {soundscape_path}.")
-        print(f"      Run 04_soundscape_captions.py first for accurate soundscape descriptions.")
-        print(f"      Using fallback descriptions (soundscape IDs).")
+        print(f"Note: Scene mappings not found at {scenes_path}. Run 03_scene_mapping.py first for better descriptions.")
 
     # Generate captions for both datasets
-    araus = captions_araus(a.processed, soundscape_captions_df=soundscape_captions_df)
+    araus = captions_araus(a.processed, scenes_df=scenes_df)
     isd = captions_isd(a.processed)
 
     # Combine and save

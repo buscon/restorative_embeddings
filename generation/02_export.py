@@ -119,7 +119,7 @@ def process_stimulus(args):
     )
 
     # Mix audio (row is passed as dict for pickling)
-    x, sr = mixer.mix(row['soundscape'], row['masker'], row['smr'])
+    x, sr = mixer.mix(row['soundscape'], row['masker_type'], row['smr'])
 
     # Prepare: mono, 48 kHz, 30 s, RMS norm
     y = prepare(x, sr)
