@@ -1,0 +1,8 @@
+id,caption,ISOPleasant,bin,n_ratings,LA50,dataset
+stim_001,quiet park with natural ambience and birdsong. Loudness: moderately quiet (LA50: 55.5 dB). Pleasantness: pleasant (ISOPleasant: 0.45).,0.45,pleasant,40,55.5,araus
+stim_002,quiet park with natural ambience and birdsong. Loudness: moderately quiet (LA50: 54.3 dB). Pleasantness: very pleasant (ISOPleasant: 0.52).,0.52,very_pleasant,40,54.3,araus
+stim_003,highway or major intersection with heavy traffic. Loudness: loud (LA50: 78.2 dB). Pleasantness: very unpleasant pleasantness (ISOPleasant: -0.68).,-0.68,very_unpleasant,35,78.2,araus
+stim_004,waterfront location with water sounds and ambient activity. Loudness: moderately loud (LA50: 62.1 dB). Pleasantness: pleasant (ISOPleasant: 0.3).,0.3,pleasant,38,62.1,araus
+stim_005,intense construction site with heavy equipment. Loudness: loud (LA50: 72.0 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.42).,-0.42,unpleasant,36,72.0,araus
+ISD_001,Venice. Loudness: moderately loud (LA50: 65.0 dB). Pleasantness: pleasant (ISOPleasant: 0.25).,0.25,pleasant,30,65.0,isd
+ISD_002,London. Loudness: loud (LA50: 72.5 dB). Pleasantness: neutral pleasantness (ISOPleasant: -0.1).,-0.1,neutral,28,72.5,isd

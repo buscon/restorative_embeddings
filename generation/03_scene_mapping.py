@@ -1,9 +1,9 @@
-"""Create scene-type mappings for ARAUS and ISD using CLAP-based automated annotation.
+"""Create scene-type mappings for ARAUS and ISD using rule-based scene generation.
 
-Enables semantically meaningful caption templating. For ARAUS, uses CLAP embeddings
-to score each soundscape against scene category phrases and assigns the best match.
-For ISD, maps the 26 sampling locations to scene categories based on hand-annotated
-geographical and acoustic characteristics.
+Enables semantically meaningful caption templating. For ARAUS, uses rule-based
+generation combining masker type and loudness to create differentiated scene
+descriptions. For ISD, maps the 26 sampling locations to scene categories based
+on hand-annotated geographical and acoustic characteristics.
 
 Output:
     data/generation/araus_scenes.csv  [soundscape, scene_description, scene_score]
@@ -18,36 +18,38 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-# Scene category phrases for CLAP-based annotation
-SCENE_PHRASES = {
-    "urban_street": [
-        "urban street", "city street", "street intersection", "downtown",
-        "busy street", "traffic noise", "street traffic"
-    ],
-    "park": [
-        "park", "urban park", "public park", "green space",
-        "birds singing", "natural sounds", "outdoor space"
-    ],
-    "water": [
-        "water", "beach", "river", "waterside", "ocean",
-        "water sounds", "flowing water", "fountain"
-    ],
-    "highway": [
-        "highway", "motorway", "freeway", "road traffic",
-        "vehicle noise", "driving", "cars"
-    ],
-    "nature": [
-        "forest", "nature", "woodland", "birds",
-        "natural environment", "outdoor nature", "countryside"
-    ],
-    "train": [
-        "train", "train station", "railway", "transit",
-        "train noise", "public transport"
-    ],
-    "indoor": [
-        "indoor", "building", "interior", "office",
-        "shopping", "mall", "restaurant"
-    ],
+# Scene templates by masker type and loudness
+MASKER_SCENES = {
+    "bird": {
+        "quiet": "quiet park with natural ambience and birdsong",
+        "moderate": "urban park with birds and ambient activity",
+        "loud": "busy park with intermittent birdsong",
+    },
+    "water": {
+        "quiet": "peaceful waterside environment with flowing water",
+        "moderate": "waterfront location with water sounds and ambient activity",
+        "loud": "active waterfront or water treatment facility",
+    },
+    "traffic": {
+        "quiet": "suburban street with occasional traffic",
+        "moderate": "busy urban street with steady traffic noise",
+        "loud": "highway or major intersection with heavy traffic",
+    },
+    "construction": {
+        "quiet": "light construction activity",
+        "moderate": "active construction site with machinery",
+        "loud": "intense construction site with heavy equipment",
+    },
+    "wind": {
+        "quiet": "outdoor environment with light wind",
+        "moderate": "windy outdoor location",
+        "loud": "highly exposed outdoor area with strong wind",
+    },
+    "silence": {
+        "quiet": "quiet controlled environment",
+        "moderate": "indoor or sheltered space",
+        "loud": "indoor space with background noise",
+    },
 }
 
 # ISD location → scene category mapping (hand-annotated from recording names and metadata)
@@ -66,54 +68,43 @@ ISD_LOCATION_MAP = {
 }
 
 
-def get_clap_scene_label(soundscape_embedding, scene_phrases):
-    """Score soundscape CLAP embedding against scene category phrases.
+def get_loudness_category(la50):
+    """Categorize loudness level from LA50."""
+    if la50 < 60:
+        return "quiet"
+    elif la50 < 70:
+        return "moderate"
+    else:
+        return "loud"
 
-    Returns the best-matching scene category and confidence score.
+
+def generate_scene_description(masker_type, la50):
+    """Generate scene description based on masker type and loudness.
+
+    Returns (scene_description, confidence_score).
+    Confidence is based on how well the masker type is defined.
     """
-    try:
-        from rsd.sources import text_embeddings
-        import os
+    loudness_cat = get_loudness_category(la50)
 
-        # Check if we're in fake embedding mode (smoke test)
-        if os.environ.get("RSD_FAKE_EMBED"):
-            # Return a random scene for testing
-            categories = list(scene_phrases.keys())
-            return categories[hash(tuple(soundscape_embedding)) % len(categories)], 0.5
+    # Normalize masker type (handle variations)
+    masker_normalized = masker_type.lower().strip()
 
-        # Load model (minimal, just for text embeddings)
-        try:
-            from laion_clap import CLAP_Module
-            model = CLAP_Module(enable_fusion=False, amodel='HTSAT-tiny', device='cpu')
-            model.load_ckpt()
-        except Exception:
-            # Fallback if model loading fails
-            return "urban_street", 0.5
+    # Map to base masker type
+    if masker_normalized in MASKER_SCENES:
+        scenes = MASKER_SCENES[masker_normalized]
+        description = scenes.get(loudness_cat, scenes["moderate"])
+        confidence = 0.9
+    else:
+        # Unknown masker type - use generic description
+        if loudness_cat == "quiet":
+            description = "quiet environment"
+        elif loudness_cat == "loud":
+            description = "loud environment"
+        else:
+            description = "moderate activity environment"
+        confidence = 0.5
 
-        # Compute text embeddings for each scene category
-        best_category = "urban_street"
-        best_score = 0.0
-
-        for category, phrases in scene_phrases.items():
-            # Average embeddings across all phrases for this category
-            phrase_embeddings = text_embeddings(model, None, {category: phrases})
-            category_embedding = phrase_embeddings[category]
-
-            # Cosine similarity
-            similarity = np.dot(soundscape_embedding, category_embedding) / (
-                np.linalg.norm(soundscape_embedding) * np.linalg.norm(category_embedding) + 1e-8
-            )
-
-            if similarity > best_score:
-                best_score = similarity
-                best_category = category
-
-        return best_category, float(best_score)
-
-    except Exception as e:
-        # Fallback to default scene
-        print(f"Warning: CLAP scoring failed ({e}), using default scene")
-        return "urban_street", 0.5
+    return description, confidence
 
 
 if __name__ == "__main__":
@@ -127,58 +118,35 @@ if __name__ == "__main__":
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
 
-    # ---- ARAUS scenes (using CLAP-based automated annotation) ----
+    # ---- ARAUS scenes (using rule-based generation by masker type + loudness) ----
     stimuli = pd.read_csv(Path(a.processed) / "araus_stimuli.csv")
 
-    # Extract unique soundscapes
-    araus_scenes = stimuli[["soundscape"]].drop_duplicates().reset_index(drop=True)
+    # Extract unique soundscapes with their masker types and mean loudness
+    araus_scenes = stimuli.groupby("soundscape").agg({
+        "masker_type": "first",  # Masker type is constant per soundscape
+        "LA50": "mean"  # Average loudness across stimuli in this soundscape
+    }).reset_index()
 
-    # Try to use CLAP embeddings for automated scene annotation
-    clap_path = Path(a.processed) / "araus_clap.npz"
-    if clap_path.exists():
-        print("Loading CLAP embeddings for ARAUS soundscapes...")
-        clap_data = np.load(clap_path)
-        clap_embeddings = clap_data["embeddings"]  # [n_stimuli, 512]
-        stimulus_ids = clap_data.get("stimulus_ids", None)
+    print(f"Generating scene descriptions for {len(araus_scenes)} unique soundscapes...")
 
-        # Map soundscape names to CLAP embeddings
-        # For each unique soundscape, take the mean embedding across all its stimuli
-        soundscape_embeddings = {}
-        for soundscape_name in araus_scenes["soundscape"]:
-            # Find all stimuli with this soundscape
-            mask = stimuli["soundscape"] == soundscape_name
-            if mask.any():
-                # Average CLAP embeddings for this soundscape
-                indices = np.where(mask)[0]
-                mean_embedding = clap_embeddings[indices].mean(axis=0)
-                soundscape_embeddings[soundscape_name] = mean_embedding
+    # Apply rule-based scene generation
+    scenes = []
+    scores = []
+    for _, row in araus_scenes.iterrows():
+        scene_desc, confidence = generate_scene_description(row["masker_type"], row["LA50"])
+        scenes.append(scene_desc)
+        scores.append(confidence)
 
-        # Score each soundscape against scene categories
-        print("Scoring soundscapes against scene categories...")
-        scenes = []
-        scores = []
-        for soundscape in araus_scenes["soundscape"]:
-            if soundscape in soundscape_embeddings:
-                scene, score = get_clap_scene_label(
-                    soundscape_embeddings[soundscape], SCENE_PHRASES
-                )
-                scenes.append(scene)
-                scores.append(score)
-            else:
-                scenes.append("urban_street")
-                scores.append(0.0)
+    araus_scenes["scene_description"] = scenes
+    araus_scenes["scene_score"] = scores
 
-        araus_scenes["scene_description"] = scenes
-        araus_scenes["scene_score"] = scores
-    else:
-        # Fallback: use CLAP if available, else generic
-        print("CLAP embeddings not found. Using generic scene descriptions.")
-        araus_scenes["scene_description"] = "urban soundscape"
-        araus_scenes["scene_score"] = 0.0
+    # Keep only soundscape and description columns for output
+    araus_scenes = araus_scenes[["soundscape", "scene_description", "scene_score"]]
 
     araus_scenes.to_csv(out / "araus_scenes.csv", index=False)
     print(f"Wrote {out}/araus_scenes.csv ({len(araus_scenes)} unique soundscapes)")
-    print(f"Scene distribution:\n{araus_scenes['scene_description'].value_counts()}")
+    print(f"\nScene description distribution:")
+    print(araus_scenes["scene_description"].value_counts().to_string())
 
     # ---- ISD scenes (from location metadata) ----
     recordings = pd.read_csv(Path(a.processed) / "isd_recordings.csv")
@@ -195,4 +163,4 @@ if __name__ == "__main__":
     isd_scenes.to_csv(out / "isd_scenes.csv", index=False)
     print(f"\nWrote {out}/isd_scenes.csv ({len(isd_scenes)} unique locations)")
 
-    print("\nScene mappings complete. Ready for caption generation with scene descriptions.")
+    print("\nScene mappings complete. Ready for caption generation with differentiated scene descriptions.")

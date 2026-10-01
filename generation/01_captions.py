@@ -106,15 +106,17 @@ def captions_araus(proc_root, scenes_df=None):
     # Filter out silence maskers (no acoustic information to model)
     stim = stim[stim.masker_type != "silence"].copy()
 
-    # Add scene descriptions from CLAP-based scene mapping
+    # Add scene descriptions from rule-based scene mapping
+    has_scene_mapping = False
     if scenes_df is not None and not scenes_df.empty:
         stim = stim.merge(scenes_df[["soundscape", "scene_description"]], on="soundscape", how="left")
-        stim["scene"] = stim["scene_description"].fillna("soundscape")
+        stim["scene"] = stim["scene_description"]
+        has_scene_mapping = True
     else:
         # Fallback: use soundscape ID
         stim["scene"] = stim.soundscape.str.replace(r"_segment.*", "", regex=True)
 
-    # Add source descriptions from masker type
+    # Add source descriptions from masker type (only needed if no scene mapping)
     stim["source"] = stim.masker_type.map(SOURCE_DESC).fillna(stim.masker_type)
     stim["loudness"] = stim.LA50.apply(loudness_desc)
 
@@ -122,15 +124,26 @@ def captions_araus(proc_root, scenes_df=None):
     stim["bin"] = stim.ISOPleasant.apply(bin_pleasantness)
     stim["pleasantness_label"] = stim.bin.map(PLEASANTNESS_LABELS)
 
-    # Expanded template caption with more descriptive details
-    stim["caption"] = (
-        stim.scene + " with " +
-        stim.source + ". " +
-        "Loudness: " + stim.loudness +
-        " (LA50: " + stim.LA50.round(1).astype(str) + " dB). " +
-        "Pleasantness: " + stim.pleasantness_label +
-        " (ISOPleasant: " + stim.ISOPleasant.round(2).astype(str) + ")."
-    )
+    # Caption template: if using scene mapping (which includes source context),
+    # just use scene description. Otherwise, append source to scene.
+    if has_scene_mapping:
+        stim["caption"] = (
+            stim.scene + ". " +
+            "Loudness: " + stim.loudness +
+            " (LA50: " + stim.LA50.round(1).astype(str) + " dB). " +
+            "Pleasantness: " + stim.pleasantness_label +
+            " (ISOPleasant: " + stim.ISOPleasant.round(2).astype(str) + ")."
+        )
+    else:
+        # Fallback: expand with source type
+        stim["caption"] = (
+            stim.scene + " with " +
+            stim.source + ". " +
+            "Loudness: " + stim.loudness +
+            " (LA50: " + stim.LA50.round(1).astype(str) + " dB). " +
+            "Pleasantness: " + stim.pleasantness_label +
+            " (ISOPleasant: " + stim.ISOPleasant.round(2).astype(str) + ")."
+        )
 
     return stim[["stimulus_id", "caption", "ISOPleasant", "bin", "n_ratings", "LA50"]].rename(
         columns={"stimulus_id": "id"}
