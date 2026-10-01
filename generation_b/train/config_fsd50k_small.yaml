@@ -1,0 +1,118 @@
+# Stable Audio Open Fine-tuning Configuration
+# Plan B: FSD50K + SoundAQnet pleasantness labels
+# Target: SAO Small (11s generation, ~60M parameters)
+
+model_config:
+  model_type: "stable_audio"
+  sample_rate: 44100
+  channels: 2
+  # Full SAO checkpoint
+  pretrained_path: "stabilityai/stable-audio-small-1.0"  # or local checkpoint path
+
+# Dataset configuration
+dataset_config:
+  # Plan B: captions + audio from FSD50K
+  train_dir: "../train"  # Audio files from step 04
+  test_dir: "../test"
+  metadata_file: "../metadata.json"
+  captions_file: "../captions.csv"
+  
+  # Audio processing
+  sample_rate: 44100
+  channels: 2
+  chunk_size: 11  # seconds (SAO Small max)
+  pad_to_length: true
+  loudness_target: -23.0  # LUFS (normalized in step 04)
+  
+  # Conditioning on pleasantness level in caption
+  condition_type: "text"  # captions with pleasantness level
+  num_workers: 4
+  prefetch_factor: 2
+
+training:
+  # Batch size (depends on GPU memory)
+  batch_size: 4  # per GPU; adjust for your hardware
+  num_epochs: 5
+  learning_rate: 1e-4
+  warmup_steps: 500
+  gradient_accumulation_steps: 2
+  
+  # Mixed precision training
+  mixed_precision: "fp16"
+  grad_clip_value: 1.0
+  
+  # Learning rate schedule
+  lr_scheduler: "cosine"
+  warmup_strategy: "linear"
+  
+  # Optimization
+  optimizer: "adamw"
+  weight_decay: 0.01
+  
+  # Checkpointing
+  save_every_n_steps: 1000
+  eval_every_n_steps: 500
+  keep_checkpoints: 3
+  
+  # Logging
+  log_every_n_steps: 100
+  log_dir: "./logs"
+  
+  # Device
+  device: "cuda"
+  num_gpus: 1
+  num_processes: 1  # for multi-GPU: DistributedDataParallel
+
+model:
+  # Conditioning
+  text_encoder: "t5-base"  # or "t5-large" for higher capacity
+  
+  # Model parameters (usually frozen for fine-tuning)
+  # See stable-audio-tools for full options
+  freeze_encoder: true  # Keep text encoder fixed
+  freeze_audio_encoder: true  # Keep VAE encoder fixed
+  
+  # Only train the diffusion model head (lightly)
+  train_diffusion_model_only: false
+
+evaluation:
+  eval_metrics:
+    - "fad"  # Frechet Audio Distance
+    - "clap_score"  # CLAP embedding similarity
+  
+  eval_batch_size: 8
+  num_samples_eval: 50  # sample from each bin
+  
+  # Generation parameters for evaluation
+  generation:
+    num_inference_steps: 50
+    guidance_scale: 3.0  # classifier-free guidance strength
+    seed: 42
+
+# Plan B specific
+plan_b:
+  # Split by pleasantness level
+  pleasantness_levels:
+    - "very_unpleasant"
+    - "unpleasant"
+    - "neutral"
+    - "pleasant"
+    - "very_pleasant"
+  
+  # For within-prompt Spearman test
+  eval_prompts: "../eval_prompts.txt"  # Same held-out prompts across plans
+  
+  # Compare against baseline
+  baseline_checkpoint: "stabilityai/stable-audio-small-1.0"
+  
+  # Control experiment: same data without pleasantness word
+  control_config: "config_fsd50k_small_no_pleasantness.yaml"
+
+# Checkpointing and resumption
+checkpoint:
+  resume_from: null  # Or path to checkpoint to continue from
+  checkpoint_dir: "./checkpoints"
+  load_best_model_at_end: true
+
+# Reproducibility
+seed: 42
