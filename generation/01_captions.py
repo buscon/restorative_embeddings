@@ -11,11 +11,11 @@ combined ARAUS + ISD response distributions to balance class sizes:
 * very pleasant: ISOPleasant ≥ +0.50
 
 Caption template:
-    "{scene_description}, {source_description}, {loudness}. {pleasantness} soundscape."
+    "{scene} with {source}. Loudness: {loudness} (LA50: {LA50} dB). Pleasantness: {pleasantness_label} (ISOPleasant: {ISOPleasant})."
 
 Examples:
-    "Urban park, birds singing and people talking, moderately loud. Pleasant soundscape."
-    "Street intersection, traffic and construction noise, very loud. Very unpleasant soundscape."
+    "Urban park with birdsong. Loudness: moderately loud (LA50: 65.3 dB). Pleasantness: pleasant (ISOPleasant: 0.28)."
+    "Street intersection with traffic noise. Loudness: very loud (LA50: 78.2 dB). Pleasantness: very unpleasant pleasantness (ISOPleasant: -0.68)."
 
 Output: captions.csv with columns
     [id, dataset, caption, ISOPleasant, bin, n_ratings, LA50]
@@ -39,19 +39,21 @@ BINS = {
 }
 
 PLEASANTNESS_LABELS = {
-    "very_unpleasant": "very unpleasant",
-    "unpleasant": "unpleasant",
-    "neutral": "neutral",
+    "very_unpleasant": "very unpleasant pleasantness",
+    "unpleasant": "unpleasant pleasantness",
+    "neutral": "neutral pleasantness",
     "pleasant": "pleasant",
     "very_pleasant": "very pleasant",
 }
 
-# Source type descriptions (common masker types in ARAUS)
+# Source type descriptions (masker types in ARAUS)
 SOURCE_DESC = {
     "bird": "birdsong",
     "water": "flowing water",
     "traffic": "traffic noise",
     "construction": "construction noise",
+    "wind": "wind noise",
+    "silence": None,  # Will be filtered out
 }
 
 # Loudness descriptions
@@ -97,6 +99,9 @@ def captions_araus(proc_root):
     # Load ARAUS stimulus-level aggregates
     stim = pd.read_csv(proc_root / "araus_stimuli.csv")
 
+    # Filter out silence maskers (no acoustic information to model)
+    stim = stim[stim.masker_type != "silence"].copy()
+
     # Add scene descriptions from soundscape metadata
     # For now, use a simple heuristic: group by soundscape base
     # Real implementation would join with USotW_metadata.csv
@@ -110,12 +115,14 @@ def captions_araus(proc_root):
     stim["bin"] = stim.ISOPleasant.apply(bin_pleasantness)
     stim["pleasantness_label"] = stim.bin.map(PLEASANTNESS_LABELS)
 
-    # Template caption
+    # Expanded template caption with more descriptive details
     stim["caption"] = (
-        stim.scene + ", " +
-        stim.source + ", " +
-        stim.loudness + ". " +
-        stim.pleasantness_label + " soundscape."
+        stim.scene + " with " +
+        stim.source + ". " +
+        "Loudness: " + stim.loudness +
+        " (LA50: " + stim.LA50.round(1).astype(str) + " dB). " +
+        "Pleasantness: " + stim.pleasantness_label +
+        " (ISOPleasant: " + stim.ISOPleasant.round(2).astype(str) + ")."
     )
 
     return stim[["stimulus_id", "caption", "ISOPleasant", "bin", "n_ratings", "LA50"]].rename(
@@ -127,7 +134,7 @@ def captions_isd(proc_root):
     """Generate captions for ISD recordings.
 
     Note: ISD does not have masker types or controlled acoustic variation.
-    Captions are simpler: "{location}, {loudness}. {pleasantness} soundscape."
+    Captions include location and acoustic measurements for consistency with ARAUS.
 
     Returns:
         DataFrame with [id, caption, ISOPleasant, bin, n_ratings, LA50]
@@ -147,11 +154,13 @@ def captions_isd(proc_root):
     recs["bin"] = recs.ISOPleasant.apply(bin_pleasantness)
     recs["pleasantness_label"] = recs.bin.map(PLEASANTNESS_LABELS)
 
-    # Template caption (location instead of scene)
+    # Expanded template caption for consistency with ARAUS
     recs["caption"] = (
-        recs.LocationID + ", " +
-        recs.loudness + ". " +
-        recs.pleasantness_label + " soundscape."
+        recs.LocationID + ". " +
+        "Loudness: " + recs.loudness +
+        " (LA50: " + recs.LA50.round(1).astype(str) + " dB). " +
+        "Pleasantness: " + recs.pleasantness_label +
+        " (ISOPleasant: " + recs.ISOPleasant.round(2).astype(str) + ")."
     )
 
     return recs[["GroupID", "caption", "ISOPleasant", "bin", "n_ratings", "LA50"]].rename(

@@ -87,8 +87,7 @@ def normalise_loudness(y, sr, target_lufs=-23.0):
         # Silent or near-silent: return as-is
         return y
 
-    normalizer = pyloudnorm.Normalizer(loudness)
-    y_norm = normalizer.normalize(y, target_lufs)
+    y_norm = pyloudnorm.normalize.loudness(y, loudness, target_lufs)
 
     # Clip to [-1, 1] to avoid distortion
     return np.clip(y_norm, -1.0, 1.0)
