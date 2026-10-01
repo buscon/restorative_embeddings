@@ -1,51 +1,51 @@
 idx	bin	caption	ISOPleasant	LA50
-0	pleasant	urban soundscape with wind noise. Loudness: moderately quiet (LA50: 55.8 dB). Pleasantness: pleasant (ISOPleasant: 0.35).	0.3535533905932736	55.76
-1	neutral	urban soundscape with wind noise. Loudness: moderately loud (LA50: 62.6 dB). Pleasantness: neutral pleasantness (ISOPleasant: 0.07).	0.0732233047033632	62.62
-2	unpleasant	urban soundscape with construction noise. Loudness: moderately quiet (LA50: 58.0 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.35).	-0.3535533905932738	58.0
-3	neutral	urban soundscape with birdsong. Loudness: moderately quiet (LA50: 59.3 dB). Pleasantness: neutral pleasantness (ISOPleasant: 0.1).	0.1035533905932737	59.33
-4	neutral	urban soundscape with birdsong. Loudness: moderately loud (LA50: 61.5 dB). Pleasantness: neutral pleasantness (ISOPleasant: -0.07).	-0.0732233047033631	61.5
-5	very_unpleasant	urban soundscape with construction noise. Loudness: loud (LA50: 70.5 dB). Pleasantness: very unpleasant pleasantness (ISOPleasant: -0.78).	-0.7803300858899106	70.46
-6	unpleasant	urban soundscape with wind noise. Loudness: moderately quiet (LA50: 57.8 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.35).	-0.3535533905932738	57.84
-7	very_pleasant	urban soundscape with birdsong. Loudness: moderately quiet (LA50: 52.0 dB). Pleasantness: very pleasant (ISOPleasant: 0.56).	0.5606601717798212	52.04
-8	neutral	urban soundscape with traffic noise. Loudness: moderately loud (LA50: 68.8 dB). Pleasantness: neutral pleasantness (ISOPleasant: 0.1).	0.1035533905932737	68.77
-9	pleasant	urban soundscape with traffic noise. Loudness: moderately loud (LA50: 66.2 dB). Pleasantness: pleasant (ISOPleasant: 0.35).	0.3535533905932738	66.21
-10	unpleasant	urban soundscape with flowing water. Loudness: moderately loud (LA50: 69.8 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.25).	-0.25	69.77
-11	neutral	urban soundscape with birdsong. Loudness: moderately loud (LA50: 66.8 dB). Pleasantness: neutral pleasantness (ISOPleasant: -0.07).	-0.0732233047033631	66.77
-12	very_unpleasant	urban soundscape with flowing water. Loudness: moderately loud (LA50: 68.4 dB). Pleasantness: very unpleasant pleasantness (ISOPleasant: -0.5).	-0.5	68.41
-13	pleasant	urban soundscape with wind noise. Loudness: moderately loud (LA50: 65.4 dB). Pleasantness: pleasant (ISOPleasant: 0.5).	0.5	65.43
-14	neutral	urban soundscape with construction noise. Loudness: moderately loud (LA50: 62.6 dB). Pleasantness: neutral pleasantness (ISOPleasant: 0.15).	0.1464466094067263	62.63
-15	pleasant	urban soundscape with construction noise. Loudness: moderately loud (LA50: 60.3 dB). Pleasantness: pleasant (ISOPleasant: 0.25).	0.2499999999999999	60.34
-16	pleasant	urban soundscape with wind noise. Loudness: moderately loud (LA50: 65.5 dB). Pleasantness: pleasant (ISOPleasant: 0.28).	0.2803300858899106	65.54
-17	unpleasant	urban soundscape with wind noise. Loudness: moderately quiet (LA50: 54.6 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.35).	-0.3535533905932737	54.64
-18	very_unpleasant	urban soundscape with construction noise. Loudness: moderately loud (LA50: 69.1 dB). Pleasantness: very unpleasant pleasantness (ISOPleasant: -0.57).	-0.5732233047033631	69.07
-19	unpleasant	urban soundscape with wind noise. Loudness: moderately loud (LA50: 67.2 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.49).	-0.487436867076458	67.21
-20	pleasant	urban soundscape with flowing water. Loudness: moderately loud (LA50: 60.6 dB). Pleasantness: pleasant (ISOPleasant: 0.21).	0.2071067811865475	60.63
-21	pleasant	urban soundscape with construction noise. Loudness: moderately quiet (LA50: 55.6 dB). Pleasantness: pleasant (ISOPleasant: 0.31).	0.3106601717798212	55.61
-22	unpleasant	urban soundscape with traffic noise. Loudness: moderately loud (LA50: 66.2 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.32).	-0.3232233047033631	66.24
-23	very_unpleasant	urban soundscape with wind noise. Loudness: moderately loud (LA50: 69.3 dB). Pleasantness: very unpleasant pleasantness (ISOPleasant: -0.6).	-0.6035533905932737	69.27
-24	neutral	urban soundscape with wind noise. Loudness: loud (LA50: 70.3 dB). Pleasantness: neutral pleasantness (ISOPleasant: 0.13).	0.1338834764831844	70.33
-25	unpleasant	urban soundscape with traffic noise. Loudness: moderately loud (LA50: 61.0 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.4).	-0.3964466094067263	61.0
-26	very_pleasant	urban soundscape with flowing water. Loudness: moderately loud (LA50: 64.5 dB). Pleasantness: very pleasant (ISOPleasant: 0.6).	0.6035533905932738	64.48
-27	neutral	urban soundscape with construction noise. Loudness: moderately quiet (LA50: 56.7 dB). Pleasantness: neutral pleasantness (ISOPleasant: -0.15).	-0.1464466094067262	56.67
-28	pleasant	urban soundscape with flowing water. Loudness: moderately loud (LA50: 63.8 dB). Pleasantness: pleasant (ISOPleasant: 0.21).	0.2071067811865475	63.82
-29	unpleasant	urban soundscape with construction noise. Loudness: moderately loud (LA50: 66.1 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.46).	-0.4571067811865475	66.07
-30	very_pleasant	urban soundscape with wind noise. Loudness: moderately loud (LA50: 62.7 dB). Pleasantness: very pleasant (ISOPleasant: 0.68).	0.676776695296637	62.66
-31	pleasant	urban soundscape with birdsong. Loudness: moderately quiet (LA50: 52.1 dB). Pleasantness: pleasant (ISOPleasant: 0.41).	0.414213562373095	52.13
-32	pleasant	urban soundscape with birdsong. Loudness: loud (LA50: 72.3 dB). Pleasantness: pleasant (ISOPleasant: 0.28).	0.2803300858899107	72.3
-33	unpleasant	urban soundscape with construction noise. Loudness: moderately loud (LA50: 68.0 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.25).	-0.2499999999999999	67.96
-34	unpleasant	urban soundscape with wind noise. Loudness: loud (LA50: 70.9 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.43).	-0.4267766952966368	70.87
-35	pleasant	urban soundscape with construction noise. Loudness: moderately loud (LA50: 65.3 dB). Pleasantness: pleasant (ISOPleasant: 0.46).	0.4571067811865476	65.33
-36	pleasant	urban soundscape with birdsong. Loudness: moderately quiet (LA50: 52.6 dB). Pleasantness: pleasant (ISOPleasant: 0.43).	0.4267766952966369	52.57
-37	neutral	urban soundscape with flowing water. Loudness: loud (LA50: 74.9 dB). Pleasantness: neutral pleasantness (ISOPleasant: -0.07).	-0.0732233047033631	74.89
-38	pleasant	urban soundscape with wind noise. Loudness: moderately quiet (LA50: 56.6 dB). Pleasantness: pleasant (ISOPleasant: 0.25).	0.25	56.63
-39	pleasant	urban soundscape with birdsong. Loudness: moderately quiet (LA50: 57.2 dB). Pleasantness: pleasant (ISOPleasant: 0.5).	0.5	57.15
-40	very_pleasant	urban soundscape with birdsong. Loudness: moderately loud (LA50: 61.4 dB). Pleasantness: very pleasant (ISOPleasant: 0.78).	0.7803300858899107	61.44
-41	unpleasant	urban soundscape with flowing water. Loudness: loud (LA50: 74.0 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.35).	-0.3535533905932737	74.05
-42	neutral	urban soundscape with flowing water. Loudness: moderately loud (LA50: 60.8 dB). Pleasantness: neutral pleasantness (ISOPleasant: -0.07).	-0.0732233047033631	60.82
-43	very_unpleasant	urban soundscape with construction noise. Loudness: loud (LA50: 70.7 dB). Pleasantness: very unpleasant pleasantness (ISOPleasant: -0.71).	-0.7071067811865474	70.72
-44	neutral	urban soundscape with wind noise. Loudness: moderately loud (LA50: 65.8 dB). Pleasantness: neutral pleasantness (ISOPleasant: 0.07).	0.0732233047033631	65.75
-45	unpleasant	urban soundscape with flowing water. Loudness: moderately quiet (LA50: 50.3 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.32).	-0.3232233047033631	50.34
-46	neutral	urban soundscape with wind noise. Loudness: moderately loud (LA50: 64.2 dB). Pleasantness: neutral pleasantness (ISOPleasant: 0.1).	0.1035533905932737	64.16
-47	neutral	urban soundscape with flowing water. Loudness: moderately loud (LA50: 67.3 dB). Pleasantness: neutral pleasantness (ISOPleasant: -0.15).	-0.1464466094067262	67.33
-48	very_pleasant	urban soundscape with traffic noise. Loudness: moderately quiet (LA50: 59.8 dB). Pleasantness: very pleasant (ISOPleasant: 0.71).	0.7071067811865476	59.84
-49	very_unpleasant	urban soundscape with construction noise. Loudness: moderately loud (LA50: 67.8 dB). Pleasantness: very unpleasant pleasantness (ISOPleasant: -0.71).	-0.7071067811865476	67.83
+0	pleasant	quiet park with natural ambience and birdsong. Loudness: moderately quiet (LA50: 55.8 dB). Pleasantness: pleasant (ISOPleasant: 0.35).	0.3535533905932736	55.76
+1	neutral	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 62.6 dB). Pleasantness: neutral pleasantness (ISOPleasant: 0.07).	0.0732233047033632	62.62
+2	unpleasant	quiet park with natural ambience and birdsong. Loudness: moderately quiet (LA50: 58.0 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.35).	-0.3535533905932738	58.0
+3	neutral	urban park with birds and ambient activity. Loudness: moderately quiet (LA50: 59.3 dB). Pleasantness: neutral pleasantness (ISOPleasant: 0.1).	0.1035533905932737	59.33
+4	neutral	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 61.5 dB). Pleasantness: neutral pleasantness (ISOPleasant: -0.07).	-0.0732233047033631	61.5
+5	very_unpleasant	urban park with birds and ambient activity. Loudness: loud (LA50: 70.5 dB). Pleasantness: very unpleasant pleasantness (ISOPleasant: -0.78).	-0.7803300858899106	70.46
+6	unpleasant	urban park with birds and ambient activity. Loudness: moderately quiet (LA50: 57.8 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.35).	-0.3535533905932738	57.84
+7	very_pleasant	quiet park with natural ambience and birdsong. Loudness: moderately quiet (LA50: 52.0 dB). Pleasantness: very pleasant (ISOPleasant: 0.56).	0.5606601717798212	52.04
+8	neutral	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 68.8 dB). Pleasantness: neutral pleasantness (ISOPleasant: 0.1).	0.1035533905932737	68.77
+9	pleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 66.2 dB). Pleasantness: pleasant (ISOPleasant: 0.35).	0.3535533905932738	66.21
+10	unpleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 69.8 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.25).	-0.25	69.77
+11	neutral	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 66.8 dB). Pleasantness: neutral pleasantness (ISOPleasant: -0.07).	-0.0732233047033631	66.77
+12	very_unpleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 68.4 dB). Pleasantness: very unpleasant pleasantness (ISOPleasant: -0.5).	-0.5	68.41
+13	pleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 65.4 dB). Pleasantness: pleasant (ISOPleasant: 0.5).	0.5	65.43
+14	neutral	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 62.6 dB). Pleasantness: neutral pleasantness (ISOPleasant: 0.15).	0.1464466094067263	62.63
+15	pleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 60.3 dB). Pleasantness: pleasant (ISOPleasant: 0.25).	0.2499999999999999	60.34
+16	pleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 65.5 dB). Pleasantness: pleasant (ISOPleasant: 0.28).	0.2803300858899106	65.54
+17	unpleasant	quiet park with natural ambience and birdsong. Loudness: moderately quiet (LA50: 54.6 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.35).	-0.3535533905932737	54.64
+18	very_unpleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 69.1 dB). Pleasantness: very unpleasant pleasantness (ISOPleasant: -0.57).	-0.5732233047033631	69.07
+19	unpleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 67.2 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.49).	-0.487436867076458	67.21
+20	pleasant	quiet park with natural ambience and birdsong. Loudness: moderately loud (LA50: 60.6 dB). Pleasantness: pleasant (ISOPleasant: 0.21).	0.2071067811865475	60.63
+21	pleasant	quiet park with natural ambience and birdsong. Loudness: moderately quiet (LA50: 55.6 dB). Pleasantness: pleasant (ISOPleasant: 0.31).	0.3106601717798212	55.61
+22	unpleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 66.2 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.32).	-0.3232233047033631	66.24
+23	very_unpleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 69.3 dB). Pleasantness: very unpleasant pleasantness (ISOPleasant: -0.6).	-0.6035533905932737	69.27
+24	neutral	urban park with birds and ambient activity. Loudness: loud (LA50: 70.3 dB). Pleasantness: neutral pleasantness (ISOPleasant: 0.13).	0.1338834764831844	70.33
+25	unpleasant	quiet park with natural ambience and birdsong. Loudness: moderately loud (LA50: 61.0 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.4).	-0.3964466094067263	61.0
+26	very_pleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 64.5 dB). Pleasantness: very pleasant (ISOPleasant: 0.6).	0.6035533905932738	64.48
+27	neutral	quiet park with natural ambience and birdsong. Loudness: moderately quiet (LA50: 56.7 dB). Pleasantness: neutral pleasantness (ISOPleasant: -0.15).	-0.1464466094067262	56.67
+28	pleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 63.8 dB). Pleasantness: pleasant (ISOPleasant: 0.21).	0.2071067811865475	63.82
+29	unpleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 66.1 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.46).	-0.4571067811865475	66.07
+30	very_pleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 62.7 dB). Pleasantness: very pleasant (ISOPleasant: 0.68).	0.676776695296637	62.66
+31	pleasant	quiet park with natural ambience and birdsong. Loudness: moderately quiet (LA50: 52.1 dB). Pleasantness: pleasant (ISOPleasant: 0.41).	0.414213562373095	52.13
+32	pleasant	busy park with intermittent birdsong. Loudness: loud (LA50: 72.3 dB). Pleasantness: pleasant (ISOPleasant: 0.28).	0.2803300858899107	72.3
+33	unpleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 68.0 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.25).	-0.2499999999999999	67.96
+34	unpleasant	urban park with birds and ambient activity. Loudness: loud (LA50: 70.9 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.43).	-0.4267766952966368	70.87
+35	pleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 65.3 dB). Pleasantness: pleasant (ISOPleasant: 0.46).	0.4571067811865476	65.33
+36	pleasant	quiet park with natural ambience and birdsong. Loudness: moderately quiet (LA50: 52.6 dB). Pleasantness: pleasant (ISOPleasant: 0.43).	0.4267766952966369	52.57
+37	neutral	busy park with intermittent birdsong. Loudness: loud (LA50: 74.9 dB). Pleasantness: neutral pleasantness (ISOPleasant: -0.07).	-0.0732233047033631	74.89
+38	pleasant	quiet park with natural ambience and birdsong. Loudness: moderately quiet (LA50: 56.6 dB). Pleasantness: pleasant (ISOPleasant: 0.25).	0.25	56.63
+39	pleasant	quiet park with natural ambience and birdsong. Loudness: moderately quiet (LA50: 57.2 dB). Pleasantness: pleasant (ISOPleasant: 0.5).	0.5	57.15
+40	very_pleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 61.4 dB). Pleasantness: very pleasant (ISOPleasant: 0.78).	0.7803300858899107	61.44
+41	unpleasant	busy park with intermittent birdsong. Loudness: loud (LA50: 74.0 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.35).	-0.3535533905932737	74.05
+42	neutral	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 60.8 dB). Pleasantness: neutral pleasantness (ISOPleasant: -0.07).	-0.0732233047033631	60.82
+43	very_unpleasant	urban park with birds and ambient activity. Loudness: loud (LA50: 70.7 dB). Pleasantness: very unpleasant pleasantness (ISOPleasant: -0.71).	-0.7071067811865474	70.72
+44	neutral	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 65.8 dB). Pleasantness: neutral pleasantness (ISOPleasant: 0.07).	0.0732233047033631	65.75
+45	unpleasant	quiet park with natural ambience and birdsong. Loudness: moderately quiet (LA50: 50.3 dB). Pleasantness: unpleasant pleasantness (ISOPleasant: -0.32).	-0.3232233047033631	50.34
+46	neutral	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 64.2 dB). Pleasantness: neutral pleasantness (ISOPleasant: 0.1).	0.1035533905932737	64.16
+47	neutral	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 67.3 dB). Pleasantness: neutral pleasantness (ISOPleasant: -0.15).	-0.1464466094067262	67.33
+48	very_pleasant	urban park with birds and ambient activity. Loudness: moderately quiet (LA50: 59.8 dB). Pleasantness: very pleasant (ISOPleasant: 0.71).	0.7071067811865476	59.84
+49	very_unpleasant	urban park with birds and ambient activity. Loudness: moderately loud (LA50: 67.8 dB). Pleasantness: very unpleasant pleasantness (ISOPleasant: -0.71).	-0.7071067811865476	67.83
