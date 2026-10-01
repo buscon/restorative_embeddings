@@ -77,9 +77,17 @@ if __name__ == "__main__":
     araus_captions = captions[captions.dataset == "araus"].copy()
     print(f"Found {len(araus_captions)} ARAUS captions")
 
-    # Merge with stimulus metadata
+    # Check which columns are available in stimuli
+    available_cols = ["stimulus_id", "soundscape", "masker_type"]
+    for col in ["SMR", "gain_dB", "n_ratings", "LA50", "ISOPleasant"]:
+        if col in stimuli.columns:
+            available_cols.append(col)
+
+    print(f"Available stimulus columns: {available_cols}")
+
+    # Merge with stimulus metadata (only use available columns)
     araus_captions = araus_captions.merge(
-        stimuli[["stimulus_id", "soundscape", "masker_type", "SMR", "gain_dB"]],
+        stimuli[available_cols],
         left_on="id",
         right_on="stimulus_id",
         how="left"
@@ -114,9 +122,14 @@ if __name__ == "__main__":
 
     # Save mapping for reference
     output_csv = out / "audio_location_mapping.csv"
-    output_cols = ["id", "stimulus_id", "soundscape", "masker_type", "SMR", "gain_dB", "caption"]
+    output_cols = ["id", "stimulus_id", "soundscape", "masker_type"]
+    for col in ["SMR", "gain_dB", "LA50", "ISOPleasant", "n_ratings", "caption"]:
+        if col in araus_captions.columns:
+            output_cols.append(col)
+
     araus_captions[output_cols].to_csv(output_csv, index=False)
     print(f"\n✓ Mapping saved to: {output_csv}")
+    print(f"  Columns: {', '.join(output_cols)}")
 
     # Sample captions with audio info
     print("\n" + "="*80)
@@ -126,5 +139,9 @@ if __name__ == "__main__":
     for idx, row in sample.iterrows():
         print(f"\nStimulus ID: {row['stimulus_id']}")
         print(f"Soundscape: {row['soundscape']}")
-        print(f"Masker: {row['masker_type']} (gain: {row['gain_dB']} dB, SMR: {row['SMR']} dB)")
+        print(f"Masker: {row['masker_type']}")
+        if 'gain_dB' in row and pd.notna(row['gain_dB']):
+            print(f"  Gain: {row['gain_dB']} dB, SMR: {row['SMR']} dB")
+        if 'LA50' in row and pd.notna(row['LA50']):
+            print(f"  Loudness: {row['LA50']:.1f} dB")
         print(f"Caption: {row['caption'][:80]}...")
