@@ -118,8 +118,8 @@ def process_stimulus(args):
         masker_dir=araus_root / "maskers",
     )
 
-    # Mix audio
-    x, sr = mixer.mix(row.soundscape, row.masker_type, row.smr)
+    # Mix audio (row is passed as dict for pickling)
+    x, sr = mixer.mix(row['soundscape'], row['masker'], row['smr'])
 
     # Prepare: mono, 48 kHz, 30 s, RMS norm
     y = prepare(x, sr)
@@ -142,11 +142,11 @@ def process_stimulus(args):
     # Return metadata
     return {
         "export_id": wav_idx,
-        "stimulus_id": row.stimulus_id,
-        "caption": row.caption,
-        "ISOPleasant": row.ISOPleasant,
-        "bin": row.bin,
-        "LA50": row.LA50,
+        "stimulus_id": row['stimulus_id'],
+        "caption": row['caption'],
+        "ISOPleasant": row['ISOPleasant'],
+        "bin": row['bin'],
+        "LA50": row['LA50'],
         "wav_path": str(wav_path),
     }
 
