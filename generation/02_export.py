@@ -22,6 +22,7 @@ Requires: soundfile, pyloudnorm, rsd.data, rsd.audio, generation.01_captions
 
 import argparse
 import sys
+import traceback
 from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
@@ -109,14 +110,17 @@ def process_stimulus(args):
     wav_path = audio_dir / f"araus_{wav_idx}.wav"
 
     # Initialize mixer (per-worker instance)
-    soundscapes = pd.read_csv(araus_root / "data" / "soundscapes.csv")
-    maskers = pd.read_csv(araus_root / "data" / "maskers.csv")
-    mixer = ArausMixer(
-        soundscapes=soundscapes,
-        maskers=maskers,
-        soundscape_dir=araus_root / "soundscapes",
-        masker_dir=araus_root / "maskers",
-    )
+    try:
+        soundscapes = pd.read_csv(araus_root / "data" / "soundscapes.csv")
+        maskers = pd.read_csv(araus_root / "data" / "maskers.csv")
+        mixer = ArausMixer(
+            soundscapes=soundscapes,
+            maskers=maskers,
+            soundscape_dir=araus_root / "soundscapes",
+            masker_dir=araus_root / "maskers",
+        )
+    except Exception as e:
+        raise RuntimeError(f"Failed to initialize ArausMixer with araus_root={araus_root}: {e}")
 
     # Mix audio (row is passed as dict for pickling)
     x, sr = mixer.mix(row['soundscape'], row['masker_type'], row['smr'])
@@ -223,6 +227,9 @@ if __name__ == "__main__":
                     print(f"  ... {processed} / {len(sample)}")
             except Exception as e:
                 print(f"ERROR processing stimulus {idx}: {e}")
+                if processed == 0:  # Print full traceback for first error
+                    print("Full traceback:")
+                    traceback.print_exc()
 
     # Save metadata
     metadata = pd.DataFrame(export_rows)
