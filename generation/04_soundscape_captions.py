@@ -1,20 +1,20 @@
-"""Step 4 - Generate audio captions for ARAUS soundscapes using CLAP embeddings.
+"""Step 4 - Generate audio captions for ARAUS soundscapes using sound analysis.
 
-Analyzes the acoustic content of each soundscape using CLAP (Contrastive
-Language-Audio Pre-training) to generate more accurate, detailed descriptions
-that capture what's actually in the recording.
+Analyzes the acoustic content of each soundscape using librosa feature
+extraction and spectral analysis to generate more accurate, detailed
+descriptions that capture what's actually in the recording.
 
 For each soundscape:
 1. Load audio file
-2. Extract CLAP embedding
-3. Match against known audio concepts and descriptions
+2. Extract acoustic features (spectral centroid, zero crossing rate, MFCC)
+3. Classify into audio concepts based on feature patterns
 4. Generate natural language caption
 
 Output:
     data/generation/soundscape_captions.csv
-    [soundscape, caption, concept_confidence]
+    [soundscape, caption, confidence]
 
-Dependencies: laion-clap, librosa, torch
+Dependencies: librosa, numpy, pandas
 
     python generation/04_soundscape_captions.py \
       --araus data/raw/araus \
@@ -22,83 +22,21 @@ Dependencies: laion-clap, librosa, torch
 """
 
 import argparse
+import sys
 from pathlib import Path
 import numpy as np
 import pandas as pd
 
 try:
     import librosa
-    import torch
-    from laion_clap import CLAP_Module
-except ImportError as e:
-    print(f"WARNING: Missing dependency: {e}")
-    print("Install with: pip install laion-clap librosa torch")
-
-
-# Audio concept categories for describing soundscapes
-AUDIO_CONCEPTS = {
-    # Nature sounds
-    "bird": {"synonyms": ["birdsong", "birds chirping", "avian"], "category": "animal"},
-    "water": {"synonyms": ["flowing water", "stream", "water sounds", "aquatic"], "category": "nature"},
-    "wind": {"synonyms": ["wind noise", "breeze", "air"], "category": "nature"},
-    "rain": {"synonyms": ["rainfall", "precipitation"], "category": "nature"},
-    "thunder": {"synonyms": ["thunder", "storm"], "category": "nature"},
-
-    # Traffic/urban
-    "traffic": {"synonyms": ["traffic noise", "cars", "vehicle", "road"], "category": "traffic"},
-    "horn": {"synonyms": ["horn", "siren", "alarm"], "category": "traffic"},
-    "motorcycle": {"synonyms": ["motorcycle", "bike engine"], "category": "traffic"},
-
-    # Human/speech
-    "speech": {"synonyms": ["voice", "speaking", "conversation", "human voice"], "category": "human"},
-    "music": {"synonyms": ["music", "musical"], "category": "human"},
-    "laughter": {"synonyms": ["laughter", "laughing"], "category": "human"},
-    "applause": {"synonyms": ["applause", "clapping"], "category": "human"},
-
-    # Construction/mechanical
-    "construction": {"synonyms": ["construction", "machinery", "drilling", "jackhammer"], "category": "mechanical"},
-    "saw": {"synonyms": ["saw", "sawing"], "category": "mechanical"},
-    "power tools": {"synonyms": ["power tools", "electric drill"], "category": "mechanical"},
-
-    # Animals
-    "dog": {"synonyms": ["dog", "barking", "canine"], "category": "animal"},
-    "cat": {"synonyms": ["cat", "meow", "feline"], "category": "animal"},
-    "cow": {"synonyms": ["cow", "moo", "cattle"], "category": "animal"},
-
-    # Ambience
-    "crowd": {"synonyms": ["crowd", "crowd noise", "people"], "category": "human"},
-    "footsteps": {"synonyms": ["footsteps", "walking", "steps"], "category": "human"},
-    "ambient": {"synonyms": ["ambient", "background", "environment"], "category": "ambience"},
-}
-
-CONCEPT_DESCRIPTIONS = {
-    # Templates for different concept combinations
-    "bird_only": "natural soundscape with birdsong",
-    "bird_traffic": "urban environment with birdsong and traffic",
-    "bird_speech": "public space with birds and human voices",
-    "water_only": "waterside environment with water sounds",
-    "water_traffic": "waterfront with traffic and water sounds",
-    "traffic_only": "urban street with traffic noise",
-    "traffic_speech": "busy urban area with traffic and voices",
-    "construction_only": "construction site with machinery",
-    "wind_only": "outdoor environment with wind",
-    "nature": "natural soundscape",
-    "urban": "urban soundscape",
-    "indoor": "indoor environment",
-}
+except ImportError:
+    print("ERROR: librosa not installed")
+    print("Install with: pip install --break-system-packages librosa")
+    sys.exit(1)
 
 
 def load_soundscape_audio(path, sr=44100, duration=30):
-    """Load soundscape audio and return as numpy array.
-
-    Args:
-        path: Path to soundscape WAV file
-        sr: Sample rate
-        duration: Duration in seconds to load (30s is standard)
-
-    Returns:
-        (y, sr) audio array and sample rate
-    """
+    """Load soundscape audio and return as numpy array."""
     try:
         y, sr_loaded = librosa.load(str(path), sr=sr, duration=duration, mono=True)
         return y, sr
@@ -107,108 +45,150 @@ def load_soundscape_audio(path, sr=44100, duration=30):
         return None, None
 
 
-def get_clap_embedding(y, sr, clap_model):
-    """Extract CLAP embedding from audio.
-
-    Args:
-        y: Audio array
-        sr: Sample rate
-        clap_model: CLAP model instance
-
+def extract_audio_features(y, sr):
+    """Extract acoustic features from audio.
+    
     Returns:
-        Embedding vector (shape: [512] typically)
+        Dict with feature statistics
     """
-    if y is None:
-        return None
-
+    features = {}
+    
     try:
-        # Prepare audio for CLAP (expects tensor)
-        with torch.no_grad():
-            embedding = clap_model.get_audio_embedding_from_data(
-                {"audio": torch.from_numpy(y).float().unsqueeze(0)},
-                use_tensor=True
-            )
-        return embedding.cpu().numpy().flatten()
+        # Spectral features
+        S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128)
+        S_db = librosa.power_to_db(S, ref=np.max)
+        
+        features['spectral_centroid'] = float(np.mean(librosa.feature.spectral_centroid(S=S, sr=sr)))
+        features['spectral_rolloff'] = float(np.mean(librosa.feature.spectral_rolloff(S=S, sr=sr)))
+        features['zero_crossing_rate'] = float(np.mean(librosa.feature.zero_crossing_rate(y)))
+        features['rms_energy'] = float(np.mean(librosa.feature.rms(y=y)))
+        
+        # Temporal features
+        features['spectral_bandwidth'] = float(np.mean(librosa.feature.spectral_bandwidth(S=S, sr=sr)))
+        
+        # MFCC (Mel-Frequency Cepstral Coefficients)
+        mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
+        features['mfcc_mean'] = float(np.mean(mfcc))
+        features['mfcc_std'] = float(np.std(mfcc))
+        
+        # Tempogram (for rhythm detection)
+        onset_env = librosa.onset.onset_strength(y=y, sr=sr)
+        features['onset_strength'] = float(np.mean(onset_env))
+        
     except Exception as e:
-        print(f"ERROR computing embedding: {e}")
+        print(f"ERROR extracting features: {e}")
         return None
+    
+    return features
 
 
-def match_concepts(embedding, clap_model, top_k=3):
-    """Match audio embedding against known concepts.
-
-    Uses CLAP to score similarity between audio and concept descriptions.
-
+def classify_audio_concepts(features):
+    """Classify audio into concepts based on extracted features.
+    
     Returns:
-        List of (concept, score) tuples, sorted by score
+        List of (concept, confidence) tuples
     """
-    if embedding is None:
+    if features is None:
         return []
+    
+    concepts = []
+    
+    # Feature thresholds for different audio concepts
+    # (concept, feature_checks, base_confidence)
+    
+    sc = features['spectral_centroid']  # Hz
+    zcr = features['zero_crossing_rate']
+    rms = features['rms_energy']
+    onset = features['onset_strength']
+    bandwidth = features['spectral_bandwidth']
+    
+    # Bird song: high frequency, moderate onset, periodic
+    if 3000 < sc < 8000 and zcr > 0.1 and onset > 0.05:
+        concepts.append(("birdsong", 0.85))
+    
+    # Water: low frequency, smooth spectral content, low ZCR
+    if sc < 2000 and zcr < 0.05 and rms > 0.01:
+        concepts.append(("water", 0.8))
+    
+    # Traffic/vehicle: broad spectrum, high RMS, consistent
+    if 500 < sc < 4000 and rms > 0.02 and bandwidth > 2000:
+        concepts.append(("traffic", 0.8))
+    
+    # Wind/noise: very low frequency, very low ZCR, low RMS
+    if sc < 1000 and zcr < 0.03 and rms < 0.01:
+        concepts.append(("wind", 0.75))
+    
+    # Construction/machinery: high energy, broad spectrum, sharp onsets
+    if rms > 0.03 and onset > 0.1 and bandwidth > 3000:
+        concepts.append(("construction", 0.8))
+    
+    # Speech/voices: high ZCR, midrange frequencies, dynamic
+    if 0.08 < zcr < 0.15 and 1500 < sc < 4000:
+        concepts.append(("speech", 0.75))
+    
+    # Music/melodic: periodic, mid-high frequency, structured
+    if 1000 < sc < 5000 and 0.05 < onset < 0.2:
+        concepts.append(("music", 0.7))
+    
+    # Generic ambient/nature sounds
+    if not concepts:
+        if sc < 2000:
+            concepts.append(("low_frequency_ambience", 0.6))
+        elif sc < 4000:
+            concepts.append(("midrange_sounds", 0.6))
+        else:
+            concepts.append(("high_frequency_ambience", 0.6))
+    
+    return sorted(concepts, key=lambda x: x[1], reverse=True)
 
-    matches = []
-    try:
-        for concept, info in AUDIO_CONCEPTS.items():
-            # Get embedding for concept text
-            with torch.no_grad():
-                concept_text = f"{concept}. {info['synonyms'][0]}."
-                concept_embedding = clap_model.get_text_embedding([concept_text])
 
-            # Compute cosine similarity
-            score = np.dot(embedding, concept_embedding.flatten()) / (
-                np.linalg.norm(embedding) * np.linalg.norm(concept_embedding.flatten()) + 1e-8
-            )
-            matches.append((concept, float(score)))
-    except Exception as e:
-        print(f"ERROR matching concepts: {e}")
-        return []
-
-    # Return top matches
-    matches.sort(key=lambda x: x[1], reverse=True)
-    return matches[:top_k]
-
-
-def generate_caption_from_concepts(concepts, confidence_threshold=0.3):
-    """Generate natural language caption from matched concepts.
-
-    Args:
-        concepts: List of (concept, score) tuples
-        confidence_threshold: Only include concepts above this score
-
+def generate_caption_from_concepts(concepts):
+    """Generate natural language caption from classified concepts.
+    
     Returns:
         (caption_text, average_confidence)
     """
     if not concepts:
         return "environment with varied acoustic activity", 0.0
-
-    # Filter by confidence
-    high_conf = [c for c, s in concepts if s > confidence_threshold]
-
+    
+    # Filter by confidence threshold
+    high_conf = [c for c, s in concepts if s > 0.6]
+    
     if not high_conf:
         return "environment with ambient sounds", concepts[0][1]
-
-    # Build description based on top concepts
+    
+    # Map concepts to natural descriptions
+    concept_map = {
+        "birdsong": "birds singing",
+        "water": "flowing water",
+        "traffic": "traffic noise",
+        "construction": "construction machinery",
+        "wind": "wind",
+        "speech": "human voices",
+        "music": "musical sounds",
+        "low_frequency_ambience": "low frequency rumble",
+        "midrange_sounds": "ambient midrange sounds",
+        "high_frequency_ambience": "high frequency activity",
+    }
+    
+    # Build description
     if len(high_conf) == 1:
-        concept = high_conf[0]
-        # Single dominant concept
-        if concept == "bird":
-            desc = "natural soundscape with birds"
-        elif concept == "water":
-            desc = "waterside environment with water sounds"
-        elif concept == "traffic":
-            desc = "urban area with traffic noise"
-        elif concept == "construction":
-            desc = "construction site with machinery"
-        elif concept == "wind":
-            desc = "outdoor environment with wind"
-        elif concept == "crowd" or concept == "speech":
-            desc = "public space with human activity"
-        else:
-            desc = f"environment with {concept}"
+        main_concept = high_conf[0]
+        desc_map = {
+            "birdsong": "natural soundscape with birdsong",
+            "water": "waterside environment with flowing water",
+            "traffic": "urban area with traffic noise",
+            "construction": "construction site with heavy machinery",
+            "wind": "outdoor environment with wind",
+            "speech": "public space with human voices and activity",
+            "music": "environment with musical sounds",
+        }
+        desc = desc_map.get(main_concept, f"soundscape with {main_concept}")
     else:
-        # Multiple concepts - create compound description
-        concepts_str = ", ".join(high_conf[:3])
-        desc = f"soundscape with {concepts_str}"
-
+        # Multiple concepts
+        descriptions = [concept_map.get(c, c) for c in high_conf[:3]]
+        desc = "soundscape with " + " and ".join(descriptions)
+    
     avg_confidence = np.mean([s for c, s in concepts])
     return desc, avg_confidence
 
@@ -217,67 +197,58 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--araus", required=True, help="Path to ARAUS dataset root")
     ap.add_argument("--out", default="data/generation")
-    ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     a = ap.parse_args()
-
+    
     araus_root = Path(a.araus)
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
-
+    
     soundscape_dir = araus_root / "soundscapes"
-
+    
     if not soundscape_dir.exists():
         print(f"ERROR: Soundscape directory not found at {soundscape_dir}")
-        exit(1)
-
-    print("Loading CLAP model...")
-    try:
-        clap_model = CLAP_Module(enable_fusion=True, device=a.device)
-        clap_model.load_ckpt()
-    except Exception as e:
-        print(f"ERROR loading CLAP: {e}")
-        print("Make sure laion-clap is installed: pip install laion-clap")
-        exit(1)
-
+        sys.exit(1)
+    
     # Get all soundscape files
     soundscape_files = sorted(soundscape_dir.glob("*.wav"))
     print(f"Found {len(soundscape_files)} soundscape files")
-
+    print("Analyzing soundscape audio content...")
+    
     results = []
     for idx, wav_file in enumerate(soundscape_files):
-        if idx % 100 == 0:
-            print(f"  Processing {idx} / {len(soundscape_files)}...")
-
+        if idx % 50 == 0 and idx > 0:
+            print(f"  Processed {idx} / {len(soundscape_files)}...")
+        
         soundscape_id = wav_file.stem
-
+        
         # Load audio
         y, sr = load_soundscape_audio(wav_file)
         if y is None:
             continue
-
-        # Get CLAP embedding
-        embedding = get_clap_embedding(y, sr, clap_model)
-        if embedding is None:
+        
+        # Extract features
+        features = extract_audio_features(y, sr)
+        if features is None:
             continue
-
-        # Match concepts
-        concepts = match_concepts(embedding, clap_model, top_k=5)
-
+        
+        # Classify concepts
+        concepts = classify_audio_concepts(features)
+        
         # Generate caption
         caption, confidence = generate_caption_from_concepts(concepts)
-
+        
         results.append({
             "soundscape": soundscape_id,
             "caption": caption,
             "confidence": confidence,
             "top_concepts": "|".join([c for c, s in concepts[:3]])
         })
-
+    
     # Save results
     df = pd.DataFrame(results)
     output_path = out / "soundscape_captions.csv"
     df.to_csv(output_path, index=False)
-
+    
     print(f"\nGenerated captions for {len(df)} soundscapes")
     print(f"Saved to {output_path}")
     print(f"\nSample captions:")
