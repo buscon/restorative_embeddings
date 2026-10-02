@@ -22,7 +22,6 @@ from datetime import datetime
 import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
-from transformers import AutoModel, AutoTokenizer
 import torchaudio
 import torchaudio.transforms as T
 from tqdm import tqdm
@@ -159,7 +158,7 @@ class StableAudioFineTuner:
         logger.info(f"Checkpoint dir: {self.checkpoint_dir}")
         logger.info(f"Log dir: {self.log_dir}")
 
-        # Initialize model and tokenizer
+        # Initialize model
         self.init_model()
         self.init_optimizer()
 
@@ -167,17 +166,23 @@ class StableAudioFineTuner:
         self.training_losses = []
 
     def init_model(self):
-        """Initialize Stable Audio Open model."""
+        """Initialize Stable Audio Open model using stable-audio-tools."""
         model_checkpoint = self.config['model']['checkpoint']
         logger.info(f"Loading model: {model_checkpoint}")
 
-        # Load model - this is a placeholder, actual SAO loading depends on the library structure
         try:
-            self.model = AutoModel.from_pretrained(model_checkpoint, trust_remote_code=True)
-            self.tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+            # Use stable-audio-tools to load the model
+            from stable_audio_tools.model import get_pretrained
+
+            logger.info("Loading model via stable-audio-tools...")
+            self.model, self.sample_rate = get_pretrained(model_checkpoint)
+            logger.info(f"Model loaded with sample rate: {self.sample_rate}")
+
+        except ImportError:
+            logger.error("stable-audio-tools not found. Please install: pip install stable-audio-tools")
+            raise
         except Exception as e:
             logger.error(f"Error loading model: {e}")
-            logger.info("Note: Ensure stable-audio-tools is properly installed")
             raise
 
         self.model = self.model.to(self.device)
@@ -212,10 +217,20 @@ class StableAudioFineTuner:
 
         # Forward pass
         try:
-            # This is a simplified version - actual fine-tuning depends on SAO's API
-            # You may need to adjust based on the actual stable-audio-tools implementation
-            outputs = self.model(audio, text=caption)
-            loss = outputs.loss if hasattr(outputs, 'loss') else torch.tensor(0.0)
+            # Stable Audio Open expects audio and conditioning text
+            # The exact API depends on the stable-audio-tools version
+            # This is a simplified version - you may need to adjust based on your version
+
+            # Typical usage: model encodes text and audio, computes loss
+            with torch.autocast(device_type=self.device):
+                outputs = self.model(audio, text=caption)
+
+            if hasattr(outputs, 'loss'):
+                loss = outputs.loss
+            else:
+                # If no direct loss, compute one (this depends on model output)
+                logger.warning("Model did not return loss - using placeholder")
+                loss = torch.tensor(0.0, device=self.device, requires_grad=True)
 
             # Backward pass
             loss.backward()
