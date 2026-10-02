@@ -122,22 +122,21 @@ def prepare_dataset(metadata, audio_dir, output_dir):
             missing += 1
             continue
 
-        # Resolve audio file path
-        audio_file = audio_dir / wav_path
+        # Extract just the filename (handle full paths in CSV)
+        wav_filename = Path(wav_path).name
+
+        # Resolve audio file path (try filename only first)
+        audio_file = audio_dir / wav_filename
         if not audio_file.exists():
-            # Try relative paths
-            if not audio_file.is_absolute():
-                alt_path = audio_dir / Path(wav_path).name
-                if alt_path.exists():
-                    audio_file = alt_path
-                else:
-                    print(f"  ✗ [{export_id}] Audio file not found: {wav_path}")
+            # Try the full path from CSV (in case it's relative to a different base)
+            audio_file = audio_dir / wav_path
+            if not audio_file.exists():
+                # Try absolute path
+                audio_file = Path(wav_path)
+                if not audio_file.exists():
+                    print(f"  ✗ [{export_id}] Audio file not found: {wav_filename} (tried: {audio_dir / wav_filename})")
                     missing += 1
                     continue
-            else:
-                print(f"  ✗ [{export_id}] Audio file not found: {audio_file}")
-                missing += 1
-                continue
 
         # Determine output directory (by pleasantness bin)
         bin_level = row.get('bin', 'unknown')
