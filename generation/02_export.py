@@ -320,7 +320,7 @@ if __name__ == "__main__":
 
     # Load metadata
     print("Loading ARAUS stimuli...")
-    araus = load_araus(araus_root, proc_root)
+    araus = load_araus(araus_root)
     
     print("Loading captions...")
     captions = pd.read_csv(a.captions, index_col=0)
