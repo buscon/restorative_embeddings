@@ -4,12 +4,13 @@ Prepare Training Configuration for Stable Audio Open Fine-Tuning
 
 Purpose: Generate YAML training configuration for Stable Audio Open base model.
 Configured for the ARAUS restorative soundscapes dataset.
+Follows the official stable-audio-tools training format.
 
 Usage:
     python 02_prepare_training_config.py [--model-size base] [--batch-size 1]
 
 Output:
-    config_sao_base.yaml (ready for training)
+    config_sao_base.yaml (ready for training with: python -m train --config config_sao_base.yaml)
 """
 
 import yaml
@@ -28,9 +29,10 @@ def estimate_training_time(num_samples, batch_size, grad_accum_steps, time_per_s
 
 
 def create_config(model_size="base", batch_size=1, grad_accum_steps=8,
-                  num_epochs=3, learning_rate=1e-4, warmup_steps=500):
+                  num_epochs=3, learning_rate=5.0e-5, warmup_steps=500):
     """
     Create training configuration for Stable Audio Open.
+    Follows official stable-audio-tools format.
 
     Args:
         model_size: "base" (1.1B, 30s) or "small" (341M, 11s)
@@ -89,57 +91,40 @@ def create_config(model_size="base", batch_size=1, grad_accum_steps=8,
     else:
         model_checkpoint = "stabilityai/stable-audio-open-1.0-small"
 
-    # Build configuration
+    # Build configuration following official stable-audio-tools format
     config = {
-        # Model configuration
-        "model": {
-            "name": f"stable-audio-open-{model_size}",
-            "checkpoint": model_checkpoint,
+        # Data configuration
+        "data": {
+            "train_path": str(metadata_csv),
+            "audio_dir": str(data_audio_dir),
             "sample_rate": sample_rate,
-            "audio_duration": audio_duration,  # seconds
+            "duration": audio_duration,
+            "channels": 2,
+            "text_key": "caption",  # Column name for text conditioning
+            "file_key": "wav_path",  # Column name for audio file paths
         },
 
-        # Dataset configuration
-        "dataset": {
-            "audio_dir": str(data_audio_dir),
-            "metadata_csv": str(metadata_csv),
-            "num_samples": num_samples,
-            "caption_column": "caption_pleasantness",  # Column with pleasantness-conditioned captions
-            "sample_rate": sample_rate,
-            "stereo": True,
-            "normalize_loudness": True,  # Normalize to -23 LUFS
-            "target_loudness": -23.0,  # LUFS
+        # Model configuration
+        "model": {
+            "pretrained_model_name_or_path": model_checkpoint,
         },
 
         # Training configuration
-        "training": {
-            "num_epochs": num_epochs,
-            "batch_size": batch_size,
+        "train": {
+            "output_dir": str(checkpoint_dir),
+            "num_train_epochs": num_epochs,
+            "per_device_train_batch_size": batch_size,
             "gradient_accumulation_steps": grad_accum_steps,
             "learning_rate": learning_rate,
             "warmup_steps": warmup_steps,
             "weight_decay": 0.01,
             "max_grad_norm": 1.0,
-            "mixed_precision": "fp16",  # Use mixed precision for faster training
-            "optimizer": "adamw",
+            "mixed_precision": "fp16",
+            "optimizer": "adamw_torch",
             "scheduler": "cosine",
-            "num_training_steps": total_steps,
-        },
-
-        # Evaluation configuration
-        "evaluation": {
-            "eval_steps": 500,
-            "save_steps": 500,
-            "checkpoint_dir": str(checkpoint_dir),
-            "keep_best_n_checkpoints": 3,
-        },
-
-        # Logging
-        "logging": {
-            "use_tensorboard": True,
-            "log_dir": str(checkpoint_dir.parent / "logs"),
-            "log_interval": 50,
-            "use_wandb": False,  # Set to True if using Weights & Biases
+            "max_steps": total_steps,
+            "save_interval": 500,
+            "logging_steps": 50,
         },
 
         # Metadata for reference
@@ -150,6 +135,7 @@ def create_config(model_size="base", batch_size=1, grad_accum_steps=8,
             "estimated_training_hours": round(total_hours, 1),
             "estimated_total_steps": total_steps,
             "time_per_step_seconds": time_per_step,
+            "note": "Train with: python -m train --config config_sao_base.yaml",
         }
     }
 
@@ -167,8 +153,8 @@ def main():
                        help="Gradient accumulation steps (default: 8)")
     parser.add_argument("--num-epochs", type=int, default=3,
                        help="Number of training epochs (default: 3)")
-    parser.add_argument("--learning-rate", type=float, default=1e-4,
-                       help="Learning rate (default: 1e-4)")
+    parser.add_argument("--learning-rate", type=float, default=5.0e-5,
+                       help="Learning rate (default: 5.0e-5)")
     parser.add_argument("--warmup-steps", type=int, default=500,
                        help="Warmup steps (default: 500)")
     parser.add_argument("--output", type=str, default="config_sao_base.yaml",
@@ -192,23 +178,23 @@ def main():
 
     # Display configuration summary
     print("\n--- Configuration Summary ---")
-    print(f"Model Size:              {config['model']['name']}")
-    print(f"Sample Rate:             {config['dataset']['sample_rate']} Hz")
-    print(f"Audio Duration:          {config['model']['audio_duration']:.1f} seconds")
-    print(f"Dataset Size:            {config['dataset']['num_samples']} samples")
-    print(f"Epochs:                  {config['training']['num_epochs']}")
-    print(f"Batch Size:              {config['training']['batch_size']}")
-    print(f"Gradient Accum Steps:    {config['training']['gradient_accumulation_steps']}")
-    print(f"Effective Batch Size:    {config['training']['batch_size'] * config['training']['gradient_accumulation_steps']}")
-    print(f"Learning Rate:           {config['training']['learning_rate']}")
+    print(f"Model:                   {config['model']['pretrained_model_name_or_path']}")
+    print(f"Sample Rate:             {config['data']['sample_rate']} Hz")
+    print(f"Audio Duration:          {config['data']['duration']:.1f} seconds")
+    print(f"Dataset Size:            6000 samples")
+    print(f"Epochs:                  {config['train']['num_train_epochs']}")
+    print(f"Batch Size:              {config['train']['per_device_train_batch_size']}")
+    print(f"Gradient Accum Steps:    {config['train']['gradient_accumulation_steps']}")
+    print(f"Effective Batch Size:    {config['train']['per_device_train_batch_size'] * config['train']['gradient_accumulation_steps']}")
+    print(f"Learning Rate:           {config['train']['learning_rate']}")
     print(f"\nEstimated Training Time: {config['metadata']['estimated_training_hours']} hours")
     print(f"Estimated Total Steps:   {config['metadata']['estimated_total_steps']}")
 
     # Data paths
     print(f"\n--- Data Paths ---")
-    print(f"Audio Directory:         {config['dataset']['audio_dir']}")
-    print(f"Metadata CSV:            {config['dataset']['metadata_csv']}")
-    print(f"Checkpoint Directory:    {config['evaluation']['checkpoint_dir']}")
+    print(f"Audio Directory:         {config['data']['audio_dir']}")
+    print(f"Metadata CSV:            {config['data']['train_path']}")
+    print(f"Checkpoint Directory:    {config['train']['output_dir']}")
 
     # Save configuration
     output_path = Path(args.output)
@@ -216,8 +202,9 @@ def main():
         yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
     print(f"\n✓ Configuration saved to: {output_path}")
-    print("\nNext step:")
-    print(f"  python 03_train_model.py --config {output_path}")
+    print("\n--- Next Step ---")
+    print(f"Run training with:")
+    print(f"  python -m train --config {output_path}")
     print()
 
 
