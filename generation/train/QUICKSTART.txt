@@ -1,0 +1,135 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                 STABLE AUDIO OPEN FINE-TUNING - QUICKSTART                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📊 STATUS: Phase 1 Complete. 6,000 ARAUS samples ready for fine-tuning.
+
+🚀 QUICK START (5 STEPS):
+
+1️⃣  SETUP (30 min, one-time)
+    $ python generation/train/01_setup_environment.py
+    $ source venv_sao_training/bin/activate
+
+2️⃣  CONFIGURE (2 min)
+    $ python generation/train/02_prepare_training_config.py --model-size small
+
+3️⃣  BASELINE [OPTIONAL] (1 hour)
+    $ python generation/train/03_generate_baseline.py
+
+4️⃣  TRAIN (3-6 hours) ⚠️  Run on ORPHEUS with RTX 5090
+    $ python generation/train/03_train_model.py --config config_sao_small.yaml
+
+5️⃣  EVALUATE & GENERATE (1-2 hours)
+    $ python generation/train/04_generate_and_evaluate.py \
+        --checkpoint generation/train/checkpoints/sao_small_step_2000.pt
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📚 DETAILED DOCUMENTATION:
+
+    README_FINETUNE.md       ← Start here for full step-by-step guide
+    SCRIPTS_SUMMARY.md       ← Overview of each script
+    QUICKSTART.txt           ← This file
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📋 SCRIPT CHECKLIST:
+
+    ✓ 01_setup_environment.py         - Create venv + install dependencies
+    ✓ 02_prepare_training_config.py   - Generate training config YAML
+    ✓ 03_generate_baseline.py         - Generate baseline (pretrained SAO)
+    ✓ 03_train_model.py               - Fine-tune SAO on your data
+    ✓ 04_generate_and_evaluate.py     - Generate + automatic evaluation
+    ✓ 05_compare_baseline_finetuned.py - Compare results
+    ✓ 06_listening_set.py             - Create blinded listening test
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 KEY DECISION POINTS:
+
+    AFTER STEP 4 (Training):
+    → Choose checkpoint: use the LAST one (highest training step)
+
+    AFTER STEP 5 (Evaluation):
+    → Check pleasantness effect (r > 0.4)?
+      ✓ YES → Proceed to listening test (Step 6)
+      ✗ NO  → Try different hyperparameters or more training data
+
+═══════════════════════════════════════════════════════════════════════════════
+
+💾 DATA LAYOUT:
+
+    Input (already ready from Phase 1):
+    ├── data/generation/audio/               [6,000 WAV files, stereo, 44.1kHz]
+    └── data/generation/export_metadata.csv  [captions + pleasantness labels]
+
+    Output (created during fine-tuning):
+    ├── generation/train/config_sao_small.yaml        [training config]
+    ├── generation/train/checkpoints/                 [model checkpoints]
+    ├── generation/train/baseline_generations/        [unmodified SAO results]
+    ├── generation/train/finetuned_generations/       [fine-tuned SAO results]
+    ├── generation/train/comparison/                  [baseline vs fine-tuned]
+    └── generation/train/listening_test/              [blinded listening test]
+
+═══════════════════════════════════════════════════════════════════════════════
+
+⚡ PERFORMANCE ESTIMATE (on ORPHEUS RTX 5090):
+
+    Step 1 (Setup):           30 min  [one-time]
+    Step 2 (Configure):       2 min
+    Step 3 (Baseline):        1 hour  [optional]
+    Step 4 (Training):        3-6 hours
+    Step 5 (Generate):        1-2 hours
+    Step 6 (Compare):         5 min
+    Step 7 (Listening test):  30 min prep + 30 min listening [optional]
+    ────────────────────────────────
+    TOTAL:                    ~8-12 hours (spread over 2-3 days)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+⚠️  IMPORTANT NOTES:
+
+    1. Run on ORPHEUS (RTX 5090, 32GB VRAM) — local machine may OOM
+    2. Create SEPARATE venv — don't reuse milestone-1 environment
+    3. Monitor GPU: `nvidia-smi` during training
+    4. Target pleasantness effect: r > 0.4 (Spearman correlation)
+    5. If OOM: reduce batch size or use SAO Small instead of Large
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔗 RESOURCES:
+
+    Plan & Context:     docs/plan_generation.md          [full methodology]
+    Phase 1 Summary:    docs/PHASE1_SUMMARY.md           [data preparation]
+    SAO Fine-Tuning:    github.com/inkuele/stableaudio   [reference tutorial]
+    Stable Audio Docs:  github.com/Stability-AI/stable-audio-tools
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📞 TROUBLESHOOTING:
+
+    Q: "ModuleNotFoundError: stable_audio_tools"
+    A: Re-run 01_setup_environment.py to reinstall dependencies
+
+    Q: "CUDA out of memory"
+    A: Reduce batch_size to 1, increase grad_accum_steps to 8-16
+       OR use SAO Small instead of Large
+
+    Q: "Training loss doesn't decrease"
+    A: Check learning rate (try 1e-5), ensure data loads correctly
+       OR check GPU memory usage with nvidia-smi
+
+    Q: "No pleasantness effect in results (r < 0.3)"
+    A: Try label variant (b), coarsen bins to 3 words, or add ISD data
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ YOU'RE READY!
+
+Start with:
+    $ cd ~/Documents/Bamberg/restorative_embeddings
+    $ cat generation/train/README_FINETUNE.md    # Read full guide
+    $ python generation/train/01_setup_environment.py
+
+Happy fine-tuning! 🎵
+

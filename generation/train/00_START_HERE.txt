@@ -1,0 +1,178 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                   FINE-TUNING GUIDE - CREATION COMPLETE                     ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+✅ ALL SCRIPTS & DOCUMENTATION CREATED
+
+Location: ~/Documents/Bamberg/restorative_embeddings/generation/train/
+
+═══════════════════════════════════════════════════════════════════════════════
+📚 DOCUMENTATION (READ IN THIS ORDER):
+
+1. QUICKSTART.txt
+   └─ 5-step overview + troubleshooting (this is the quick reference)
+
+2. README_FINETUNE.md (16 KB)
+   └─ Complete step-by-step guide with:
+      • Pre-flight checklist
+      • 7-step detailed workflow
+      • Decision tree for next phase
+      • Gotchas & common issues
+      • Time estimates & computing notes
+      • 3 References to papers & tutorials
+
+3. SCRIPTS_SUMMARY.md (8 KB)
+   └─ Overview of each script with:
+      • Purpose & runtime
+      • Quick run commands
+      • Input/output specifications
+      • Options & configuration
+
+═══════════════════════════════════════════════════════════════════════════════
+🐍 PYTHON SCRIPTS (7 TOTAL, ~60 KB):
+
+Step 1: 01_setup_environment.py (6.1 KB)
+        → Creates venv, installs PyTorch + stable-audio-tools
+        → Validates CUDA/GPU setup
+
+Step 2: 02_prepare_training_config.py (6.9 KB)
+        → Generates training config YAML
+        → Calculates time/memory estimates
+        → Supports both SAO Small & Large models
+
+Step 3: 03_generate_baseline.py (7.0 KB)
+        → Generates audio with unmodified SAO (control)
+        → 50 clips (10 prompts × 5 pleasantness levels)
+        → Essential for comparing fine-tuned results
+
+Step 4: 03_train_model.py (9.7 KB)
+        → Main fine-tuning loop
+        → PyTorch DataLoader for your 6000 audio files
+        → Checkpointing every 500 steps
+        → Loss monitoring & GPU memory tracking
+
+Step 5: 04_generate_and_evaluate.py (13 KB)
+        → Generates with fine-tuned model
+        → Computes automatic evaluation metrics:
+          * Pleasantness effect (main test: r > 0.4?)
+          * Source independence (not just more birds?)
+          * Prompt adherence (follows caption?)
+        → Outputs results.csv + pleasantness_analysis.json
+
+Step 6: 05_compare_baseline_finetuned.py (4.2 KB)
+        → Statistical comparison: baseline vs fine-tuned
+        → Computes improvement & effect size
+        → Decision guidance for next phase
+
+Step 7: 06_listening_set.py (12 KB)
+        → Creates blinded listening test
+        → Generates HTML rating form (8 PAQ-style items)
+        → Anonymizes audio clips
+        → Creates answer key for analysis
+
+═══════════════════════════════════════════════════════════════════════════════
+📊 WORKFLOW SUMMARY:
+
+Phase 1 (Already Done):
+  ✓ 6,000 ARAUS audio samples exported to data/generation/audio/
+  ✓ Pleasantness-stratified (5 bins: very unpleasant to very pleasant)
+  ✓ Captions ready in data/generation/export_metadata.csv
+  ✓ Audio normalized to -23 LUFS, stereo, 44.1 kHz
+
+Phase 2 (What These Scripts Do):
+  
+  1. Setup environment (30 min)
+  2. Configure training (2 min)
+  3. Generate baseline (1 hour) ← Optional but recommended
+  4. Fine-tune SAO (3-6 hours) ← Main step, run on ORPHEUS RTX 5090
+  5. Generate & evaluate (1-2 hours) ← Automatic metrics computed
+  6. Compare results (5 min) ← Statistical test
+  7. Listening test (optional) ← If effect is clear (r > 0.4)
+
+  Total: ~8-12 hours spread over 2-3 days
+
+═══════════════════════════════════════════════════════════════════════════════
+🎯 KEY EVALUATION THRESHOLD:
+
+After Step 5, check the pleasantness effect (Spearman correlation):
+  
+  r > 0.4   → ✓ CLEAR EFFECT, proceed to listening test
+  r < 0.3   → ✗ NO EFFECT, try different hyperparameters or more data
+  0.3-0.4   → ⚠ MARGINAL, gather listening test feedback
+
+═══════════════════════════════════════════════════════════════════════════════
+🚀 GETTING STARTED:
+
+1. Read QUICKSTART.txt first (this folder)
+
+2. On ORPHEUS:
+   $ cd ~/Documents/Bamberg/restorative_embeddings
+   $ python generation/train/01_setup_environment.py
+   $ source venv_sao_training/bin/activate
+
+3. Then follow README_FINETUNE.md step-by-step
+
+═══════════════════════════════════════════════════════════════════════════════
+⚙️  DEPENDENCIES (INSTALLED BY SCRIPTS):
+
+  • PyTorch 2.0+ with CUDA 12.1
+  • stable-audio-tools (from GitHub)
+  • transformers, laion-clap, librosa
+  • pyloudnorm, tqdm, numpy, pandas, scipy
+  • pyyaml (for config)
+
+═══════════════════════════════════════════════════════════════════════════════
+⚠️  CRITICAL NOTES:
+
+1. ⚡ GPU REQUIRED: Run Step 4 (training) on ORPHEUS with RTX 5090
+   → Local machine will likely OOM (32GB VRAM not enough)
+
+2. 🔄 SEPARATE ENVIRONMENT: Create new venv, don't reuse milestone-1
+   → Scripts in 01_setup_environment.py handle this
+
+3. 💾 CHECKPOINT STRATEGY: After training, use LAST checkpoint (highest step)
+   → Saves to generation/train/checkpoints/sao_small_step_*.pt
+
+4. 📊 EVALUATION: Main metric is Spearman correlation (r)
+   → Target: r > 0.4 for "clear pleasantness effect"
+   → Check independence from sound sources (not just adding birds)
+
+5. 🎧 LISTENING TEST: Run only if r > 0.4
+   → Creates HTML form + anonymized clips
+   → 20-30 minutes to complete
+
+═══════════════════════════════════════════════════════════════════════════════
+📚 CONTEXT & REFERENCES:
+
+Your existing documentation:
+  • docs/plan_generation.md           [Phase 2 methodology & decisions]
+  • docs/PHASE1_SUMMARY.md            [Phase 1 results & data specs]
+
+GitHub tutorials:
+  • https://github.com/inkuele/stableaudio/wiki/Fine-Tuning-with-DCASE-Augmented-Dataset
+  • https://github.com/Stability-AI/stable-audio-tools
+
+Paper:
+  • Evans et al. (2024). Stable Audio Open. arXiv:2407.14358
+
+═══════════════════════════════════════════════════════════════════════════════
+✅ CHECKLIST BEFORE STARTING:
+
+  □ Read QUICKSTART.txt (this folder)
+  □ Read README_FINETUNE.md (full guide)
+  □ Verify 6000 audio files exist: ls data/generation/audio/ | wc -l
+  □ Verify captions CSV exists: head data/generation/export_metadata.csv
+  □ You have access to ORPHEUS (RTX 5090)
+  □ You have Python 3.10+
+  □ You understand: this is Phase 2, Phase 1 data is ready
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎵 Everything is ready. Start with:
+
+   $ cat generation/train/QUICKSTART.txt
+   $ cat generation/train/README_FINETUNE.md
+   $ python generation/train/01_setup_environment.py
+
+Good luck! 🚀
+
