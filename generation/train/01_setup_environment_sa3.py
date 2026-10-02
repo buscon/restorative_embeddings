@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 
-def run_command(cmd, description):
+def run_command(cmd, description, cwd=None):
     """Run a shell command and report status."""
     print(f"\n{'='*70}")
     print(f"{description}")
@@ -25,7 +25,7 @@ def run_command(cmd, description):
     print(f"$ {' '.join(cmd)}\n")
 
     try:
-        result = subprocess.run(cmd, check=False)
+        result = subprocess.run(cmd, cwd=cwd, check=False)
         if result.returncode == 0:
             print(f"\n✓ {description} completed successfully")
             return True
@@ -104,7 +104,8 @@ def main():
     # Install with LoRA support
     success = run_command(
         ["uv", "sync", "--extra", "lora"],
-        "Install Stable Audio 3 with LoRA training dependencies"
+        "Install Stable Audio 3 with LoRA training dependencies",
+        cwd=sa3_dir
     )
     if not success:
         return False
