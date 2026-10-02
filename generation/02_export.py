@@ -25,10 +25,13 @@ import sys
 import traceback
 from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from math import gcd
 
 import numpy as np
 import pandas as pd
 import soundfile as sf
+from scipy.signal import resample_poly
+import warnings
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from rsd.audio import ArausMixer, prepare  # noqa: E402
@@ -58,8 +61,68 @@ def stratified_sample(stim, n_samples=6000, seed=42):
     return result.reset_index(drop=True)
 
 
+def resample_audio_safe(y, sr_orig, sr_target=44100):
+    """Resample audio with comprehensive validation.
+    
+    Args:
+        y: audio array
+        sr_orig: original sample rate (usually 48000)
+        sr_target: target sample rate (usually 44100)
+    
+    Returns:
+        y_resampled
+    
+    Raises:
+        ValueError: if resampling produces invalid audio
+    """
+    # Validate input
+    if y.size == 0:
+        raise ValueError("Cannot resample empty audio")
+    
+    n_samples_orig = len(y)
+    expected_duration = n_samples_orig / sr_orig
+    
+    # Calculate resampling ratio (simplest form)
+    gcd_val = gcd(int(sr_target), int(sr_orig))
+    up = int(sr_target) // gcd_val
+    down = int(sr_orig) // gcd_val
+    
+    # Resample
+    try:
+        y_resampled = resample_poly(y, up, down)
+    except Exception as e:
+        raise ValueError(f"Resampling failed: {str(e)}")
+    
+    # Validate output
+    if y_resampled.size == 0:
+        raise ValueError("Resampling produced empty audio")
+    
+    n_samples_resampled = len(y_resampled)
+    duration_resampled = n_samples_resampled / sr_target
+    
+    # Check if duration matches (allow 0.1% tolerance)
+    if expected_duration > 0:
+        duration_error = abs(duration_resampled - expected_duration) / expected_duration
+    else:
+        duration_error = 0
+    
+    if duration_error > 0.001:  # > 0.1% mismatch is suspicious
+        raise ValueError(
+            f"Resampling duration mismatch: "
+            f"expected {expected_duration:.4f}s, got {duration_resampled:.4f}s "
+            f"({duration_error*100:.2f}% error)"
+        )
+    
+    return y_resampled
+
+
 def normalise_loudness(y, sr, target_lufs=-23.0):
     """Normalise audio to target loudness using pyloudnorm.
+
+    Robust version with edge-case handling for:
+    - Silent audio (loudness = -inf)
+    - NaN loudness measurements (invalid audio)
+    - Clipping after normalization
 
     Args:
         y: (n_samples,) mono audio array (will be converted to stereo)
@@ -70,7 +133,7 @@ def normalise_loudness(y, sr, target_lufs=-23.0):
         (n_samples, 2) stereo normalised audio
 
     Raises:
-        ValueError: if audio is empty or completely silent
+        ValueError: if audio cannot be normalized
     """
     try:
         import pyloudnorm
@@ -94,25 +157,52 @@ def normalise_loudness(y, sr, target_lufs=-23.0):
     # pyloudnorm expects float32 or float64 in [-1, 1]
     y_stereo = y_stereo.astype(np.float32)
 
+    # Check for NaN/Inf in input
+    if np.any(np.isnan(y_stereo)):
+        raise ValueError("Input audio contains NaN values (corrupted)")
+    if np.any(np.isinf(y_stereo)):
+        raise ValueError("Input audio contains Inf values (corrupted)")
+
     meter = pyloudnorm.Meter(sr)
     loudness = meter.integrated_loudness(y_stereo)
 
     # Validate loudness measurement
     if np.isnan(loudness):
-        raise ValueError("Loudness measurement returned NaN (corrupted or invalid audio)")
+        # Try mono measurement as backup
+        try:
+            loudness_mono = meter.integrated_loudness(y.astype(np.float32))
+            if np.isnan(loudness_mono):
+                raise ValueError("Loudness measurement is NaN. Audio may be corrupted or completely silent.")
+            loudness = loudness_mono
+        except:
+            raise ValueError(
+                "Loudness measurement failed. Audio may be corrupted or incompatible with pyloudnorm."
+            )
     
     if loudness == -np.inf:
         raise ValueError("Audio is completely silent (loudness = -inf)")
+    
+    if loudness > 5:  # Suspiciously loud
+        raise ValueError(
+            f"Audio is unusually loud ({loudness:.1f} LUFS). "
+            f"This may indicate clipping or corrupted input."
+        )
 
     # Normalize
     y_norm = pyloudnorm.normalize.loudness(y_stereo, loudness, target_lufs)
 
-    # Clip to [-1, 1] to avoid distortion
-    y_norm = np.clip(y_norm, -1.0, 1.0)
+    # Handle clipping
+    peak = np.abs(y_norm).max()
+    if peak > 1.0:
+        warnings.warn(f"Clipping detected after normalization (peak={peak:.4f}). Applying soft clipping.")
+        y_norm = np.tanh(y_norm)  # Smooth clipping curve
     
-    # Final validation: ensure we didn't produce empty audio
+    # Final validation
     if y_norm.size == 0:
         raise ValueError("Normalization produced empty audio")
+
+    if np.any(np.isnan(y_norm)):
+        raise ValueError("Normalization produced NaN values")
 
     return y_norm
 
@@ -127,15 +217,12 @@ def process_stimulus(args):
     """
     idx, row, audio_dir, araus_root = args
 
-    from scipy.signal import resample_poly
-    from math import gcd
-
     # Filename: araus_XXXXXXX.wav (7-digit zero-padded index)
     wav_idx = f"{idx:07d}"
     wav_path = audio_dir / f"araus_{wav_idx}.wav"
 
-    # Initialize mixer (per-worker instance)
     try:
+        # Initialize mixer (per-worker instance)
         soundscapes = pd.read_csv(araus_root / "data" / "soundscapes.csv")
         maskers = pd.read_csv(araus_root / "data" / "maskers.csv")
         mixer = ArausMixer(
@@ -147,69 +234,69 @@ def process_stimulus(args):
     except Exception as e:
         raise RuntimeError(f"Failed to initialize ArausMixer with araus_root={araus_root}: {e}")
 
-    # Mix audio (row is passed as dict for pickling)
+    # Step 1: Mix audio (row is passed as dict for pickling)
     x, sr = mixer.mix(row['soundscape'], row['masker'], row['smr'])
     
-    # Validate mixer output
     if x.size == 0:
         raise ValueError(f"ArausMixer produced empty audio for soundscape={row['soundscape']}, masker={row['masker']}, smr={row['smr']}")
 
-    # Prepare: mono, 48 kHz, 30 s, RMS norm
+    # Step 2: Prepare (mono, 48 kHz, 30 s, RMS norm)
     y = prepare(x, sr)
     
-    # Validate prepare output
     if y.size == 0:
         raise ValueError("prepare() returned empty audio")
     
-    expected_samples_48k = int(30 * 48000)  # 30 seconds at 48 kHz
-    if len(y) < expected_samples_48k * 0.9:  # Allow 10% tolerance
+    expected_samples_48k = int(30 * 48000)
+    if len(y) < expected_samples_48k * 0.9:
         raise ValueError(f"prepare() returned truncated audio: {len(y)} samples (expected ~{expected_samples_48k})")
 
-    # Resample to 44.1 kHz
-    g = gcd(int(48000), int(44100))
-    y = resample_poly(y, 44100 // g, 48000 // g)
+    # Step 3: Resample to 44.1 kHz (using improved function)
+    y = resample_audio_safe(y, 48000, 44100)
     sr_out = 44100
     
-    # Validate resample output
-    if y.size == 0:
-        raise ValueError("resample_poly() returned empty audio")
-    
-    expected_samples_44k = int(30 * 44100)  # 30 seconds at 44.1 kHz
-    if len(y) < expected_samples_44k * 0.9:  # Allow 10% tolerance
-        raise ValueError(f"resample_poly() returned truncated audio: {len(y)} samples (expected ~{expected_samples_44k})")
+    expected_samples_44k = int(30 * 44100)
+    if len(y) < expected_samples_44k * 0.9:
+        raise ValueError(f"resample_audio_safe() returned truncated audio: {len(y)} samples (expected ~{expected_samples_44k})")
 
-    # Normalise to -23 LUFS (returns stereo)
+    # Step 4: Normalise to -23 LUFS (returns stereo)
     y = normalise_loudness(y, sr_out, target_lufs=-23.0)
     
-    # Validate normalise output
     if y.size == 0:
         raise ValueError("normalise_loudness() returned empty audio")
-    
-    if y.shape[0] < expected_samples_44k * 0.9:
-        raise ValueError(f"normalise_loudness() produced truncated audio: {y.shape[0]} samples (expected ~{expected_samples_44k})")
     
     if y.ndim != 2 or y.shape[1] != 2:
         raise ValueError(f"normalise_loudness() did not return stereo: shape is {y.shape}")
 
-    # Save as 16-bit WAV
+    # Step 5: Save as 16-bit WAV
     sf.write(str(wav_path), y, sr_out, subtype="PCM_16")
     
-    # Post-save validation: verify file was created and has audio
+    # Step 6: Post-save validation
     if not wav_path.exists():
         raise RuntimeError(f"WAV file was not created: {wav_path}")
     
-    if wav_path.stat().st_size < 1000:  # WAV header is ~44 bytes; 1KB is a reasonable minimum
-        raise RuntimeError(f"WAV file is suspiciously small ({wav_path.stat().st_size} bytes): {wav_path}")
+    file_size = wav_path.stat().st_size
+    if file_size < 10000:
+        raise RuntimeError(f"WAV file suspiciously small ({file_size} bytes)")
+    
+    # Step 7: Verify by re-loading
+    try:
+        import librosa
+        y_check, sr_check = librosa.load(str(wav_path), sr=None, mono=False)
+        if y_check.size == 0:
+            raise RuntimeError("Re-loaded file is empty")
+        if sr_check != sr_out:
+            raise RuntimeError(f"Saved file has wrong SR: {sr_check} (expected {sr_out})")
+    except ImportError:
+        pass  # librosa not available, skip re-load check
 
-    # Return metadata
     return {
-        "export_id": wav_idx,
+        "id": wav_idx,
         "stimulus_id": row['stimulus_id'],
         "caption": row['caption'],
         "ISOPleasant": row['ISOPleasant'],
         "bin": row['bin'],
         "LA50": row['LA50'],
-        "wav_path": str(wav_path),
+        "wav_path": str(wav_path.relative_to(Path.cwd())),
     }
 
 
@@ -231,76 +318,71 @@ if __name__ == "__main__":
     audio_dir = out / "audio"
     audio_dir.mkdir(parents=True, exist_ok=True)
 
-    # Load ARAUS metadata
-    araus_data = load_araus(araus_root)
-    stim = araus_data["stimuli"]
-    sounds = araus_data["soundscapes"]
-    maskers = araus_data["maskers"]
+    # Load metadata
+    print("Loading ARAUS stimuli...")
+    araus = load_araus(araus_root, proc_root)
+    
+    print("Loading captions...")
+    captions = pd.read_csv(a.captions, index_col=0)
+    
+    # Stratify sample
+    print(f"Sampling {a.n_samples} stratified stimuli...")
+    sample = stratified_sample(araus, n_samples=a.n_samples, seed=a.seed)
+    
+    # Merge with captions
+    sample = sample.merge(captions[["caption", "ISOPleasant"]], left_on="stimulus_id", right_index=True)
+    
+    print(f"\nDistribution:")
+    print(sample['bin'].value_counts().sort_index())
+    print(f"\nExporting {len(sample)} audio files...")
 
-    # Load captions and filter to ARAUS only
-    captions = pd.read_csv(a.captions)
-    captions_araus = captions[captions.dataset == "araus"].copy()
-
-    # Add caption and bin info to stimuli
-    # Merge on stimulus_id (from stim) = id (from captions)
-    stim = stim.merge(
-        captions_araus[["id", "caption", "bin"]],
-        left_on="stimulus_id",
-        right_on="id",
-        how="inner"
-    )
-
-    # Stratified sample
-    sample = stratified_sample(stim, n_samples=a.n_samples, seed=a.seed)
-
-    # Export audio in parallel
-    print(f"Exporting {len(sample)} stratified ARAUS stimuli to {audio_dir}...")
-    print(f"Using {a.workers} parallel workers...")
-
-    export_rows = []
-    processed = 0
-    failed_stimuli = []
-
-    with ProcessPoolExecutor(max_workers=a.workers) as executor:
-        # Prepare tasks
-        tasks = [
-            (idx, row, audio_dir, araus_root)
-            for idx, (_, row) in enumerate(sample.iterrows())
-        ]
-
-        # Submit all tasks
+    # Process in parallel
+    results = []
+    failed = []
+    
+    with ProcessPoolExecutor(max_workers=a.workers) as ex:
         futures = {
-            executor.submit(process_stimulus, task): task[0]
-            for task in tasks
+            ex.submit(process_stimulus, (idx, row.to_dict(), audio_dir, araus_root)): idx
+            for idx, (_, row) in enumerate(sample.iterrows())
         }
-
-        # Collect results as they complete
+        
         for future in as_completed(futures):
             idx = futures[future]
             try:
-                metadata = future.result()
-                export_rows.append(metadata)
-                processed += 1
-
-                if processed % 500 == 0:
-                    print(f"  ... {processed} / {len(sample)}")
+                result = future.result()
+                results.append(result)
+                if (len(results) + len(failed)) % 500 == 0:
+                    print(f"  Progress: {len(results)}/{len(sample)} ✓, {len(failed)} ✗")
             except Exception as e:
-                failed_stimuli.append((idx, str(e)))
-                print(f"SKIP stimulus {idx}: {e}")
+                failed.append({"stimulus_idx": idx, "error": str(e)})
+                print(f"  ✗ Stimulus {idx}: {str(e)[:80]}")
 
-    # Save metadata
-    metadata = pd.DataFrame(export_rows)
-    metadata.to_csv(out / "export_metadata.csv", index=False)
+    # Write metadata
+    if results:
+        results_df = pd.DataFrame(results)
+        metadata_path = out / "export_metadata.csv"
+        results_df.to_csv(metadata_path, index=False)
+        print(f"\n✅ Export complete: {len(results)}/{len(sample)} files successfully exported")
+        print(f"   Metadata saved to {metadata_path}")
+    else:
+        print(f"\n❌ Export failed: no files were successfully processed")
+        sys.exit(1)
 
-    print(f"\nExport complete:")
-    print(f"  {len(metadata)} WAV files in {audio_dir}")
-    print(f"  Metadata saved to {out}/export_metadata.csv")
-    print(f"\n  Pleasantness bin distribution:")
-    print(metadata.bin.value_counts().sort_index().to_string())
+    if failed:
+        print(f"\n⚠️  {len(failed)} files failed:")
+        for f in failed[:10]:
+            print(f"   {f['stimulus_idx']}: {f['error'][:100]}")
+        if len(failed) > 10:
+            print(f"   ... and {len(failed) - 10} more")
+        
+        # Write error log
+        error_log_path = out / "export_errors.csv"
+        pd.DataFrame(failed).to_csv(error_log_path, index=False)
+        print(f"   Full error log: {error_log_path}")
     
-    if failed_stimuli:
-        print(f"\n  ⚠️  {len(failed_stimuli)} stimuli skipped due to validation errors:")
-        for idx, error in failed_stimuli[:10]:
-            print(f"     - stimulus {idx}: {error}")
-        if len(failed_stimuli) > 10:
-            print(f"     ... and {len(failed_stimuli) - 10} more")
+    print("\nExport summary:")
+    print(f"  Total requested: {len(sample)}")
+    print(f"  Successfully exported: {len(results)}")
+    print(f"  Failed: {len(failed)}")
+    
+    sys.exit(0 if len(failed) == 0 else 1)
