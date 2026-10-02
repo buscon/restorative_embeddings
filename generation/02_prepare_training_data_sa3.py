@@ -49,27 +49,24 @@ def load_metadata(csv_path):
 
 
 def create_caption(row):
-    """Create SA3 caption from metadata row with pleasantness conditioning."""
+    """Create SA3 caption from metadata row with minimal pleasantness conditioning.
+    
+    Format: description + pleasantness level (0-100)
+    Example: "urban park with birds and ambient activity. [pleasantness: 50]"
+    """
     caption = row.get('caption', '')
     iso_pleasant = row.get('ISOPleasant', '')
-    bin_level = row.get('bin', '')
 
-    # Enhance caption with pleasantness metadata
-    enhanced_caption = caption
-
-    # Add pleasantness bin if available
-    if bin_level and bin_level.lower() != 'nan':
-        enhanced_caption = f"{caption} [pleasantness: {bin_level}]"
-
-    # Also include ISO rating if available (0-100 scale)
+    # Add ISO pleasantness rating (0-100 scale) if available
     if iso_pleasant and iso_pleasant.lower() != 'nan':
         try:
             iso_val = float(iso_pleasant)
-            enhanced_caption += f" (iso_pleasantness: {iso_val:.0f})"
+            return f"{caption} [pleasantness: {iso_val:.0f}]"
         except:
             pass
 
-    return enhanced_caption
+    # Fallback to description only if pleasantness not available
+    return caption
 
 
 def prepare_dataset(metadata, audio_dir, output_dir):
