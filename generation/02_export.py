@@ -62,43 +62,68 @@ def normalise_loudness(y, sr, target_lufs=-23.0):
     """Normalise audio to target loudness using pyloudnorm.
 
     Args:
-        y: (n_samples,) or (n_samples, 2) audio array
+        y: (n_samples,) mono audio array (will be converted to stereo)
         sr: sample rate
         target_lufs: target loudness in LUFS
 
     Returns:
-        (n_samples,) or (n_samples, 2) normalised audio
+        (n_samples, 2) stereo normalised audio
+
+    Raises:
+        ValueError: if audio is empty or completely silent
     """
     try:
         import pyloudnorm
     except ImportError:
         print("WARNING: pyloudnorm not installed, skipping loudness normalisation")
+        # Still convert to stereo
+        if y.ndim == 1:
+            y = np.stack([y, y], axis=1)
         return y
 
-    # Ensure stereo
-    if y.ndim == 1:
-        y = np.stack([y, y], axis=1)
+    # Validate input
+    if y.size == 0:
+        raise ValueError("Input audio is empty (0 samples)")
+    
+    if y.ndim != 1:
+        raise ValueError(f"Expected mono audio (1D), got shape {y.shape}")
+
+    # Convert mono to stereo early
+    y_stereo = np.stack([y, y], axis=1)
 
     # pyloudnorm expects float32 or float64 in [-1, 1]
-    y = y.astype(np.float32)
+    y_stereo = y_stereo.astype(np.float32)
 
     meter = pyloudnorm.Meter(sr)
-    loudness = meter.integrated_loudness(y)
+    loudness = meter.integrated_loudness(y_stereo)
 
-    if np.isnan(loudness) or loudness == -np.inf:
-        # Silent or near-silent: return as-is
-        return y
+    # Validate loudness measurement
+    if np.isnan(loudness):
+        raise ValueError("Loudness measurement returned NaN (corrupted or invalid audio)")
+    
+    if loudness == -np.inf:
+        raise ValueError("Audio is completely silent (loudness = -inf)")
 
-    y_norm = pyloudnorm.normalize.loudness(y, loudness, target_lufs)
+    # Normalize
+    y_norm = pyloudnorm.normalize.loudness(y_stereo, loudness, target_lufs)
 
     # Clip to [-1, 1] to avoid distortion
-    return np.clip(y_norm, -1.0, 1.0)
+    y_norm = np.clip(y_norm, -1.0, 1.0)
+    
+    # Final validation: ensure we didn't produce empty audio
+    if y_norm.size == 0:
+        raise ValueError("Normalization produced empty audio")
+
+    return y_norm
 
 
 def process_stimulus(args):
     """Process a single stimulus: mix, resample, normalize, save.
 
     Returns dict with metadata for export_metadata.csv
+    
+    Raises:
+        ValueError: if audio validation fails at any step
     """
     idx, row, audio_dir, araus_root = args
 
@@ -124,24 +149,57 @@ def process_stimulus(args):
 
     # Mix audio (row is passed as dict for pickling)
     x, sr = mixer.mix(row['soundscape'], row['masker'], row['smr'])
+    
+    # Validate mixer output
+    if x.size == 0:
+        raise ValueError(f"ArausMixer produced empty audio for soundscape={row['soundscape']}, masker={row['masker']}, smr={row['smr']}")
 
     # Prepare: mono, 48 kHz, 30 s, RMS norm
     y = prepare(x, sr)
+    
+    # Validate prepare output
+    if y.size == 0:
+        raise ValueError("prepare() returned empty audio")
+    
+    expected_samples_48k = int(30 * 48000)  # 30 seconds at 48 kHz
+    if len(y) < expected_samples_48k * 0.9:  # Allow 10% tolerance
+        raise ValueError(f"prepare() returned truncated audio: {len(y)} samples (expected ~{expected_samples_48k})")
 
     # Resample to 44.1 kHz
     g = gcd(int(48000), int(44100))
     y = resample_poly(y, 44100 // g, 48000 // g)
     sr_out = 44100
+    
+    # Validate resample output
+    if y.size == 0:
+        raise ValueError("resample_poly() returned empty audio")
+    
+    expected_samples_44k = int(30 * 44100)  # 30 seconds at 44.1 kHz
+    if len(y) < expected_samples_44k * 0.9:  # Allow 10% tolerance
+        raise ValueError(f"resample_poly() returned truncated audio: {len(y)} samples (expected ~{expected_samples_44k})")
 
-    # Normalise to -23 LUFS
+    # Normalise to -23 LUFS (returns stereo)
     y = normalise_loudness(y, sr_out, target_lufs=-23.0)
-
-    # Ensure stereo
-    if y.ndim == 1:
-        y = np.stack([y, y], axis=1)
+    
+    # Validate normalise output
+    if y.size == 0:
+        raise ValueError("normalise_loudness() returned empty audio")
+    
+    if y.shape[0] < expected_samples_44k * 0.9:
+        raise ValueError(f"normalise_loudness() produced truncated audio: {y.shape[0]} samples (expected ~{expected_samples_44k})")
+    
+    if y.ndim != 2 or y.shape[1] != 2:
+        raise ValueError(f"normalise_loudness() did not return stereo: shape is {y.shape}")
 
     # Save as 16-bit WAV
     sf.write(str(wav_path), y, sr_out, subtype="PCM_16")
+    
+    # Post-save validation: verify file was created and has audio
+    if not wav_path.exists():
+        raise RuntimeError(f"WAV file was not created: {wav_path}")
+    
+    if wav_path.stat().st_size < 1000:  # WAV header is ~44 bytes; 1KB is a reasonable minimum
+        raise RuntimeError(f"WAV file is suspiciously small ({wav_path.stat().st_size} bytes): {wav_path}")
 
     # Return metadata
     return {
@@ -201,6 +259,7 @@ if __name__ == "__main__":
 
     export_rows = []
     processed = 0
+    failed_stimuli = []
 
     with ProcessPoolExecutor(max_workers=a.workers) as executor:
         # Prepare tasks
@@ -226,10 +285,8 @@ if __name__ == "__main__":
                 if processed % 500 == 0:
                     print(f"  ... {processed} / {len(sample)}")
             except Exception as e:
-                print(f"ERROR processing stimulus {idx}: {e}")
-                if processed == 0:  # Print full traceback for first error
-                    print("Full traceback:")
-                    traceback.print_exc()
+                failed_stimuli.append((idx, str(e)))
+                print(f"SKIP stimulus {idx}: {e}")
 
     # Save metadata
     metadata = pd.DataFrame(export_rows)
@@ -240,3 +297,10 @@ if __name__ == "__main__":
     print(f"  Metadata saved to {out}/export_metadata.csv")
     print(f"\n  Pleasantness bin distribution:")
     print(metadata.bin.value_counts().sort_index().to_string())
+    
+    if failed_stimuli:
+        print(f"\n  ⚠️  {len(failed_stimuli)} stimuli skipped due to validation errors:")
+        for idx, error in failed_stimuli[:10]:
+            print(f"     - stimulus {idx}: {error}")
+        if len(failed_stimuli) > 10:
+            print(f"     ... and {len(failed_stimuli) - 10} more")
