@@ -328,8 +328,8 @@ if __name__ == "__main__":
 
     araus_root = Path(a.araus)
     proc_root = Path(a.processed)
-    out = Path(a.out)
-    audio_dir = out / "audio"
+    out = Path(a.out).resolve()
+    audio_dir = (out / "audio").resolve()
     audio_dir.mkdir(parents=True, exist_ok=True)
 
     # Load metadata
