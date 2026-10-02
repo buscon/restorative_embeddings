@@ -45,14 +45,14 @@ class ARUASAudioDataset(Dataset):
                  duration: float = 30.0, normalize_loudness: bool = True, target_loudness: float = -23.0):
         """
         Args:
-            audio_dir: Directory containing audio files
-            metadata_csv: CSV with columns: filename, caption_pleasantness
+            audio_dir: Base directory for audio files
+            metadata_csv: CSV with columns: export_id, stimulus_id, caption, ISOPleasant, bin, LA50, wav_path
             sample_rate: Audio sample rate
             duration: Audio duration in seconds
             normalize_loudness: Whether to normalize loudness
             target_loudness: Target loudness in LUFS
         """
-        self.audio_dir = Path(audio_dir)
+        self.audio_dir = Path(audio_dir).expanduser().absolute()
         self.sample_rate = sample_rate
         self.duration = duration
         self.num_samples = int(sample_rate * duration)
@@ -63,16 +63,32 @@ class ARUASAudioDataset(Dataset):
         import pandas as pd
         self.metadata = pd.read_csv(metadata_csv)
 
-        # Filter to only existing audio files
+        # Build file paths and captions
         self.audio_files = []
         self.captions = []
         for idx, row in self.metadata.iterrows():
-            audio_path = self.audio_dir / row['filename']
+            # wav_path in CSV can be relative or absolute
+            wav_path = row['wav_path']
+
+            # Try to resolve the path
+            if Path(wav_path).is_absolute():
+                audio_path = Path(wav_path)
+            else:
+                # Try relative to audio_dir
+                audio_path = self.audio_dir / wav_path
+                if not audio_path.exists():
+                    # Try as direct filename in audio_dir
+                    audio_path = self.audio_dir / Path(wav_path).name
+
             if audio_path.exists():
                 self.audio_files.append(audio_path)
-                self.captions.append(row['caption_pleasantness'])
+                self.captions.append(row['caption'])
+            else:
+                logger.warning(f"Audio file not found: {wav_path} (resolved to {audio_path})")
 
-        logger.info(f"Loaded {len(self.audio_files)} audio files from {self.audio_dir}")
+        logger.info(f"Loaded {len(self.audio_files)}/{len(self.metadata)} audio files")
+        if len(self.audio_files) == 0:
+            logger.error("No audio files found! Check paths in CSV.")
 
     def __len__(self):
         return len(self.audio_files)
@@ -132,8 +148,8 @@ class StableAudioFineTuner:
     def __init__(self, config: Dict[str, Any], device: str = 'cuda'):
         self.config = config
         self.device = device
-        self.checkpoint_dir = Path(config['evaluation']['checkpoint_dir'])
-        self.log_dir = Path(config['logging']['log_dir'])
+        self.checkpoint_dir = Path(config['evaluation']['checkpoint_dir']).expanduser().absolute()
+        self.log_dir = Path(config['logging']['log_dir']).expanduser().absolute()
 
         # Create directories
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -359,6 +375,10 @@ def main():
         normalize_loudness=config['dataset']['normalize_loudness'],
         target_loudness=config['dataset']['target_loudness']
     )
+
+    if len(dataset) == 0:
+        print("❌ No audio files loaded from dataset")
+        return
 
     dataloader = DataLoader(
         dataset,
