@@ -345,7 +345,7 @@ if __name__ == "__main__":
     sample = stratified_sample(araus["stimuli"], n_samples=a.n_samples, seed=a.seed)
     
     # Merge with captions
-    sample = sample.merge(captions[["caption", "ISOPleasant"]], left_on="stimulus_id", right_index=True)
+    sample = sample.merge(captions[["caption"]], left_on="stimulus_id", right_index=True)
     
     print(f"\nDistribution:")
     print(sample['bin'].value_counts().sort_index())
