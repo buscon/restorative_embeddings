@@ -38,6 +38,19 @@ from rsd.audio import ArausMixer, prepare  # noqa: E402
 from rsd.data import load_araus  # noqa: E402
 
 
+
+def create_pleasantness_bins(stim):
+    """Add pleasantness bin column based on ISOPleasant thresholds."""
+    stim = stim.copy()
+    def bin_pleasantness(iso_pleasant):
+        if iso_pleasant <= -0.50: return "very_unpleasant"
+        elif iso_pleasant <= -0.15: return "unpleasant"
+        elif iso_pleasant <= 0.15: return "neutral"
+        elif iso_pleasant <= 0.50: return "pleasant"
+        else: return "very_pleasant"
+    stim["bin"] = stim["ISOPleasant"].apply(bin_pleasantness)
+    return stim
+
 def stratified_sample(stim, n_samples=6000, seed=42):
     """Sample stimuli stratified by pleasantness bin and masker type.
 
@@ -59,6 +72,7 @@ def stratified_sample(stim, n_samples=6000, seed=42):
 
     result = pd.concat(sampled, ignore_index=False).sample(frac=1, random_state=rng)
     return result.reset_index(drop=True)
+
 
 
 def resample_audio_safe(y, sr_orig, sr_target=44100):
@@ -321,6 +335,7 @@ if __name__ == "__main__":
     # Load metadata
     print("Loading ARAUS stimuli...")
     araus = load_araus(araus_root)
+    araus["stimuli"] = create_pleasantness_bins(araus["stimuli"])
     
     print("Loading captions...")
     captions = pd.read_csv(a.captions, index_col=0)
