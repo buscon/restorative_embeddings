@@ -51,23 +51,30 @@ def load_metadata(csv_path):
 def create_caption(row):
     """Create SA3 caption: description + ISO pleasantness value only.
     
+    Extracts description (first sentence) from caption field.
     Format: description + [ISOPleasant: value]
     Example: "urban park with birds and ambient activity. [ISOPleasant: 0.07]"
     """
-    description = row.get('caption', '')
+    caption_full = row.get('caption', '')
     iso_pleasant = row.get('ISOPleasant', '')
 
+    # Extract just the description (first sentence before "Loudness:")
+    # Handles format: "description. Loudness: ... Pleasantness: ..."
+    if '. Loudness:' in caption_full:
+        description = caption_full.split('. Loudness:')[0].strip()
+    else:
+        description = caption_full.strip()
+    
     # Return: description + ISO pleasantness rating only
     if iso_pleasant and iso_pleasant.lower() != 'nan':
         try:
             iso_val = float(iso_pleasant)
-            return f"{description} [ISOPleasant: {iso_val:.2f}]"
+            return f"{description}. [ISOPleasant: {iso_val:.2f}]"
         except:
             pass
 
     # Fallback to description only
     return description
-
 
 def prepare_dataset(metadata, audio_dir, output_dir):
     """
