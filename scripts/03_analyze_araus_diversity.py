@@ -29,22 +29,14 @@ except Exception as e:
     print(f"ERROR loading CSVs: {e}")
     exit(1)
 
-# Flexible column detection
-def find_column(df, candidates):
-    """Find first existing column from candidates list"""
-    for col in candidates:
-        if col in df.columns:
-            return col
-    return None
-
-# Identify key columns
-stimulus_col = find_column(soundscapes, ['stimulus_id', 'id', 'stimID'])
-scene_col = find_column(soundscapes, ['scene', 'scene_name', 'Scene', 'description', 'label'])
-masker_col = find_column(maskers, ['masker_id', 'id', 'maskerID'])
-masker_type_col = find_column(maskers, ['masker_type', 'type', 'masker', 'Type'])
-response_stimulus_col = find_column(responses, ['stimulus_id', 'id', 'stimID'])
-response_masker_col = find_column(responses, ['masker_id', 'id', 'maskerID'])
-pleasantness_col = find_column(responses, ['pleasantness', 'ISOPleasant', 'pleasantness_rating', 'rating'])
+# ARAUS-specific column mappings
+stimulus_col = 'soundscape'
+scene_col = 'soundscape'
+masker_col = 'masker'
+masker_type_col = 'class'
+response_stimulus_col = 'soundscape'
+response_masker_col = 'masker'
+pleasantness_col = 'pleasant'  # ARAUS uses 'pleasant' rating
 
 print(f"\nColumn Mapping:")
 print(f"  Soundscapes: stimulus_id='{stimulus_col}', scene='{scene_col}'")
