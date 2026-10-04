@@ -2,9 +2,11 @@
 """
 Update captions in existing encoded dataset to be more diverse.
 Works directly with the pre-encoded JSON files organized by pleasantness.
+Also copies corresponding .npy latent files to the output directory.
 """
 
 import json
+import shutil
 import random
 from pathlib import Path
 from collections import defaultdict
@@ -14,7 +16,7 @@ ENCODED_DIR = Path("/home/marcello/Documents/restorative_embeddings/generation/t
 OUTPUT_DIR = Path("/home/marcello/Documents/restorative_embeddings/generation/train/diverse_training_data")
 
 print("=" * 70)
-print("UPDATE ENCODED CAPTIONS - DIVERSE DATASET")
+print("UPDATE ENCODED CAPTIONS - DIVERSE DATASET (WITH .NPY FILES)")
 print("=" * 70)
 
 # Load all encoded files grouped by pleasantness folder
@@ -140,9 +142,10 @@ def generate_diverse_caption(bin_id, current_caption):
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 print(f"\n✓ Output directory: {OUTPUT_DIR}")
 
-# Process and save files with updated captions
-print("\nUpdating captions and saving to output directory...")
+# Process and save files with updated captions and copy .npy files
+print("\nUpdating captions and copying latent files...")
 saved_count = 0
+missing_npy_count = 0
 
 for json_file, data, pleasantness_folder, bin_id in selected_files:
     try:
@@ -151,10 +154,19 @@ for json_file, data, pleasantness_folder, bin_id in selected_files:
         new_caption = generate_diverse_caption(bin_id, old_caption)
         data['prompt'] = new_caption
 
-        # Save to output directory
-        output_file = OUTPUT_DIR / json_file.name
-        with open(output_file, 'w') as f:
+        # Save updated JSON to output directory
+        output_json_file = OUTPUT_DIR / json_file.name
+        with open(output_json_file, 'w') as f:
             json.dump(data, f)
+
+        # Copy corresponding .npy file (if it exists)
+        npy_file = json_file.with_suffix('.npy')
+        if npy_file.exists():
+            output_npy_file = OUTPUT_DIR / npy_file.name
+            shutil.copy2(npy_file, output_npy_file)
+        else:
+            missing_npy_count += 1
+            print(f"  Warning: No .npy file for {json_file.name}")
 
         saved_count += 1
         if saved_count % 20 == 0:
@@ -164,6 +176,8 @@ for json_file, data, pleasantness_folder, bin_id in selected_files:
         print(f"  Error processing {json_file.name}: {e}")
 
 print(f"\n✓ Saved {saved_count} files with updated captions")
+if missing_npy_count > 0:
+    print(f"  ⚠ Warning: {missing_npy_count} .npy files were missing")
 
 # Print sample captions
 print("\n" + "=" * 70)
@@ -182,11 +196,21 @@ for bin_id in range(5):
             print(f"  - {caption}")
 
 print("\n" + "=" * 70)
+print("VERIFY DATASET")
+print("=" * 70)
+
+json_count = len(list(OUTPUT_DIR.glob("*.json")))
+npy_count = len(list(OUTPUT_DIR.glob("*.npy")))
+print(f"Files in output directory:")
+print(f"  .json files: {json_count}")
+print(f"  .npy files: {npy_count}")
+
+print("\n" + "=" * 70)
 print("NEXT STEPS")
 print("=" * 70)
 print(f"""
 1. Training data ready at: {OUTPUT_DIR}
-   Contains {saved_count} files with diverse captions
+   Contains {saved_count} file pairs (json + npy)
 
 2. Train LoRA with this diverse dataset:
    python train_lora.py --model medium-base \\
