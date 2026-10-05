@@ -1,0 +1,10 @@
+model:
+  pretrained_model_path: "stabilityai/stable-audio-open-1.0"
+
+train:
+  output_dir: "~/Documents/restorative_embeddings/generation/train/checkpoints"
+  batch_size: 2
+  grad_accum_steps: 4
+  learning_rate: 5.0e-5
+  max_steps: 2000
+  save_interval: 500

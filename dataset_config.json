@@ -1,11 +1,11 @@
 {
-  "dataset_type": "audio_dir",
-  "datasets": [
-    {
-      "id": "restorative_soundscapes",
-      "path": "~/Documents/restorative_embeddings/generation/train/diverse_audio_with_captions"
-    }
-  ],
-  "random_crop": true,
-  "drop_last": true
+    "dataset_type": "audio_dir",
+    "datasets": [
+        {
+            "id": "restorative_soundscapes",
+            "path": "~/Documents/restorative_embeddings/generation/train/sa3_finetuning_data"
+        }
+    ],
+    "random_crop": true,
+    "drop_last": true
 }

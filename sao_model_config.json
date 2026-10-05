@@ -1,16 +1,19 @@
 {
   "model_type": "diffusion_cond",
-  "sample_size": 1323000,
   "sample_rate": 44100,
+  "sample_size": 1323000,
   "audio_channels": 2,
   "model": {
-    "pretrained_model_name_or_path": "stabilityai/stable-audio-open-1.0",
-    "type": "autoencoder_kl",
-    "model_class": "StableAudioOpenAutoencoder"
+    "pretrained_model_name_or_path": "stabilityai/stable-audio-open-1.0"
+  },
+  "pretransform": {
+    "pretrained_model_name_or_path": "stabilityai/stable-audio-open-1.0"
+  },
+  "diffusion": {
+    "pretrained_model_name_or_path": "stabilityai/stable-audio-open-1.0"
   },
   "training": {
     "learning_rate": 5e-5,
-    "use_ema": false,
-    "lora_config": null
+    "use_ema": false
   }
 }

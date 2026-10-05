@@ -1,0 +1,19 @@
+data:
+  train_path: ~/Documents/restorative_embeddings/generation/train/sa3_finetuning_data/metadata.csv
+  audio_dir: ~/Documents/restorative_embeddings/generation/train/sa3_finetuning_data
+  sample_rate: 44100
+  duration: 30.0
+  channels: 2
+  text_key: caption
+  file_key: file
+
+model:
+  pretrained_model_path: stabilityai/stable-audio-open-1.0
+
+train:
+  output_dir: ~/Documents/restorative_embeddings/generation/train/checkpoints
+  batch_size: 2
+  grad_accum_steps: 4
+  learning_rate: 5.0e-5
+  max_steps: 2000
+  save_interval: 500

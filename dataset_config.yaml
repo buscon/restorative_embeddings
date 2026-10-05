@@ -1,0 +1,8 @@
+data:
+  train_path: "~/Documents/restorative_embeddings/generation/train/sa3_finetuning_data/metadata.csv"
+  audio_dir: "~/Documents/restorative_embeddings/generation/train/sa3_finetuning_data"
+  sample_rate: 44100
+  duration: 30.0
+  channels: 2
+  text_key: "caption"
+  file_key: "file"
