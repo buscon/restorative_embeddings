@@ -1,26 +1,31 @@
-import os
+import csv
 from pathlib import Path
 
-def get_metadata(filepath):
+def get_custom_metadata(info, audio):
     """
-    Load metadata for an audio file from a corresponding .txt caption file.
+    Extract metadata for each audio file from metadata.csv
     
     Args:
-        filepath: Path to the audio file (.wav)
+        info: dict with file info (includes 'relpath')
+        audio: audio data (not used here)
     
     Returns:
-        Dictionary with 'caption' key containing the text from the .txt file
+        dict with 'prompt' key containing the caption from metadata.csv
     """
-    # Get the base name without extension
-    base_path = os.path.splitext(filepath)[0]
     
-    # Look for corresponding .txt file
-    txt_path = base_path + '.txt'
+    # Get the audio filename from the path
+    audio_filename = Path(info["relpath"]).stem  # Just the filename without extension
     
-    if os.path.exists(txt_path):
-        with open(txt_path, 'r', encoding='utf-8') as f:
-            caption = f.read().strip()
-        return {'caption': caption}
-    else:
-        # Fallback: use filename as caption if no .txt file
-        return {'caption': Path(filepath).stem}
+    # Path to metadata CSV in the same directory
+    metadata_csv = Path(info["relpath"]).parent / "metadata.csv"
+    
+    # Read metadata.csv and find the matching caption
+    if metadata_csv.exists():
+        with open(metadata_csv, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if row['file'].replace('.wav', '') == audio_filename:
+                    return {"prompt": row['caption']}
+    
+    # Fallback if file not found in CSV
+    return {"prompt": "Soundscape audio"}
