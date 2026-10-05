@@ -8,5 +8,10 @@
   },
   "latent_channels": 8,
   "pretransform_type": "vae",
-  "compile_unet": false
+  "compile_unet": false,
+  "training": {
+    "learning_rate": 5e-5,
+    "use_ema": false,
+    "lora_config": null
+  }
 }
