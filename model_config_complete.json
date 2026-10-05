@@ -48,11 +48,13 @@
       "configs": [
         {
           "id": "prompt",
-          "type": "t5",
+          "type": "clap_text",
           "config": {
-            "t5_model_name": "t5-base",
-            "max_length": 77,
-            "project_out": true
+            "audio_model_type": "HTSAT-base",
+            "enable_fusion": true,
+            "clap_ckpt_path": "/sessions/rcw-01krvaafubyv77sfs23abj1i/models/clap-htsat-unfused.ckpt",
+            "use_text_features": true,
+            "feature_layer_ix": -2
           }
         },
         {
