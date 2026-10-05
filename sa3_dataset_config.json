@@ -1,0 +1,15 @@
+{
+  "dataset_type": "audio_dir",
+  "datasets": [
+    {
+      "path": "~/Documents/restorative_embeddings/generation/train/diverse_audio_with_captions",
+      "sample_rate": 44100,
+      "channels": 2,
+      "caption_files": true,
+      "weight": 1.0
+    }
+  ],
+  "random_crop": false,
+  "sample_duration": 30.0,
+  "drop_last": true
+}

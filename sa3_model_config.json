@@ -1,0 +1,12 @@
+{
+  "model_name": "stabilityai/stable-audio-3-medium-base",
+  "sample_rate": 44100,
+  "channels": 2,
+  "default_length": 30.0,
+  "pretransform": {
+    "type": "compress"
+  },
+  "latent_channels": 8,
+  "pretransform_type": "vae",
+  "compile_unet": false
+}
