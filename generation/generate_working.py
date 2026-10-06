@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate audio from Stable Audio Open v1 - Minimal Working Version
+Generate audio from Stable Audio Open v1 - Working Version
 """
 
 import argparse
@@ -98,9 +98,10 @@ def main():
     try:
         from stable_audio_tools.inference.generation import generate_diffusion_cond
 
-        # Try with "prompt" key (for Stable Audio 1.0 compatibility)
+        # Include all required conditioning keys
         conditioning = [{
             "prompt": args.prompt,
+            "seconds_start": 0.0,
             "seconds_total": args.seconds
         }]
 
