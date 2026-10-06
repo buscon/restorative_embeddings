@@ -38,7 +38,7 @@ def load_metadata(csv_path):
         with open(csv_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                export_id = row.get('export_id')
+                export_id = row.get('id')  # Use 'id' column (0000000, 0000004, etc.)
                 if export_id:
                     metadata[export_id] = row
         print(f"✓ Loaded {len(metadata)} metadata entries from {csv_path}")
@@ -145,8 +145,8 @@ def prepare_dataset(metadata, audio_dir, output_dir):
         else:
             target_dir = output_dir
 
-        # Create output filenames
-        stimulus_id = row.get('stimulus_id', export_id)
+        # Create output filenames (use 'id' column instead of 'stimulus_id' to avoid pipe chars)
+        stimulus_id = row.get('id', export_id or 'unknown')  # Use clean numeric ID (0000000, 0000004, etc.)
         output_audio = target_dir / f"{stimulus_id}.wav"
         output_caption = target_dir / f"{stimulus_id}.txt"
 
