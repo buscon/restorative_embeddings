@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate audio from Stable Audio Open v1 - Handles both base and fine-tuned checkpoints
+Generate audio from Stable Audio Open v1 - Handles fine-tuned checkpoints with diffusion. prefix
 """
 
 import argparse
@@ -69,7 +69,6 @@ def main():
             checkpoint = torch.load(ckpt_path, map_location='cpu')
             
             # Handle PyTorch Lightning checkpoints (from fine-tuning)
-            # These have a 'state_dict' key containing the actual model weights
             if isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
                 state_dict = checkpoint['state_dict']
                 print(f"✓ Loaded PyTorch Lightning checkpoint (extracted state_dict)")
@@ -79,19 +78,27 @@ def main():
 
         print(f"  Checkpoint has {len(state_dict)} keys")
 
-        # For fine-tuned checkpoints, filter to only model keys
-        model_keys = set(model.state_dict().keys())
-        checkpoint_keys = set(state_dict.keys())
+        # Handle fine-tuned checkpoint structure:
+        # Fine-tuned checkpoints have "diffusion." prefix and include EMA weights
+        # Strip the prefix and ignore EMA weights
+        processed_state_dict = {}
         
-        # Filter state dict to only include keys the model expects
-        filtered_state_dict = {}
-        for key in state_dict.keys():
-            if key in model_keys:
-                filtered_state_dict[key] = state_dict[key]
+        for key, value in state_dict.items():
+            # Skip EMA weights (training-only)
+            if key.startswith('diffusion_ema.'):
+                continue
+            
+            # Strip "diffusion." prefix if present
+            if key.startswith('diffusion.'):
+                new_key = key[len('diffusion.'):]
+                processed_state_dict[new_key] = value
+            else:
+                # Keep as-is (base model or already stripped)
+                processed_state_dict[key] = value
         
-        if filtered_state_dict:
-            print(f"  Filtered to {len(filtered_state_dict)} matching keys")
-            state_dict = filtered_state_dict
+        print(f"  After processing: {len(processed_state_dict)} keys (removed EMA weights)")
+        
+        state_dict = processed_state_dict
         
         # Load into model
         missing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=False)
@@ -104,6 +111,7 @@ def main():
         if loaded_count < total_count * 0.7:
             print(f"\n❌ CRITICAL: Only {loaded_count}/{total_count} weights loaded!")
             print(f"   Expected at least 70% ({int(total_count * 0.7)}) weights")
+            print(f"   Missing keys: {len(missing_keys)}")
             return False
 
     except Exception as e:
