@@ -112,8 +112,17 @@ def save_selection(selected_metadata, output_csv):
         return False
 
     try:
+        # Rename 'id' to 'export_id' for downstream compatibility with 02_prepare_training_data_sa3.py
+        for row in selected_metadata:
+            if 'id' in row and 'export_id' not in row:
+                row['export_id'] = row.pop('id')
+
         # Get fieldnames from first row
         fieldnames = list(selected_metadata[0].keys())
+        # Ensure export_id comes first for clarity
+        if 'export_id' in fieldnames:
+            fieldnames.remove('export_id')
+            fieldnames.insert(0, 'export_id')
 
         output_path = Path(output_csv)
         output_path.parent.mkdir(parents=True, exist_ok=True)
