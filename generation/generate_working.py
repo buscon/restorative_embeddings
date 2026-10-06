@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate audio from Stable Audio Open v1 - Working Version
+Generate audio from Stable Audio Open v1 - Handles both base and fine-tuned checkpoints
 """
 
 import argparse
@@ -67,11 +67,35 @@ def main():
             print(f"✓ Loaded safetensors format")
         else:
             checkpoint = torch.load(ckpt_path, map_location='cpu')
-            state_dict = checkpoint.get('state_dict', checkpoint)
-            print(f"✓ Loaded PyTorch checkpoint")
+            
+            # Handle PyTorch Lightning checkpoints (from fine-tuning)
+            # These have a 'state_dict' key containing the actual model weights
+            if isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
+                state_dict = checkpoint['state_dict']
+                print(f"✓ Loaded PyTorch Lightning checkpoint (extracted state_dict)")
+            else:
+                state_dict = checkpoint
+                print(f"✓ Loaded PyTorch checkpoint")
 
         print(f"  Checkpoint has {len(state_dict)} keys")
+
+        # For fine-tuned checkpoints, filter to only model keys
+        model_keys = set(model.state_dict().keys())
+        checkpoint_keys = set(state_dict.keys())
+        
+        # Filter state dict to only include keys the model expects
+        filtered_state_dict = {}
+        for key in state_dict.keys():
+            if key in model_keys:
+                filtered_state_dict[key] = state_dict[key]
+        
+        if filtered_state_dict:
+            print(f"  Filtered to {len(filtered_state_dict)} matching keys")
+            state_dict = filtered_state_dict
+        
+        # Load into model
         missing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=False)
+
         loaded_count = len(state_dict) - len(missing_keys)
         total_count = len(model.state_dict())
 
@@ -79,10 +103,13 @@ def main():
 
         if loaded_count < total_count * 0.7:
             print(f"\n❌ CRITICAL: Only {loaded_count}/{total_count} weights loaded!")
+            print(f"   Expected at least 70% ({int(total_count * 0.7)}) weights")
             return False
 
     except Exception as e:
         print(f"❌ Failed to load checkpoint: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
