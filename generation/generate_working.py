@@ -27,7 +27,8 @@ def main():
 
     args = parser.parse_args()
 
-    if args.seed is not None:
+    # Set seed if provided (but not -1, which means random)
+    if args.seed is not None and args.seed != -1:
         torch.manual_seed(args.seed)
 
     print("\n" + "="*70)
@@ -127,16 +128,22 @@ def main():
         }]
 
         with torch.no_grad():
-            audio = generate_diffusion_cond(
-                model,
-                conditioning=conditioning,
-                steps=args.steps,
-                cfg_scale=args.guidance,
-                sample_rate=model_config.get("sample_rate", 16000),
-                sample_size=int(args.seconds * model_config.get("sample_rate", 16000)),
-                device=device,
-                seed=args.seed,
-            )
+            # Only pass seed if it's a valid integer (not None or -1)
+            generation_kwargs = {
+                "model": model,
+                "conditioning": conditioning,
+                "steps": args.steps,
+                "cfg_scale": args.guidance,
+                "sample_rate": model_config.get("sample_rate", 16000),
+                "sample_size": int(args.seconds * model_config.get("sample_rate", 16000)),
+                "device": device,
+            }
+            
+            # Only add seed if it's valid
+            if args.seed is not None and args.seed != -1:
+                generation_kwargs["seed"] = args.seed
+            
+            audio = generate_diffusion_cond(**generation_kwargs)
 
         print(f"\n✓ Generation complete!")
 
