@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Select a balanced subset of rated ISD recordings for fine-tuning.
 
-Balance: equal numbers per city (London, Venice, Granada, Groningen), and within each city
-as equal as availability allows across the five ISOPleasant bins. Within a (city, bin) cell
-recordings are taken round-robin across the locations of that city, so no single square
-dominates. If a city or bin cannot supply its share, the shortfall goes to the others.
+Balance: as equal as availability allows across the five ISOPleasant bins first; within each
+bin as equal as possible across the cities (London, Venice, Granada, Groningen); within a
+(bin, city) cell recordings are taken round-robin across that city's locations. A bin or city
+that cannot supply its share passes the shortfall on to the others. --primary city reverses
+the order (cities first, then bins). ISD is skewed towards pleasant recordings, so the very
+unpleasant and unpleasant bins fall short; the script prints this.
 
 ISOPleasant is the mean over the people who rated that recording (ISD gives each person one
 rating per recording, so single ratings are noisy; use --min-ratings 2 to demand more).
@@ -26,6 +28,11 @@ import pandas as pd
 
 BINS = ["very_unpleasant", "unpleasant", "neutral", "pleasant", "very_pleasant"]
 CITIES = ["London", "Venice", "Granada", "Groningen"]
+# The Granada archive folders do not contain the city name, so these locations are listed.
+LOCATION_CITY = {
+    "CampoPrincipe": "Granada", "CarloV": "Granada",
+    "MiradorSanNicolas": "Granada", "PlazaBibRambla": "Granada",
+}
 
 
 def pleasantness_bin(x: float) -> str:
@@ -40,9 +47,11 @@ def pleasantness_bin(x: float) -> str:
     return "very_pleasant"
 
 
-def city_of(path: str) -> str:
+def city_of(path: str, location: str = "") -> str:
     m = re.search("|".join(CITIES), str(path), flags=re.I)
-    return {c.lower(): c for c in CITIES}[m.group(0).lower()] if m else "unknown"
+    if m:
+        return {c.lower(): c for c in CITIES}[m.group(0).lower()]
+    return LOCATION_CITY.get(str(location), "unknown")
 
 
 def waterfill(quota: int, caps: dict) -> dict:
@@ -84,17 +93,21 @@ def round_robin(rows: pd.DataFrame, k: int, rng: random.Random) -> list:
     return picked
 
 
-def select(df: pd.DataFrame, n: int, seed: int) -> pd.DataFrame:
+def select(df: pd.DataFrame, n: int, seed: int, primary: str = "bin") -> pd.DataFrame:
+    """primary='bin': even over pleasantness bins first, then spread over cities within each
+    bin (best use of the scarce bins). primary='city': even over cities first, then bins."""
     rng = random.Random(seed)
-    cities = sorted(df.city.unique())
-    city_quota = waterfill(n, {c: int((df.city == c).sum()) for c in cities})
+    outer_col, inner_col = ("bin", "city") if primary == "bin" else ("city", "bin")
+    outer_keys = BINS if primary == "bin" else sorted(df.city.unique())
+    inner_keys = sorted(df.city.unique()) if primary == "bin" else BINS
+    outer_quota = waterfill(n, {k: int((df[outer_col] == k).sum()) for k in outer_keys})
     picked = []
-    for c in cities:
-        sub = df[df.city == c]
-        bin_quota = waterfill(city_quota[c], {b: int((sub.bin == b).sum()) for b in BINS})
-        for b in BINS:
-            if bin_quota[b]:
-                picked += round_robin(sub[sub.bin == b], bin_quota[b], rng)
+    for o in outer_keys:
+        sub = df[df[outer_col] == o]
+        inner_quota = waterfill(outer_quota[o], {k: int((sub[inner_col] == k).sum()) for k in inner_keys})
+        for i in inner_keys:
+            if inner_quota[i]:
+                picked += round_robin(sub[sub[inner_col] == i], inner_quota[i], rng)
     return pd.DataFrame(picked)
 
 
@@ -106,6 +119,8 @@ def main():
     ap.add_argument("--num-samples", type=int, default=360)
     ap.add_argument("--min-ratings", type=int, default=1)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--primary", choices=["bin", "city"], default="bin",
+                    help="what to balance first (default: pleasantness bins, then cities within each bin)")
     a = ap.parse_args()
 
     if a.recordings_csv:
@@ -116,15 +131,16 @@ def main():
         recs = load_isd(a.isd)["recordings"]
 
     recs = recs[(recs.n_ratings >= a.min_ratings) & recs.ISOPleasant.notna() & recs.wav.notna()].copy()
-    recs["city"] = recs.wav.map(city_of)
+    recs["city"] = [city_of(w, l) for w, l in zip(recs.wav, recs.LocationID)]
     recs["bin"] = recs.ISOPleasant.map(pleasantness_bin)
     print(f"{len(recs)} rated recordings with audio (min ratings {a.min_ratings})")
     print("\navailable, city x bin:")
     print(pd.crosstab(recs.city, recs.bin).reindex(columns=BINS, fill_value=0).to_string())
     if (recs.city == "unknown").any():
-        print(f"\nWARNING: {(recs.city == 'unknown').sum()} recordings have no recognisable city in their path")
+        unk = recs[recs.city == "unknown"]
+        print(f"\nWARNING: {len(unk)} recordings have no known city; locations: {sorted(unk.LocationID.unique())}")
 
-    sel = select(recs, a.num_samples, a.seed)
+    sel = select(recs, a.num_samples, a.seed, a.primary)
     cols = ["GroupID", "wav", "city", "LocationID", "ISOPleasant", "ISOEventful", "n_ratings", "bin"]
     sel = sel[[c for c in cols if c in sel.columns]].sort_values(["city", "bin", "GroupID"])
     Path(a.output_csv).parent.mkdir(parents=True, exist_ok=True)
