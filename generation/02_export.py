@@ -221,6 +221,24 @@ def normalise_loudness(y, sr, target_lufs=-23.0):
     return y_norm
 
 
+def normalise_loudness_stereo(y, sr, target_lufs=-23.0):
+    """Normalise a (n, 2) stereo signal to target_lufs, keeping both channels."""
+    import pyloudnorm
+
+    y = np.asarray(y, dtype=np.float32)
+    if y.ndim != 2 or y.shape[1] != 2:
+        raise ValueError(f"Expected stereo (n, 2), got shape {y.shape}")
+    if not np.isfinite(y).all():
+        raise ValueError("Input audio contains NaN or Inf values")
+    loudness = pyloudnorm.Meter(sr).integrated_loudness(y)
+    if not np.isfinite(loudness):
+        raise ValueError(f"Loudness measurement failed (loudness={loudness})")
+    y = pyloudnorm.normalize.loudness(y, loudness, target_lufs)
+    if np.abs(y).max() > 1.0:
+        y = np.tanh(y)  # soft clip
+    return y
+
+
 def process_stimulus(args):
     """Process a single stimulus: mix, resample, normalize, save.
 
@@ -254,26 +272,24 @@ def process_stimulus(args):
     if x.size == 0:
         raise ValueError(f"ArausMixer produced empty audio for soundscape={row['soundscape']}, masker={row['masker']}, smr={row['smr']}")
 
-    # Step 2: Prepare (mono, 48 kHz, 30 s, RMS norm)
-    y = prepare(x, sr)
-    
-    if y.size == 0:
-        raise ValueError("prepare() returned empty audio")
-    
-    expected_samples_48k = int(30 * 48000)
-    if len(y) < expected_samples_48k * 0.9:
-        raise ValueError(f"prepare() returned truncated audio: {len(y)} samples (expected ~{expected_samples_48k})")
-
-    # Step 3: Resample to 44.1 kHz (using improved function)
-    y = resample_audio_safe(y, 48000, 44100)
+    # Step 2-3: keep the binaural stereo signal, first 30 s, resample once to 44.1 kHz.
+    # (rsd.audio.prepare() is NOT used: it is made for CLAP and returns mono at 48 kHz.)
     sr_out = 44100
+    y = np.asarray(x[: 30 * sr], dtype=np.float64)
+    if y.ndim == 1:
+        y = y[:, None]
+    if sr != sr_out:
+        g = gcd(int(sr), int(sr_out))
+        y = resample_poly(y, sr_out // g, sr // g, axis=0)
+    if y.shape[1] == 1:
+        y = np.repeat(y, 2, axis=1)
     
     expected_samples_44k = int(30 * 44100)
     if len(y) < expected_samples_44k * 0.9:
         raise ValueError(f"resample_audio_safe() returned truncated audio: {len(y)} samples (expected ~{expected_samples_44k})")
 
     # Step 4: Normalise to -23 LUFS (returns stereo)
-    y = normalise_loudness(y, sr_out, target_lufs=-23.0)
+    y = normalise_loudness_stereo(y, sr_out, target_lufs=-23.0)
     
     if y.size == 0:
         raise ValueError("normalise_loudness() returned empty audio")
