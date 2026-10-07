@@ -43,3 +43,23 @@ def place_name(location_id: str) -> str:
 
 def make_isd_caption(location_id: str, city: str, pleasantness: float) -> str:
     return f"soundscape at {place_name(location_id)} in {city} [ISOPleasant: {format_pleasantness(pleasantness)}]"
+
+
+# Sound sources reported by the people who were there (ISD items ssi01-04, 1 = not at all ...
+# 5 = dominates completely; the mapping was inferred from the data, see isd/02_select_balanced.py).
+ISD_SOURCE_WORDS = {"traffic": "traffic noise", "other_noise": "other noise",
+                    "human": "human sounds", "natural": "natural sounds"}
+
+
+def isd_sources(scores: dict, threshold: float = 3.5, max_sources: int = 2) -> list:
+    """Sources rated at least `threshold` (a lot / dominates), strongest first."""
+    ranked = sorted(((v, k) for k, v in scores.items() if k in ISD_SOURCE_WORDS and v == v), reverse=True)
+    return [ISD_SOURCE_WORDS[k] for v, k in ranked if v >= threshold][:max_sources]
+
+
+def make_isd_content_caption(scores: dict, city: str, pleasantness: float, location_id: str = "") -> str:
+    """'soundscape with traffic noise and human sounds [at Camden Town] in London [ISOPleasant: x]'."""
+    srcs = isd_sources(scores)
+    what = " and ".join(srcs) if srcs else "no dominant sound source"
+    where = f" at {place_name(location_id)}" if location_id else ""
+    return f"soundscape with {what}{where} in {city} [ISOPleasant: {format_pleasantness(pleasantness)}]"

@@ -166,12 +166,14 @@ python isd/03_make_training_chunks.py --selected isd/selected_isd.csv --out isd/
 bash ~/Documents/restorative_embeddings/isd/04_train.sh
 ```
 
-- **Selection:** equal numbers per city, and within a city as equal as possible over the five
-  ISOPleasant bins (very unpleasant to very pleasant). Inside each city and bin, recordings are
-  taken in turn from the different locations. When a city or bin has too few recordings, the
-  others make up the difference, and the script prints what was available and what was taken.
-  `--min-ratings 2` keeps only recordings rated by at least two people. The ISOPleasant of a
-  recording is the mean over its raters.
+- **Selection:** as equal as availability allows over the five ISOPleasant bins (very
+  unpleasant to very pleasant); within each bin as equal as possible over the four cities; and
+  within a city taking recordings in turn from its locations. When a bin or city has too few
+  recordings, the others make up the difference, and the script prints what was available and
+  what was taken. ISD is skewed towards pleasant recordings (only about 19 very unpleasant ones,
+  all from London), so the unpleasant end will be thin whatever the settings. `--primary city`
+  balances cities first instead. `--min-ratings 2` keeps only recordings rated by at least two
+  people. The ISOPleasant of a recording is the mean over its raters.
 - **Audio:** the same conditioning as the ARAUS export (`rsd/conditioning.py`): stereo,
   44.1 kHz, 30 Hz high-pass, -23 LUFS.
 - **Captions:** `soundscape at <Place Name> in <City> [ISOPleasant: x.xx]`. ISD has no masker

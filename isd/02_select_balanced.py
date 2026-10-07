@@ -47,6 +47,21 @@ def pleasantness_bin(x: float) -> str:
     return "very_pleasant"
 
 
+SOURCE_COLS = {"ssi01": "traffic", "ssi02": "other_noise", "ssi03": "human", "ssi04": "natural"}
+
+
+def source_means(isd_root: str) -> pd.DataFrame:
+    """Mean sound-source ratings (1-5) per recording from 'ISD v1.0 Data.csv'.
+    ssi01-04 = traffic, other noise, human, natural sounds. Inferred from the data (traffic
+    is highest at Camden Town/Euston Tap, natural at Regent's Park Japan, human at San Marco,
+    and the items correlate with annoyance/pleasantness as expected); confirm in the ISD
+    metadata workbook if you rely on it."""
+    csv = next(Path(isd_root).rglob("ISD v1.0 Data.csv"))
+    raw = pd.read_csv(csv, low_memory=False)
+    raw["GroupID"] = raw.GroupID.astype(str)
+    return raw.groupby("GroupID")[list(SOURCE_COLS)].mean().rename(columns=SOURCE_COLS).reset_index()
+
+
 def city_of(path: str, location: str = "") -> str:
     m = re.search("|".join(CITIES), str(path), flags=re.I)
     if m:
@@ -133,6 +148,8 @@ def main():
     recs = recs[(recs.n_ratings >= a.min_ratings) & recs.ISOPleasant.notna() & recs.wav.notna()].copy()
     recs["city"] = [city_of(w, l) for w, l in zip(recs.wav, recs.LocationID)]
     recs["bin"] = recs.ISOPleasant.map(pleasantness_bin)
+    recs["GroupID"] = recs.GroupID.astype(str)
+    recs = recs.merge(source_means(a.isd), on="GroupID", how="left")
     print(f"{len(recs)} rated recordings with audio (min ratings {a.min_ratings})")
     print("\navailable, city x bin:")
     print(pd.crosstab(recs.city, recs.bin).reindex(columns=BINS, fill_value=0).to_string())
@@ -141,13 +158,18 @@ def main():
         print(f"\nWARNING: {len(unk)} recordings have no known city; locations: {sorted(unk.LocationID.unique())}")
 
     sel = select(recs, a.num_samples, a.seed, a.primary)
-    cols = ["GroupID", "wav", "city", "LocationID", "ISOPleasant", "ISOEventful", "n_ratings", "bin"]
+    cols = ["GroupID", "wav", "city", "LocationID", "ISOPleasant", "ISOEventful", "n_ratings", "bin",
+            "traffic", "other_noise", "human", "natural"]
     sel = sel[[c for c in cols if c in sel.columns]].sort_values(["city", "bin", "GroupID"])
     Path(a.output_csv).parent.mkdir(parents=True, exist_ok=True)
     sel.to_csv(a.output_csv, index=False)
 
     print(f"\nselected {len(sel)} -> {a.output_csv}")
     print(pd.crosstab(sel.city, sel.bin).reindex(columns=BINS, fill_value=0).to_string())
+    if "traffic" in sel.columns:
+        srcs = sel[["traffic", "other_noise", "human", "natural"]]
+        print("\nselected recordings with each source rated >= 3.5:", (srcs >= 3.5).sum().to_dict(),
+              "| none:", int((srcs.max(axis=1) < 3.5).sum()))
     print("\nrecordings per location:")
     print(sel.groupby(["city", "LocationID"]).size().to_string())
     short = [b for b in BINS if (sel.bin == b).sum() < a.num_samples / len(BINS) * 0.8]
