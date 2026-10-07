@@ -30,7 +30,7 @@ from math import gcd
 import numpy as np
 import pandas as pd
 import soundfile as sf
-from scipy.signal import resample_poly
+from scipy.signal import resample_poly, butter, sosfiltfilt
 import warnings
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -283,6 +283,9 @@ def process_stimulus(args):
         y = resample_poly(y, sr_out // g, sr // g, axis=0)
     if y.shape[1] == 1:
         y = np.repeat(y, 2, axis=1)
+    # Remove inaudible infrasound/DC (many raw soundscapes carry 20-90 % of their power below 20 Hz).
+    # Zero-phase 4th-order Butterworth high-pass at 30 Hz, before loudness normalisation.
+    y = sosfiltfilt(butter(4, 30, btype="highpass", fs=sr_out, output="sos"), y, axis=0)
     
     expected_samples_44k = int(30 * 44100)
     if len(y) < expected_samples_44k * 0.9:
