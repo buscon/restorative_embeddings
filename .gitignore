@@ -1,6 +1,12 @@
 data/
 results/
+out_*/
+*.ckpt
+*.bak*
 __pycache__/
 *.pyc
 .DS_Store
 .ipynb_checkpoints/
+.venv/
+generation/train/araus_for_sa3_360/
+generation/train/selected_*.csv

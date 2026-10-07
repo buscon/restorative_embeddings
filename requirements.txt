@@ -1,16 +1,10 @@
-# Install PyTorch first, matching your CUDA version (RTX 50xx / Blackwell needs a
-# CUDA 12.8+ build, i.e. torch >= 2.7):  https://pytorch.org/get-started/locally/
-torch>=2.7
-transformers>=4.40
-soundscapy>=0.7
-scikit-maad>=1.4
-scikit-learn>=1.3
-librosa>=0.10
-soundfile>=0.12
-scipy
+# Data preparation (download -> export). Python 3.10, repo .venv.
+# Training and generation use the separate stable-audio-tools venv (see README.md).
+soundscapy==0.7.8   # newer versions moved calculate_iso_coords / rename_paqs
 numpy
+scipy
 pandas
+soundfile
+pyloudnorm
+librosa>=0.10
 tqdm
-joblib
-matplotlib
-tabulate

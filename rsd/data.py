@@ -11,7 +11,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from soundscapy.surveys import calculate_iso_coords, rename_paqs
+from soundscapy.surveys.processing import calculate_iso_coords
+from soundscapy.surveys.survey_utils import rename_paqs
 
 PAQ_LABELS = ["pleasant", "vibrant", "eventful", "chaotic", "annoying", "monotonous", "uneventful", "calm"]
 TARGETS = ["ISOPleasant", "ISOEventful"]
