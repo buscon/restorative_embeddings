@@ -176,14 +176,22 @@ bash ~/Documents/restorative_embeddings/isd/04_train.sh
   people. The ISOPleasant of a recording is the mean over its raters.
 - **Audio:** the same conditioning as the ARAUS export (`rsd/conditioning.py`): stereo,
   44.1 kHz, 30 Hz high-pass, -23 LUFS.
-- **Captions:** `soundscape at <Place Name> in <City> [ISOPleasant: x.xx]`. ISD has no masker
-  label, so the text names the place and city, not the sound sources. Prompts for generation
-  from this model should use the same form and real place names from the selection.
+- **Captions:** built from what the raters reported hearing. ISD asks how much of four sound
+  types people heard (items `ssi01` to `ssi04`: traffic, other noise, human sounds, natural
+  sounds; 1 = not at all, 5 = dominates completely). The caption names the sources whose mean
+  rating is at least 3.5 (at most two), plus the city, for example
+  `soundscape with traffic noise and human sounds in London [ISOPleasant: -0.21]`, or
+  `soundscape with no dominant sound source in ...` when none reaches 3.5. `--caption
+  content_place` adds the place name, `--caption place` gives place and city only. The
+  mapping of the four items was inferred from the data (for example traffic is highest at
+  Camden Town and Euston Tap, natural sounds at Regent's Park Japan) and not from the ISD
+  metadata workbook, so confirm it there if you rely on it. Prompts for generation must use the
+  same form. With `--caption content` the place is not in the caption, so the model cannot
+  take the pleasantness from the place name.
 - **Grid generation and evaluation** work as before. For an ISD model give the places and a
   template, for example
-  `python generation/generate_grid.py --ckpt X.ckpt --config configs/model_config.json --out out_grid_isd --maskers "Camden Town" "San Marco" --prompt-template "soundscape at {item} in London [ISOPleasant: {p}]"`
-  (use the city that belongs to each place, one run per city). Use place names that appear in
-  `isd/selected_isd.csv`.
+  `python generation/generate_grid.py --ckpt X.ckpt --config configs/model_config.json --out out_grid_isd --maskers "traffic noise and human sounds" "natural sounds" "other noise" --prompt-template "soundscape with {item} in London [ISOPleasant: {p}]"`
+  (one run per city, using source phrases that occur in the training captions).
 
 ## Layout
 
