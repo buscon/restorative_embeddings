@@ -193,18 +193,22 @@ bash ~/Documents/restorative_embeddings/isd/04_train.sh
   `python generation/generate_grid.py --ckpt X.ckpt --config configs/model_config.json --out out_grid_isd --maskers "traffic noise and human sounds" "natural sounds" "other noise" --prompt-template "soundscape with {item} in London [ISOPleasant: {p}]"`
   (one run per city, using source phrases that occur in the training captions).
 
-## Variant: fine-tune on Clotho (planned, selection only)
+## Variant: fine-tune on Clotho (planned, selection and caption check only)
 
 Idea: a proof of concept with human-written captions instead of the templated ones. Take
 Clotho (Freesound clips of 15 to 30 s, five crowd-written captions each), rate the clips with
 SoundAQnet, and add the predicted ISOPleasant to the caption. See `clotho/README.md` for the
-numbers and caveats. Only the clip selection exists so far; the audio is not downloaded, and
-nothing has been rated or trained.
+numbers and caveats. So far there are the clip selection, audio extraction and a CLAP check
+of the captions against the audio; nothing has been rated or trained.
 
 ```bash
 cd ~/Documents/restorative_embeddings && source .venv/bin/activate
 bash clotho/01_download_metadata.sh                 # CSVs only, 3 MB, into data/raw/clotho
 python clotho/02_select_candidates.py --show 50     # counts, writes clotho/selected_clotho.csv
+bash clotho/03_download_audio.sh                    # about 7 GB, resumable
+pip install py7zr && python clotho/04_extract_selected_audio.py
+# stable-audio-tools venv (torch + transformers):
+python clotho/05_clap_caption_check.py              # best caption per clip -> clotho/checked/
 ```
 
 ## Layout
@@ -213,7 +217,7 @@ python clotho/02_select_candidates.py --show 50     # counts, writes clotho/sele
 - `generation/`: scene mapping, captions, export, generation, grid, evaluation
 - `generation/train/`: subset selection, chunking, training script, dataset config
 - `isd/`: the ISD variant (download, selection, chunking, training)
-- `clotho/`: the Clotho variant (metadata download, soundscape-like clip selection)
+- `clotho/`: the Clotho variant (metadata, clip selection, audio extraction, CLAP caption check)
 - `configs/`: put `model_config.json` here
 - `tests/smoke_generation.py`: synthetic test of captions and export
 - `archive/`: earlier experiments (CLAP embedding/regression milestone, LoRA and SA3

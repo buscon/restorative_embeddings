@@ -5,10 +5,13 @@ Clotho = Freesound clips of 15-30 s with five crowd-written captions each. The t
 has no public captions, so development + validation + evaluation are used (5929 clips).
 
 A clip is a candidate if
-  - at least MIN_CAPTIONS of its five captions contain a soundscape keyword, OR
+  - at least --min-captions of its five captions contain a soundscape keyword, OR
   - it has a soundscape-like Freesound tag AND at least one caption with a keyword.
-The keyword lists are a first pass, not tuned; read a sample of the selected clips
-(--show) before relying on the selection.
+With --require-tag the clip must have a soundscape-like Freesound tag AND at least
+--min-captions captions with a keyword (stricter; fewer clips, fewer single-event clips).
+The keyword lists are a first pass, not tuned; "station", "train" and "bus" were removed
+after a first sample showed single events (a train horn, a radio) getting through. Read a
+sample of the selected clips (--show) before relying on the selection.
 
 Durations come from start_end_samples in the metadata (44.1 kHz). That field is empty for
 about 30% of the clips; for those the mean of the known durations is used in the hour
@@ -18,11 +21,10 @@ Licence classes in Clotho: CC0, BY, BY-NC, Sampling+. The default keeps CC0 and 
 (--licences), so the BY-NC and Sampling+ clips are dropped from the output.
 
     python clotho/02_select_candidates.py --clotho data/raw/clotho \
-        --output-csv clotho/selected_clotho.csv [--licences CC0 BY] [--min-captions 2] [--show 50]
+        --output-csv clotho/selected_clotho.csv [--licences CC0 BY] [--min-captions 2] [--require-tag] [--show 50]
 """
 import argparse
 import ast
-import re
 import sys
 from pathlib import Path
 
@@ -34,7 +36,7 @@ CAPS = [f"caption_{i}" for i in range(1, 6)]
 KEYWORDS = {
     "water/weather": r"\brain|rainfall|thunder|storm|\bwind|stream|river|waterfall|\bwaves?\b|ocean|\bsea\b|shore|creek|drizzl",
     "animals": r"\bbirds?\b|chirp|tweet|song ?bird|crickets?|frogs?|insects?|cicada|\bowl|rooster",
-    "people/urban": r"crowd|people (?:are )?(?:talk|chat|walk)|chatter|street|traffic|\bcars?\b|road|\bcity|market|restaurant|station|playground|children|construction|train|bus\b|crosswalk|sidewalk",
+    "people/urban": r"crowd|people (?:are )?(?:talk|chat|walk)|chatter|street|traffic|\bcars?\b|road|\bcity|market|restaurant|playground|children|construction|crosswalk|sidewalk",
     "places": r"forest|\bpark\b|beach|jungle|\bfield\b|village|outdoors?|farm|\blake\b|\bpond\b|\bwoods?\b",
 }
 SCAPE_TAGS = r"field-recording|field recording|ambience|ambient|ambiance|soundscape|atmosphere|atmos\b|nature|city|urban|environment"
@@ -92,6 +94,9 @@ def main() -> None:
     ap.add_argument("--output-csv", default="clotho/selected_clotho.csv")
     ap.add_argument("--min-captions", type=int, default=2,
                     help="captions (of 5) that must contain a keyword (default 2)")
+    ap.add_argument("--require-tag", action="store_true",
+                    help="require a soundscape-like Freesound tag AND >= --min-captions "
+                         "captions with a keyword (stricter selection)")
     ap.add_argument("--licences", nargs="+", default=["CC0", "BY"],
                     help="licence classes kept in the 'kept licences' counts and the output "
                          "(CC0 BY BY-NC Sampling+; default CC0 BY)")
@@ -117,9 +122,14 @@ def main() -> None:
     report("tag AND >=1 caption keyword", df, df.scape_tag & (df.n_any >= 1), lic_ok)
     report("tag AND >=2 caption keywords", df, df.scape_tag & (df.n_any >= 2), lic_ok)
 
-    sel = (df.n_any >= args.min_captions) | (df.scape_tag & (df.n_any >= 1))
+    if args.require_tag:
+        sel = df.scape_tag & (df.n_any >= args.min_captions)
+        label = f"SELECTED: tag AND >={args.min_captions} captions"
+    else:
+        sel = (df.n_any >= args.min_captions) | (df.scape_tag & (df.n_any >= 1))
+        label = f"SELECTED: >={args.min_captions} captions OR (tag AND >=1)"
     print()
-    report(f"SELECTED: >={args.min_captions} captions OR (tag AND >=1)", df, sel, lic_ok)
+    report(label, df, sel, lic_ok)
 
     out = df[sel & lic_ok]
     Path(args.output_csv).parent.mkdir(parents=True, exist_ok=True)

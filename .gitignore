@@ -11,3 +11,4 @@ __pycache__/
 generation/train/araus_for_sa3_360/
 generation/train/selected_*.csv
 clotho/selected_*.csv
+clotho/checked/
