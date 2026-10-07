@@ -30,7 +30,7 @@ fi
 python3 train.py \
   --dataset-config "$DATASET_CONFIG" \
   --model-config   "$REPO/configs/model_config.json" \
-  --name araus_sao_360 \
+  --name "${RUN_NAME:-araus_sao_360}" \
   --save-dir "${SAVE_DIR:-$HOME/stableaudio/runs}" \
   --batch-size "${BATCH_SIZE:-1}" \
   --accum-batches "${ACCUM_BATCHES:-8}" \

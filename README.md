@@ -143,11 +143,52 @@ takes `--seeds`, `--levels`, `--maskers`, `--position foreground|background`, an
 files that already exist. For the base-model baseline use the same grid command with
 `--ckpt model.safetensors`.
 
+
+## Variant: fine-tune on ISD instead of ARAUS
+
+ISD (in-situ recordings from London, Venice, Granada and Groningen, rated by the people
+who were there) is processed in its own folder, `isd/`. It does not need the ARAUS data, the
+steps 2 to 7 above, or `01_prepare.py`.
+
+| # | What | Script | Output |
+|---|------|--------|--------|
+| 1 | Download ISD (without the unrated lockdown archives) | `isd/01_download.sh` | `data/raw/isd/` |
+| 2 | Balanced selection | `isd/02_select_balanced.py` | `isd/selected_isd.csv` |
+| 3 | Condition + cut into 10 s chunks + captions | `isd/03_make_training_chunks.py` | `isd/train/isd_for_sao/` (wavs, `metadata.csv`, `dataset_config.json`) |
+| 4 | Fine-tune | `isd/04_train.sh` | checkpoints in `~/stableaudio/runs_isd` |
+
+```bash
+cd ~/Documents/restorative_embeddings && source .venv/bin/activate
+bash isd/01_download.sh
+python isd/02_select_balanced.py --isd data/raw/isd --output-csv isd/selected_isd.csv --num-samples 360
+python isd/03_make_training_chunks.py --selected isd/selected_isd.csv --out isd/train/isd_for_sao
+# then, in the stable-audio-tools venv, from the stable-audio-tools checkout:
+bash ~/Documents/restorative_embeddings/isd/04_train.sh
+```
+
+- **Selection:** equal numbers per city, and within a city as equal as possible over the five
+  ISOPleasant bins (very unpleasant to very pleasant). Inside each city and bin, recordings are
+  taken in turn from the different locations. When a city or bin has too few recordings, the
+  others make up the difference, and the script prints what was available and what was taken.
+  `--min-ratings 2` keeps only recordings rated by at least two people. The ISOPleasant of a
+  recording is the mean over its raters.
+- **Audio:** the same conditioning as the ARAUS export (`rsd/conditioning.py`): stereo,
+  44.1 kHz, 30 Hz high-pass, -23 LUFS.
+- **Captions:** `soundscape at <Place Name> in <City> [ISOPleasant: x.xx]`. ISD has no masker
+  label, so the text names the place and city, not the sound sources. Prompts for generation
+  from this model should use the same form and real place names from the selection.
+- **Grid generation and evaluation** work as before. For an ISD model give the places and a
+  template, for example
+  `python generation/generate_grid.py --ckpt X.ckpt --config configs/model_config.json --out out_grid_isd --maskers "Camden Town" "San Marco" --prompt-template "soundscape at {item} in London [ISOPleasant: {p}]"`
+  (use the city that belongs to each place, one run per city). Use place names that appear in
+  `isd/selected_isd.csv`.
+
 ## Layout
 
 - `rsd/`: audio mixing (`audio.py`), ARAUS/ISD loading (`data.py`), caption format (`captions.py`)
 - `generation/`: scene mapping, captions, export, generation, grid, evaluation
 - `generation/train/`: subset selection, chunking, training script, dataset config
+- `isd/`: the ISD variant (download, selection, chunking, training)
 - `configs/`: put `model_config.json` here
 - `tests/smoke_generation.py`: synthetic test of captions and export
 - `archive/`: earlier experiments (CLAP embedding/regression milestone, LoRA and SA3

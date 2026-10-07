@@ -3,7 +3,8 @@
 
 Per file: share of power below 20 Hz (sub20_pct), A-weighted power share above 1 kHz and
 4 kHz (A_gt1k, A_gt4k, %), stereo correlation, loudness variation (cv = std/mean of
-0.5 s RMS), overall RMS (dB). Written to <dir>/metrics.csv.
+0.5 s RMS), overall RMS (dB), flat_db and peak_db (tonality, 100 Hz - 8 kHz;
+more negative flat_db and higher peak_db mean more tonal, music-like content). Written to <dir>/metrics.csv.
 
 Then, per metric and masker: mean by pleasantness level, and for each (masker, seed) the
 Spearman rho between the pleasantness value and the metric, plus a sign count over all
@@ -21,8 +22,8 @@ import soundfile as sf
 from scipy.signal import welch
 from scipy.stats import spearmanr
 
-METRICS = ["sub20_pct", "A_gt1k", "A_gt4k", "stereo_corr", "cv", "rms_db"]
-TREND_METRICS = ["A_gt1k", "A_gt4k", "cv", "rms_db"]
+METRICS = ["sub20_pct", "A_gt1k", "A_gt4k", "stereo_corr", "cv", "rms_db", "flat_db", "peak_db"]
+TREND_METRICS = ["A_gt1k", "A_gt4k", "cv", "rms_db", "flat_db", "peak_db"]
 
 
 def a_weight_db(f):
@@ -46,6 +47,16 @@ def file_metrics(path):
         "A_gt4k": 100 * pa[f >= 4000].sum() / ta,
         "stereo_corr": float(np.corrcoef(y[:, 0], y[:, 1])[0, 1]) if y.shape[1] > 1 else 1.0,
     }
+    # tonality over 100 Hz - 8 kHz, frame by frame (2048 samples, hop 1024):
+    #   flat_db = mean spectral flatness in dB (0 = noise-like, more negative = more tonal)
+    #   peak_db = mean (strongest bin minus median bin) in dB (higher = clearer tonal peaks)
+    from scipy.signal import stft
+    ff, _, Z = stft(mono, fs=sr, nperseg=2048, noverlap=1024)
+    band = (ff >= 100) & (ff <= 8000)
+    P = np.abs(Z[band]) ** 2 + 1e-20
+    flat = np.exp(np.log(P).mean(axis=0)) / P.mean(axis=0)
+    out["flat_db"] = float(np.mean(10 * np.log10(flat)))
+    out["peak_db"] = float(np.mean(10 * np.log10(P.max(axis=0) / np.median(P, axis=0))))
     n = int(0.5 * sr)
     frames = mono[: len(mono) // n * n].reshape(-1, n)
     rms = np.sqrt((frames ** 2).mean(axis=1)) + 1e-12
@@ -55,7 +66,14 @@ def file_metrics(path):
 
 
 def compute(folder: Path) -> pd.DataFrame:
-    grid = pd.read_csv(folder / "grid.csv")
+    manifest = folder / "grid.csv"
+    if not manifest.exists():
+        sys.exit(f"{manifest} not found: evaluate_grid.py only reads folders written by generate_grid.py")
+    grid = pd.read_csv(manifest)
+    need = {"seed", "masker", "p", "file"}
+    if not need <= set(grid.columns):
+        sys.exit(f"{manifest} has columns {list(grid.columns)}, expected {sorted(need)}; "
+                 "this folder was not written by generate_grid.py. Re-generate it with that script.")
     rows = []
     for r in grid.itertuples():
         p = folder / r.file

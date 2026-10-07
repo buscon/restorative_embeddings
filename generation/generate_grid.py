@@ -24,7 +24,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent))
 from generate import load_weights  # noqa: E402
-from rsd.captions import MASKER_WORDS, make_caption  # noqa: E402
+from rsd.captions import MASKER_WORDS, format_pleasantness, make_caption  # noqa: E402
 
 
 def main() -> bool:
@@ -36,12 +36,17 @@ def main() -> bool:
     ap.add_argument("--levels", type=float, nargs="+", default=[-0.8, 0.0, 0.8])
     ap.add_argument("--maskers", nargs="+", default=list(MASKER_WORDS.values()),
                     help="masker phrases as used in training captions")
+    ap.add_argument("--prompt-template", default=None,
+                    help='custom prompt with {item} (each entry of --maskers) and {p}, e.g. '
+                         '"soundscape at {item} in London [ISOPleasant: {p}]" for an ISD model')
     ap.add_argument("--position", choices=["foreground", "background"], default="background")
     ap.add_argument("--seconds", type=float, default=10.0)
     ap.add_argument("--steps", type=int, default=100)
     ap.add_argument("--guidance", type=float, default=7.0)
     ap.add_argument("--sampler", default="dpmpp-3m-sde")
     ap.add_argument("--use-ema", action="store_true")
+    ap.add_argument("--negative-prompt", default=None,
+                    help='text the sampler is pushed away from, e.g. "music, melody, singing, instruments"')
     args = ap.parse_args()
 
     with open(args.config) as f:
@@ -63,17 +68,24 @@ def main() -> bool:
     manifest = []
     for k, (seed, masker, p) in enumerate(jobs, 1):
         name = f"s{seed}_{masker.replace(' ', '_')}_p{p:.2f}.wav"
-        prompt = make_caption(masker, args.position == "foreground", p)
+        if args.prompt_template:
+            prompt = args.prompt_template.format(item=masker, p=format_pleasantness(p))
+        else:
+            prompt = make_caption(masker, args.position == "foreground", p)
         manifest.append({"seed": seed, "masker": masker, "p": p, "file": name, "prompt": prompt})
         path = out / name
         if path.exists():
             print(f"[{k}/{len(jobs)}] exists: {name}", flush=True)
             continue
         print(f"[{k}/{len(jobs)}] {name}  |  {prompt}", flush=True)
+        neg = None
+        if args.negative_prompt:
+            neg = [{"prompt": args.negative_prompt, "seconds_start": 0.0, "seconds_total": args.seconds}]
         with torch.no_grad():
             audio = generate_diffusion_cond(
                 model, steps=args.steps, cfg_scale=args.guidance,
                 conditioning=[{"prompt": prompt, "seconds_start": 0.0, "seconds_total": args.seconds}],
+                negative_conditioning=neg,
                 sample_size=size, sampler_type=args.sampler, device=device, seed=seed)
         audio = rearrange(audio, "b d n -> d (b n)")[:, : int(args.seconds * sr)]
         audio = (audio / audio.abs().max().clamp(min=1e-8)).clamp(-1, 1).mul(32767).to(torch.int16).cpu()
