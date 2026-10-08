@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Systematic generation: every (seed x masker x pleasantness level) with one loaded model.
 
-Writes <out>/s<seed>_<masker>_p<level>.wav and <out>/grid.csv (seed,masker,p,file,prompt),
+Writes <out>/s<seed>_<masker>_p<level>.wav <out>/grid.csv (seed,masker,p,file,prompt) and <out>/prompts.csv (file,prompt),
 which evaluate_grid.py reads. The model is loaded once; existing files are skipped, so an
 interrupted run can be restarted.
 
@@ -66,6 +66,18 @@ def main() -> bool:
     out.mkdir(parents=True, exist_ok=True)
     jobs = [(s, m, p) for s in args.seeds for m in args.maskers for p in args.levels]
     manifest = []
+    prompts_path = out / "prompts.csv"   # file,prompt  (accumulates over runs)
+    prompts = {}
+    if prompts_path.exists():
+        with open(prompts_path, newline="", encoding="utf-8") as f:
+            prompts = {r["file"]: r["prompt"] for r in csv.DictReader(f)}
+
+    def save_prompts():
+        with open(prompts_path, "w", newline="", encoding="utf-8") as f:
+            w = csv.writer(f)
+            w.writerow(["file", "prompt"])
+            w.writerows(sorted(prompts.items()))
+
     for k, (seed, masker, p) in enumerate(jobs, 1):
         name = f"s{seed}_{masker.replace(' ', '_')}_p{p:.2f}.wav"
         if args.prompt_template:
@@ -74,6 +86,7 @@ def main() -> bool:
             prompt = make_caption(masker, args.position == "foreground", p)
         manifest.append({"seed": seed, "masker": masker, "p": p, "file": name, "prompt": prompt})
         path = out / name
+        prompts[name] = prompt
         if path.exists():
             print(f"[{k}/{len(jobs)}] exists: {name}", flush=True)
             continue
@@ -90,12 +103,14 @@ def main() -> bool:
         audio = rearrange(audio, "b d n -> d (b n)")[:, : int(args.seconds * sr)]
         audio = (audio / audio.abs().max().clamp(min=1e-8)).clamp(-1, 1).mul(32767).to(torch.int16).cpu()
         torchaudio.save(str(path), audio, sr)
+        save_prompts()   # written after every file, so an interrupted run keeps its list
 
     with open(out / "grid.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["seed", "masker", "p", "file", "prompt"])
         w.writeheader()
         w.writerows(manifest)
-    print(f"done: {len(jobs)} files in {out}")
+    save_prompts()
+    print(f"done: {len(jobs)} files in {out}  (prompts: {prompts_path})")
     return True
 
 
