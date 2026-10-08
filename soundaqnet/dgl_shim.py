@@ -46,7 +46,7 @@ class Graph:
     def number_of_edges(self):
         return len(self.src)
 
-    def to(self, device):  # DGL returns a copy; the device is taken from the tensors
+    def to(self, device):  # the SoundSCaper code calls .to('cuda:0'); ignore it, the tensors are already on the model's device
         g = Graph(self.src, self.dst, self.n_nodes)
         g.ndata, g.edata = dict(self.ndata), dict(self.edata)
         return g
@@ -70,12 +70,12 @@ class Graph:
         self.ndata[red.names[1]] = out
 
 
-def complete_graph(n_nodes=8, edge_dim=64):
+def complete_graph(n_nodes=8, edge_dim=64, device="cpu"):
     """The graph SoundAQnet uses: every ordered pair (i, j) is an edge, edge features are ones."""
     src = torch.arange(n_nodes).repeat_interleave(n_nodes)
     dst = torch.arange(n_nodes).repeat(n_nodes)
-    g = Graph(src, dst, n_nodes)
-    g.edata["feat"] = torch.ones(n_nodes * n_nodes, edge_dim)
+    g = Graph(src.to(device), dst.to(device), n_nodes)
+    g.edata["feat"] = torch.ones(n_nodes * n_nodes, edge_dim, device=device)
     return g
 
 

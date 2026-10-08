@@ -60,7 +60,7 @@ class SoundAQnetRunner:
         norm = root / "application" / "Dataset" / "0_normalization_files"
         self.mel_mean, self.mel_std = _load_norm(norm / "norm_log_mel.pickle")
         self.loud_mean, self.loud_std = _load_norm(norm / "norm_loudness.pickle")
-        self.graph = dgl_shim.complete_graph(8, 64)
+        self.graph = dgl_shim.complete_graph(8, 64, device=self.device)
 
     @torch.no_grad()
     def predict(self, mel, loud, batch_size=32):
