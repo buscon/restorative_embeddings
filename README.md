@@ -211,6 +211,22 @@ pip install py7zr && python clotho/04_extract_selected_audio.py
 python clotho/05_clap_caption_check.py              # best caption per clip -> clotho/checked/
 ```
 
+## Plan B, step 0: SoundAQnet as a rater (validation on ISD)
+
+Before SoundAQnet (inside SoundSCaper) labels Clotho clips with ISOPleasant, `soundaqnet/` checks it
+against the human ratings of the ISD recordings and tests how it reacts to level and clip length.
+It runs SoundAQnet without DGL (RTX 50 series) and without the authors' Windows loudness tool.
+Verified on the shipped demo only; not yet run on ISD. See `soundaqnet/README.md`.
+
+```bash
+mkdir -p third_party && git clone https://github.com/Yuanbo2020/SoundSCaper third_party/SoundSCaper
+git -C third_party/SoundSCaper checkout 84e7ef0
+pip install mosqito torchlibrosa librosa soundfile scipy pandas tqdm      # stable-audio-tools venv
+python soundaqnet/00_demo_check.py
+python soundaqnet/01_rate_isd.py --workers 8 --device cuda
+python soundaqnet/02_evaluate_isd.py
+```
+
 ## Layout
 
 - `rsd/`: audio mixing (`audio.py`), ARAUS/ISD loading (`data.py`), caption format (`captions.py`)
@@ -218,6 +234,7 @@ python clotho/05_clap_caption_check.py              # best caption per clip -> c
 - `generation/train/`: subset selection, chunking, training script, dataset config
 - `isd/`: the ISD variant (download, selection, chunking, training)
 - `clotho/`: the Clotho variant (metadata, clip selection, audio extraction, CLAP caption check)
+- `soundaqnet/`: SoundAQnet without DGL, ISO 532-1 loudness in Python, validation on ISD
 - `configs/`: put `model_config.json` here
 - `tests/smoke_generation.py`: synthetic test of captions and export
 - `archive/`: earlier experiments (CLAP embedding/regression milestone, LoRA and SA3
