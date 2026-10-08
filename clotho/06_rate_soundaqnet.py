@@ -18,14 +18,19 @@ script only measures whether the model gives the same answer under harmless chan
 threshold is applied in 07_build_training_set.py.
 
 Features (log-mel, ISO 532-1 loudness) are cached per clip and level, so the script can be stopped
-and rerun. Loudness is the slow part (20 to 60 s per 30 s clip and level): use many --workers.
+and rerun. Per clip and level this takes about 7 s on one core (4 s loudness, 3 s log-mel, using the numba
+loudness in soundaqnet/fast_loudness.py); use many --workers.
 
     python clotho/06_rate_soundaqnet.py --soundscaper third_party/SoundSCaper \
         --checked clotho/checked/selected_checked.csv --audio-dir data/raw/clotho/audio_selected \
         --out clotho/rated.csv --workers 12 --device cuda [--limit 20]
 """
 import argparse
+import os
 import sys
+
+for _v in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS"):
+    os.environ.setdefault(_v, "1")  # one thread per worker process; the parallelism is across clips
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
@@ -39,6 +44,8 @@ from soundaqnet import features as F  # noqa: E402
 
 
 def job(args):
+    import torch
+    torch.set_num_threads(1)
     name, wav, level, cache = args
     path = Path(cache) / f"{Path(name).stem}__{level:g}.npz"
     if path.exists():

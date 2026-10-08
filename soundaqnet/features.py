@@ -68,6 +68,8 @@ def log_mel(y_digital_44k):
 def iso_loudness(y_pa_44k):
     """Mono 44.1 kHz signal in pascal -> (frames, 1) time-varying loudness in sone, 2 ms steps."""
     from mosqito.sq_metrics import loudness_zwtv
+    from . import fast_loudness
+    fast_loudness.install()  # numba version of the slow decay step, same result (fast_loudness.check())
 
     n, _, _, _ = loudness_zwtv(np.asarray(y_pa_44k, np.float64), SR_WAV, field_type="free")
     return np.asarray(n, np.float32)[:, None]
