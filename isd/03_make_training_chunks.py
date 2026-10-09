@@ -39,7 +39,16 @@ def main():
     ap.add_argument("--chunk-seconds", type=float, default=10.0)
     ap.add_argument("--caption", choices=["content", "content_place", "place"], default="content")
     ap.add_argument("--tolerance", type=float, default=0.25)
+    ap.add_argument("--no-city", action="store_true",
+                    help="leave the city out of the caption (so the city cannot predict the number)")
+    ap.add_argument("--bin-repeat", default="",
+                    help="extra weight per pleasantness bin as bin=N,..., N = how many times each chunk is "
+                         "seen per epoch (default 1), e.g. very_unpleasant=4,unpleasant=2")
+    ap.add_argument("--natural-extra", type=int, default=0,
+                    help="add this many repeats for recordings whose natural-sounds rating is >= --natural-thr")
+    ap.add_argument("--natural-thr", type=float, default=3.5)
     a = ap.parse_args()
+    bin_repeat = {k.strip(): int(v) for k, v in (kv.split("=") for kv in a.bin_repeat.split(",") if kv.strip())}
 
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -47,6 +56,7 @@ def main():
     step = int(round(a.chunk_seconds * SR))
     tol = int(round(a.tolerance * SR))
     rows_out, n_ok, n_fail = [], 0, 0
+    eff = {}   # bin -> [recordings, unique chunks, chunks incl. repeats]
 
     with open(a.selected, encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
@@ -59,14 +69,18 @@ def main():
             print(f"skipped {r['GroupID']}: {e}")
             continue
         p = float(r["ISOPleasant"])
+        city = "" if a.no_city else r["city"]
+        reps = bin_repeat.get(r.get("bin", ""), 1)
+        if a.natural_extra and r.get("natural", "") != "" and float(r["natural"]) >= a.natural_thr:
+            reps += a.natural_extra
         if a.caption == "place":
-            caption = make_isd_caption(r["LocationID"], r["city"], p)
+            caption = make_isd_caption(r["LocationID"], city or r["city"], p)
         else:
             if "traffic" not in r:
                 sys.exit("selected CSV has no source ratings; rerun isd/02_select_balanced.py")
             scores = {k: float(r[k]) if r[k] != "" else float("nan")
                       for k in ("traffic", "other_noise", "human", "natural")}
-            caption = make_isd_content_caption(scores, r["city"], p,
+            caption = make_isd_content_caption(scores, city, p,
                                                r["LocationID"] if a.caption == "content_place" else "")
         for i in range((len(y) + tol) // step):
             chunk = y[i * step:(i + 1) * step]
@@ -75,6 +89,16 @@ def main():
             name = f"isd_{r['GroupID']}_c{i}.wav"
             sf.write(out / name, chunk, SR, subtype="PCM_16")
             rows_out.append({"file": name, "caption": caption})
+            for k in range(1, reps):   # repeats are symlinks to the same audio, listed as extra files
+                link = out / f"isd_{r['GroupID']}_c{i}_r{k}.wav"
+                if link.is_symlink() or link.exists():
+                    link.unlink()
+                link.symlink_to(name)
+                rows_out.append({"file": link.name, "caption": caption})
+            e = eff.setdefault(r.get("bin", "all"), [0, 0, 0])
+            e[1] += 1
+            e[2] += reps
+        eff.setdefault(r.get("bin", "all"), [0, 0, 0])[0] += 1
         n_ok += 1
 
     with open(out / "metadata.csv", "w", newline="", encoding="utf-8") as f:
@@ -88,7 +112,11 @@ def main():
               "datasets": [{"id": "isd_soundscapes", "path": str(out.resolve()), "recursive": False,
                             "extensions": [".wav"], "custom_metadata_module": str(adapter)}]}
     (out / "dataset_config.json").write_text(json.dumps(config, indent=2))
-    print(f"{n_ok} recordings -> {len(rows_out)} chunks in {out} ({n_fail} failed)")
+    print(f"{n_ok} recordings -> {len(rows_out)} chunk files in {out} ({n_fail} failed)")
+    print(f"{'bin':16s}{'recordings':>11s}{'chunks':>8s}{'incl. repeats':>14s}{'hours seen':>11s}")
+    for k, (nr, nc, nt) in eff.items():
+        print(f"{k:16s}{nr:11d}{nc:8d}{nt:14d}{nt * a.chunk_seconds / 3600:11.2f}")
+    print(f"unique audio: {sum(v[1] for v in eff.values()) * a.chunk_seconds / 3600:.2f} h")
 
 
 if __name__ == "__main__":

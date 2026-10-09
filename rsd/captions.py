@@ -62,4 +62,5 @@ def make_isd_content_caption(scores: dict, city: str, pleasantness: float, locat
     srcs = isd_sources(scores)
     what = " and ".join(srcs) if srcs else "no dominant sound source"
     where = f" at {place_name(location_id)}" if location_id else ""
-    return f"soundscape with {what}{where} in {city} [ISOPleasant: {format_pleasantness(pleasantness)}]"
+    in_city = f" in {city}" if city else ""   # city="" leaves the place out of the caption
+    return f"soundscape with {what}{where}{in_city} [ISOPleasant: {format_pleasantness(pleasantness)}]"

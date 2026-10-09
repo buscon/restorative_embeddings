@@ -136,6 +136,9 @@ def main():
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--primary", choices=["bin", "city"], default="bin",
                     help="what to balance first (default: pleasantness bins, then cities within each bin)")
+    ap.add_argument("--all", action="store_true",
+                    help="take every rated recording (ignores --num-samples and --primary); "
+                         "weight the bins in 03_make_training_chunks.py with --bin-repeat")
     a = ap.parse_args()
 
     if a.recordings_csv:
@@ -157,7 +160,7 @@ def main():
         unk = recs[recs.city == "unknown"]
         print(f"\nWARNING: {len(unk)} recordings have no known city; locations: {sorted(unk.LocationID.unique())}")
 
-    sel = select(recs, a.num_samples, a.seed, a.primary)
+    sel = recs.copy() if a.all else select(recs, a.num_samples, a.seed, a.primary)
     cols = ["GroupID", "wav", "city", "LocationID", "ISOPleasant", "ISOEventful", "n_ratings", "bin",
             "traffic", "other_noise", "human", "natural"]
     sel = sel[[c for c in cols if c in sel.columns]].sort_values(["city", "bin", "GroupID"])
@@ -172,7 +175,7 @@ def main():
               "| none:", int((srcs.max(axis=1) < 3.5).sum()))
     print("\nrecordings per location:")
     print(sel.groupby(["city", "LocationID"]).size().to_string())
-    short = [b for b in BINS if (sel.bin == b).sum() < a.num_samples / len(BINS) * 0.8]
+    short = [] if a.all else [b for b in BINS if (sel.bin == b).sum() < a.num_samples / len(BINS) * 0.8]
     if short:
         print(f"\nNote: bins below 80% of an even share (availability limit): {', '.join(short)}")
 
