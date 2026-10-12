@@ -101,9 +101,11 @@ def main():
                 continue
             if masker not in MASKER_WORDS or p != p:
                 continue
-            cands.append({"id": r.get("export_id") or r.get("id"), "p": p, "bin": pleasantness_bin(p),
-                          "masker": masker, "fg": smr < 0})
+            cands.append({"id": r.get("export_id") or r.get("id"), "wav_path": r.get("wav_path") or "",
+                          "p": p, "bin": pleasantness_bin(p), "masker": masker, "fg": smr < 0})
     print(f"ARAUS candidates: {len(cands)}")
+    if cands:
+        print("example row:", {k: cands[0][k] for k in ("id", "wav_path")})
 
     by_bin = defaultdict(lambda: defaultdict(list))   # bin -> (masker, fg) -> rows
     for c in cands:
@@ -138,9 +140,16 @@ def main():
 
     n_chunks, n_missing = 0, 0
     for c in chosen:
-        src = Path(a.audio_dir) / f"{c['id']}.wav"
-        if not src.exists():
+        tried = [Path(c["wav_path"])] if c["wav_path"] else []
+        tried.append(Path(a.audio_dir) / f"{c['id']}.wav")
+        digits = "".join(ch for ch in str(c["id"]) if ch.isdigit())
+        if digits:   # exported files are named araus_<7 digits>.wav
+            tried.append(Path(a.audio_dir) / f"araus_{int(digits):07d}.wav")
+        src = next((t for t in tried if t.exists()), None)
+        if src is None:
             n_missing += 1
+            if n_missing <= 3:
+                print("missing, tried:", [str(t) for t in tried])
             continue
         if a.araus_caption == "native":
             caption = make_caption(MASKER_WORDS[c["masker"]], c["fg"], c["p"])
@@ -157,6 +166,8 @@ def main():
             src_rows.append({"file": name, "source": "araus", "bin": c["bin"], "masker": c["masker"],
                              "foreground": int(c["fg"])})
             n_chunks += 1
+    if chosen and n_missing == len(chosen):
+        sys.exit("no ARAUS audio found: check --audio-dir and the file naming (see 'missing, tried' above)")
     print(f"ARAUS: {len(chosen) - n_missing} files -> {n_chunks} chunks ({n_missing} missing audio)")
 
     with open(out / "metadata.csv", "w", newline="", encoding="utf-8") as f:
