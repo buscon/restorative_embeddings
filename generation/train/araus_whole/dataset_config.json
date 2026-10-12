@@ -1,0 +1,15 @@
+{
+  "dataset_type": "audio_dir",
+  "random_crop": false,
+  "datasets": [
+    {
+      "id": "restorative_soundscapes",
+      "path": "/home/marcello/Documents/restorative_embeddings/generation/train/araus_whole",
+      "recursive": false,
+      "extensions": [
+        ".wav"
+      ],
+      "custom_metadata_module": "/home/marcello/Documents/restorative_embeddings/generation/train/sa3_finetuning_data/metadata_adapter.py"
+    }
+  ]
+}

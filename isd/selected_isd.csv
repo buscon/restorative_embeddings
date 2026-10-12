@@ -1,0 +1,361 @@
+GroupID,wav,city,LocationID,ISOPleasant,ISOEventful,n_ratings,bin,traffic,other_noise,human,natural
+2CV12,data/raw/isd/audio/Grenada WAV Files/CarloV/2CV12.wav,Granada,CarloV,-0.10355339059327388,0.19822330470336313,2,neutral,1.0,1.0,4.0,3.0
+2CV25,data/raw/isd/audio/Grenada WAV Files/CarloV/2CV25.wav,Granada,CarloV,-0.07322330470336312,0.3838834764831844,1,neutral,2.0,1.0,5.0,4.0
+BIB10,data/raw/isd/audio/Grenada WAV Files/PlazaBibRambla/BIB10.wav,Granada,PlazaBibRambla,0.12499999999999992,-0.17677669529663687,2,neutral,1.0,1.0,3.5,3.0
+BIB6,data/raw/isd/audio/Grenada WAV Files/PlazaBibRambla/BIB6.wav,Granada,PlazaBibRambla,0.03661165235168144,0.036611652351681484,2,neutral,1.0,1.0,5.0,4.0
+CP19,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP19.wav,Granada,CampoPrincipe,0.10355339059327377,0.7071067811865476,1,neutral,1.0,1.0,4.0,5.0
+CP6,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP6.wav,Granada,CampoPrincipe,-0.14016504294495546,-0.22227182413150287,2,neutral,1.0,2.0,3.5,4.5
+M12,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M12.wav,Granada,MiradorSanNicolas,-0.01256313292354195,0.2196699141100893,1,neutral,5.0,4.0,4.0,3.0
+M16,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M16.wav,Granada,MiradorSanNicolas,0.07322330470336302,0.030330085889910697,1,neutral,2.0,1.0,4.0,1.5
+M21,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M21.wav,Granada,MiradorSanNicolas,-0.10355339059327387,0.5000000000000001,2,neutral,2.5,1.5,4.5,1.0
+2CV14,data/raw/isd/audio/Grenada WAV Files/CarloV/2CV14.wav,Granada,CarloV,0.28033008588991054,0.6767766952966369,1,pleasant,1.0,1.0,5.0,3.0
+2CV31,data/raw/isd/audio/Grenada WAV Files/CarloV/2CV31.wav,Granada,CarloV,0.19822330470336297,0.1035533905932737,2,pleasant,1.0,1.0,3.5,3.0
+2CV32,data/raw/isd/audio/Grenada WAV Files/CarloV/2CV32.wav,Granada,CarloV,0.16317279836452944,0.014644660940672665,5,pleasant,3.2857142857142856,3.142857142857143,3.7142857142857144,4.142857142857143
+2CV34,data/raw/isd/audio/Grenada WAV Files/CarloV/2CV34.wav,Granada,CarloV,0.3717514421272201,0.08033008588991059,5,pleasant,1.0,1.4,4.2,4.0
+BIB11,data/raw/isd/audio/Grenada WAV Files/PlazaBibRambla/BIB11.wav,Granada,PlazaBibRambla,0.2071067811865474,9.197388681172371e-17,1,pleasant,3.0,1.0,2.0,3.0
+BIB12,data/raw/isd/audio/Grenada WAV Files/PlazaBibRambla/BIB12.wav,Granada,PlazaBibRambla,0.2071067811865474,-0.2928932188134525,1,pleasant,1.5,1.5,3.0,1.0
+BIB4,data/raw/isd/audio/Grenada WAV Files/PlazaBibRambla/BIB4.wav,Granada,PlazaBibRambla,0.45082521472477644,-0.45450487116513405,2,pleasant,1.0,1.0,2.3333333333333335,3.0
+CP13,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP13.wav,Granada,CampoPrincipe,0.39774756441743286,-0.154029130879204,4,pleasant,1.0,1.5,3.25,4.0
+CP16,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP16.wav,Granada,CampoPrincipe,0.44952425971406984,0.21024756441743297,4,pleasant,1.0,1.0,3.5,3.5
+CP21,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP21.wav,Granada,CampoPrincipe,0.493718433538229,0.2651650429449552,2,pleasant,1.0,1.5,3.5,4.0
+CP3,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP3.wav,Granada,CampoPrincipe,0.245812289025486,-0.0673009870479068,3,pleasant,1.75,2.5,2.5,3.75
+CP7,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP7.wav,Granada,CampoPrincipe,0.48743686707645806,-0.6161165235168158,1,pleasant,1.0,1.0,3.0,5.0
+CP9,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP9.wav,Granada,CampoPrincipe,0.30892556509887886,0.14818121608766857,3,pleasant,2.3333333333333335,2.0,3.3333333333333335,3.3333333333333335
+CV14,data/raw/isd/audio/Grenada WAV Files/CarloV/CV14.wav,Granada,CarloV,0.3434433619633035,0.2744077682344544,3,pleasant,1.3333333333333333,1.0,3.6666666666666665,3.0
+CV16,data/raw/isd/audio/Grenada WAV Files/CarloV/CV16.wav,Granada,CarloV,0.33524756441743286,-0.17547574028593022,4,pleasant,1.0,1.0,3.0,2.5
+CV210,data/raw/isd/audio/Grenada WAV Files/CarloV/CV210.wav,Granada,CarloV,0.4937184335382291,-0.18305826175840784,2,pleasant,1.0,1.0,2.5,3.0
+M110,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M110.wav,Granada,MiradorSanNicolas,0.3535533905932737,0.19822330470336308,2,pleasant,1.0,1.0,4.0,3.5
+M113,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M113.wav,Granada,MiradorSanNicolas,0.323223304703363,0.32914562235881945,3,pleasant,3.75,2.5,4.0,2.75
+M22,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M22.wav,Granada,MiradorSanNicolas,0.4785533905932738,0.5606601717798213,2,pleasant,1.0,1.0,5.0,2.5
+M23,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M23.wav,Granada,MiradorSanNicolas,0.26516504294495524,0.23483495705504465,2,pleasant,2.0,1.5,4.5,3.5
+M24,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M24.wav,Granada,MiradorSanNicolas,0.31066017177982125,0.10355339059327386,1,pleasant,3.0,3.0,3.0,3.0
+M29,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M29.wav,Granada,MiradorSanNicolas,0.45710678118654746,0.21302909884200383,3,pleasant,1.75,1.0,3.0,2.75
+2CV23,data/raw/isd/audio/Grenada WAV Files/CarloV/2CV23.wav,Granada,CarloV,-0.1893398282201787,0.5000000000000001,1,unpleasant,1.0,1.0,4.0,5.0
+CP8,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP8.wav,Granada,CampoPrincipe,-0.2071067811865477,0.2928932188134525,1,unpleasant,4.0,4.0,3.0,2.0
+2CV13,data/raw/isd/audio/Grenada WAV Files/CarloV/2CV13.wav,Granada,CarloV,0.5791456223588193,-0.12203884117227191,3,very_pleasant,1.0,1.0,3.6666666666666665,3.6666666666666665
+2CV62,data/raw/isd/audio/Grenada WAV Files/CarloV/2CV62.wav,Granada,CarloV,0.503982425942334,0.17846878605533864,21,very_pleasant,1.3043478260869565,1.4583333333333333,3.375,3.375
+BIB1,data/raw/isd/audio/Grenada WAV Files/PlazaBibRambla/BIB1.wav,Granada,PlazaBibRambla,0.7071067811865475,0.10355339059327368,1,very_pleasant,1.0,1.0,2.5,4.0
+BIB13,data/raw/isd/audio/Grenada WAV Files/PlazaBibRambla/BIB13.wav,Granada,PlazaBibRambla,0.545495128834866,-0.32950487116513405,2,very_pleasant,1.0,2.0,3.0,3.0
+BIB14,data/raw/isd/audio/Grenada WAV Files/PlazaBibRambla/BIB14.wav,Granada,PlazaBibRambla,0.7803300858899107,0.6338834764831844,1,very_pleasant,1.0,2.0,4.0,3.0
+BIB16,data/raw/isd/audio/Grenada WAV Files/PlazaBibRambla/BIB16.wav,Granada,PlazaBibRambla,0.9267766952966369,0.13388347648318438,1,very_pleasant,1.0,1.0,5.0,5.0
+BIB3,data/raw/isd/audio/Grenada WAV Files/PlazaBibRambla/BIB3.wav,Granada,PlazaBibRambla,0.6767766952966368,0.030330085889910607,1,very_pleasant,1.0,1.0,4.0,2.6666666666666665
+BIB5,data/raw/isd/audio/Grenada WAV Files/PlazaBibRambla/BIB5.wav,Granada,PlazaBibRambla,0.5606601717798212,0.2928932188134525,1,very_pleasant,2.0,1.0,3.5,2.5
+BIB9,data/raw/isd/audio/Grenada WAV Files/PlazaBibRambla/BIB9.wav,Granada,PlazaBibRambla,0.6035533905932736,0.45710678118654746,1,very_pleasant,1.0,1.0,4.0,3.0
+CP0,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP0.wav,Granada,CampoPrincipe,0.5049012284045155,-0.07477670855340939,29,very_pleasant,1.096774193548387,1.2903225806451613,3.3870967741935485,3.5483870967741935
+CP00,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP00.wav,Granada,CampoPrincipe,0.5804916036441502,-0.033479274214064,22,very_pleasant,1.0,1.08,3.4,3.72
+CP1,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP1.wav,Granada,CampoPrincipe,0.6216795923659572,-0.3425760586228324,6,very_pleasant,1.0,1.0,3.1666666666666665,5.0
+CP11,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP11.wav,Granada,CampoPrincipe,0.5517766952966369,0.21599025766973196,2,very_pleasant,1.0,1.5,3.5,4.5
+CP12,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP12.wav,Granada,CampoPrincipe,0.6035533905932737,-0.5,1,very_pleasant,1.0,2.0,2.0,3.0
+CP17,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP17.wav,Granada,CampoPrincipe,0.6446067811865475,0.22227182413150276,4,very_pleasant,1.0,1.0,3.0,3.5
+CP4,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP4.wav,Granada,CampoPrincipe,0.6481812160876684,-0.2744077682344544,3,very_pleasant,1.3333333333333333,2.0,3.3333333333333335,5.0
+CP5,data/raw/isd/audio/Grenada WAV Files/CampoPrincipe/CP5.wav,Granada,CampoPrincipe,0.5303300858899105,-0.3964466094067263,2,very_pleasant,1.5,1.5,2.5,4.0
+CV212,data/raw/isd/audio/Grenada WAV Files/CarloV/CV212.wav,Granada,CarloV,0.9267766952966369,-0.07322330470336315,2,very_pleasant,1.0,1.0,2.0,2.5
+CV27,data/raw/isd/audio/Grenada WAV Files/CarloV/CV27.wav,Granada,CarloV,0.5303300858899106,-0.2714466094067262,2,very_pleasant,1.0,1.0,3.5,3.5
+CV28,data/raw/isd/audio/Grenada WAV Files/CarloV/CV28.wav,Granada,CarloV,0.7803300858899105,-0.32322330470336325,1,very_pleasant,1.0,1.0,3.0,4.0
+CV33,data/raw/isd/audio/Grenada WAV Files/CarloV/CV33.wav,Granada,CarloV,0.5303300858899105,-0.2196699141100893,1,very_pleasant,1.0,1.0,3.0,3.0
+CV41,data/raw/isd/audio/Grenada WAV Files/CarloV/CV41.wav,Granada,CarloV,0.7071067811865475,-0.7071067811865476,1,very_pleasant,1.0,1.0,3.0,4.0
+M11,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M11.wav,Granada,MiradorSanNicolas,0.7071067811865476,-0.29289321881345254,1,very_pleasant,1.0,1.0,3.0,3.0
+M111,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M111.wav,Granada,MiradorSanNicolas,0.6338834764831843,-0.2714466094067263,2,very_pleasant,1.5,1.0,4.0,3.5
+M13,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M13.wav,Granada,MiradorSanNicolas,0.5606601717798213,0.16421356237309512,1,very_pleasant,1.0,1.0,3.0,1.0
+M17,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M17.wav,Granada,MiradorSanNicolas,0.5972718241315028,-0.13128156646177092,2,very_pleasant,1.0,1.0,3.0,3.0
+M210,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M210.wav,Granada,MiradorSanNicolas,0.5606601717798212,-0.2928932188134525,1,very_pleasant,1.0,1.0,3.0,1.0
+M28,data/raw/isd/audio/Grenada WAV Files/MiradorSanNicolas/M28.wav,Granada,MiradorSanNicolas,0.5606601717798212,0.09099025766973191,2,very_pleasant,2.0,1.5,3.0,1.0
+NP108,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP108.wav,Groningen,Noorderplantsoen,0.10355339059327368,-0.10355339059327377,1,neutral,2.0,1.0,4.0,4.0
+NP123,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP123.wav,Groningen,Noorderplantsoen,0.14016504294495527,0.7348349570550448,2,neutral,2.0,3.0,3.0,3.0
+NP144,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP144.wav,Groningen,Noorderplantsoen,0.0883883476483183,0.08838834764831852,2,neutral,2.5,3.0,2.5,2.5
+NP148,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP148.wav,Groningen,Noorderplantsoen,-0.030330085889910693,0.6982233047033631,2,neutral,3.0,1.0,3.5,3.0
+NP106,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP106.wav,Groningen,Noorderplantsoen,0.35355339059327356,0.14644660940672632,1,pleasant,2.0,2.0,4.0,4.0
+NP110,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP110.wav,Groningen,Noorderplantsoen,0.493718433538229,-0.1830582617584078,2,pleasant,2.0,1.0,2.0,3.0
+NP112,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP112.wav,Groningen,Noorderplantsoen,0.42677669529663687,0.07322330470336307,1,pleasant,2.0,2.0,2.0,4.0
+NP113,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP113.wav,Groningen,Noorderplantsoen,0.28033008588991054,0.6767766952966369,1,pleasant,4.0,3.0,4.0,3.0
+NP117,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP117.wav,Groningen,Noorderplantsoen,0.32322330470336297,0.07322330470336307,1,pleasant,3.0,2.0,2.0,2.0
+NP118,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP118.wav,Groningen,Noorderplantsoen,0.47855339059327373,0.4053300858899106,2,pleasant,3.0,1.0,3.0,2.0
+NP120,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP120.wav,Groningen,Noorderplantsoen,0.46966991411008924,0.38388347648318427,1,pleasant,3.0,1.0,3.0,3.0
+NP125,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP125.hdf.wav,Groningen,Noorderplantsoen,0.3232233047033631,0.07322330470336307,1,pleasant,2.0,3.0,3.0,4.0
+NP132,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP132.wav,Groningen,Noorderplantsoen,0.4785533905932737,0.5303300858899105,2,pleasant,3.5,2.0,3.0,3.0
+NP133,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP133.wav,Groningen,Noorderplantsoen,0.19194173824159214,0.46338834764831843,2,pleasant,3.0,1.5,3.0,3.5
+NP136,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP136.wav,Groningen,Noorderplantsoen,0.24999999999999994,0.37500000000000006,2,pleasant,2.5,2.0,3.5,3.0
+NP138,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP138.wav,Groningen,Noorderplantsoen,0.3535533905932736,0.22855339059327376,2,pleasant,3.0,1.5,3.0,4.0
+NP139,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP139.wav,Groningen,Noorderplantsoen,0.19822330470336313,0.676776695296637,2,pleasant,3.5,4.0,4.0,3.5
+NP140,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP140.wav,Groningen,Noorderplantsoen,0.49999999999999994,0.6035533905932737,2,pleasant,2.0,1.0,3.5,2.5
+NP142,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP142.wav,Groningen,Noorderplantsoen,0.32322330470336297,0.17677669529663684,1,pleasant,4.0,3.0,2.0,3.0
+NP147,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP147.wav,Groningen,Noorderplantsoen,0.4633883476483184,-0.058058261758407864,2,pleasant,3.5,3.0,2.5,4.0
+NP149,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP149.wav,Groningen,Noorderplantsoen,0.3169417382415921,0.5151650429449552,2,pleasant,4.0,1.0,3.5,3.0
+NP152,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP152.wav,Groningen,Noorderplantsoen,0.42677669529663687,0.6767766952966369,1,pleasant,3.0,1.0,4.0,3.0
+NP154,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP154.wav,Groningen,Noorderplantsoen,0.5,0.6035533905932737,1,pleasant,2.0,1.0,2.0,4.0
+NP155,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP155.wav,Groningen,Noorderplantsoen,0.37499999999999994,0.43749999999999994,4,pleasant,2.0,1.5,3.5,4.25
+NP161,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP161.wav,Groningen,Noorderplantsoen,0.4696699141100894,0.6338834764831843,1,pleasant,3.0,1.0,3.0,2.0
+NP126,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP126.wav,Groningen,Noorderplantsoen,-0.3535533905932738,0.6035533905932738,1,unpleasant,2.0,4.0,3.0,2.0
+NP157,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP157.wav,Groningen,Noorderplantsoen,-0.20710678118654768,0.5,1,unpleasant,4.0,1.0,2.0,3.0
+NP101,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP101.wav,Groningen,Noorderplantsoen,0.743718433538229,0.3169417382415921,2,very_pleasant,2.5,1.0,2.0,3.0
+NP102,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP102.wav,Groningen,Noorderplantsoen,0.7499999999999999,0.10355339059327377,1,very_pleasant,4.0,2.0,2.0,3.0
+NP109,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP109.wav,Groningen,Noorderplantsoen,0.9267766952966369,-0.13388347648318447,1,very_pleasant,2.0,1.0,1.0,4.0
+NP111,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP111.wav,Groningen,Noorderplantsoen,0.6035533905932737,0.4785533905932738,2,very_pleasant,3.5,1.0,3.5,2.5
+NP116,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP116.wav,Groningen,Noorderplantsoen,0.5669417382415921,0.4419417382415922,2,very_pleasant,4.0,2.5,2.0,1.5
+NP119,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP119.wav,Groningen,Noorderplantsoen,0.6035533905932737,0.15533008588991057,2,very_pleasant,3.0,2.0,3.0,3.5
+NP127,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP127.wav,Groningen,Noorderplantsoen,0.6767766952966368,0.4356601717798213,2,very_pleasant,4.0,1.0,2.5,4.0
+NP128,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP128.wav,Groningen,Noorderplantsoen,0.6035533905932737,-0.14644660940672632,1,very_pleasant,2.0,1.0,3.0,2.0
+NP129,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP129.wav,Groningen,Noorderplantsoen,0.5791456223588193,0.27440776823445434,3,very_pleasant,3.0,1.6666666666666667,2.3333333333333335,2.6666666666666665
+NP131,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP131.wav,Groningen,Noorderplantsoen,0.691941738241592,0.19194173824159205,2,very_pleasant,2.0,1.0,3.0,4.0
+NP134,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP134.wav,Groningen,Noorderplantsoen,0.5303300858899106,0.4267766952966369,2,very_pleasant,4.0,2.0,3.5,2.5
+NP135,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP135.wav,Groningen,Noorderplantsoen,0.6767766952966369,-0.07322330470336316,1,very_pleasant,1.0,1.0,2.0,2.0
+NP143,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP143.wav,Groningen,Noorderplantsoen,0.6338834764831843,-0.07322330470336316,1,very_pleasant,2.0,1.0,2.0,3.0
+NP150,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP150.wav,Groningen,Noorderplantsoen,0.6464466094067262,0.0,1,very_pleasant,3.0,1.0,2.0,2.0
+NP151,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP151.wav,Groningen,Noorderplantsoen,0.5669417382415921,0.42049512883486584,2,very_pleasant,3.0,1.5,3.0,3.0
+NP153,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP153.wav,Groningen,Noorderplantsoen,0.6380711874576983,0.5547378541243649,3,very_pleasant,2.0,1.3333333333333333,3.3333333333333335,3.6666666666666665
+NP156,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP156.wav,Groningen,Noorderplantsoen,0.6035533905932736,0.06311327607339284,3,very_pleasant,3.0,3.0,3.3333333333333335,3.3333333333333335
+NP158,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP158.wav,Groningen,Noorderplantsoen,0.8901650429449552,0.3687184335382291,2,very_pleasant,2.0,1.0,3.0,3.5
+NP160,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP160.wav,Groningen,Noorderplantsoen,0.5883883476483185,0.14016504294495527,2,very_pleasant,2.5,1.0,2.5,3.5
+NP163,data/raw/isd/audio/WAV_Groningen_1/Noorderplantsoen/NP163.wav,Groningen,Noorderplantsoen,0.6161165235168156,0.38388347648318427,1,very_pleasant,2.0,3.0,3.0,5.0
+CT109,data/raw/isd/audio/WAV_London_1/CamdenTown/CT109.wav,London,CamdenTown,-0.053003247443422746,0.5589255650988789,3,neutral,4.0,2.3333333333333335,4.0,1.3333333333333333
+CT124,data/raw/isd/audio/WAV_London_1/CamdenTown/CT124.wav,London,CamdenTown,-0.14644660940672638,0.14644660940672619,2,neutral,4.5,3.0,3.0,1.5
+CT202,data/raw/isd/audio/WAV_London_1/CamdenTown/CT202.wav,London,CamdenTown,-0.02772817586849721,0.6616116523516816,2,neutral,4.0,3.5,4.0,1.0
+CT312,data/raw/isd/audio/WAV_London_1/CamdenTown/CT312.wav,London,CamdenTown,-0.07322330470336322,0.1422588984322122,3,neutral,3.3333333333333335,2.3333333333333335,3.0,1.3333333333333333
+CT323,data/raw/isd/audio/WAV_London_1/CamdenTown/CT323.wav,London,CamdenTown,0.03661165235168151,0.3383883476483184,2,neutral,4.5,3.0,3.5,1.5
+CT325,data/raw/isd/audio/WAV_London_1/CamdenTown/CT325.wav,London,CamdenTown,-9.197388681172371e-17,0.24999999999999992,1,neutral,4.0,2.0,3.0,1.0
+ET104,data/raw/isd/audio/WAV_London_1/EustonTap/ET104.wav,London,EustonTap,-0.10355339059327381,0.7928932188134525,1,neutral,4.0,4.0,4.0,1.0
+ET111,data/raw/isd/audio/WAV_London_1/EustonTap/ET111.wav,London,EustonTap,-0.1035533905932739,0.04289321881345251,2,neutral,3.5,3.0,2.5,2.0
+ET211,data/raw/isd/audio/WAV_London_1/EustonTap/ET211.wav,London,EustonTap,0.012563132923541607,-0.32322330470336325,1,neutral,3.0,3.0,2.0,2.0
+ET303,data/raw/isd/audio/WAV_London_1/EustonTap/ET303.wav,London,EustonTap,0.0934433619633034,0.14225889843221226,3,neutral,2.6666666666666665,2.0,2.6666666666666665,1.3333333333333333
+ET304,data/raw/isd/audio/WAV_London_1/EustonTap/ET304.wav,London,EustonTap,0.10355339059327354,-0.5,1,neutral,3.0,2.0,3.0,1.0
+ET313,data/raw/isd/audio/WAV_London_1/EustonTap/ET313.wav,London,EustonTap,-0.0732233047033632,0.07322330470336316,1,neutral,4.0,4.0,2.0,3.0
+MC115,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC115.wav,London,MarchmontGarden,-9.197388681172371e-17,9.197388681172371e-17,1,neutral,3.0,2.0,3.0,2.0
+MC311,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC311.wav,London,MarchmontGarden,0.1401650429449552,0.05805826175840781,2,neutral,3.5,2.0,1.5,3.0
+MC332,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC332.wav,London,MarchmontGarden,-0.03661165235168168,-0.09727182413150284,2,neutral,3.5,1.5,3.0,3.0
+MC404,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC404.wav,London,MarchmontGarden,0.029029130879203804,0.085247564417433,4,neutral,1.75,4.0,1.5,2.0
+MC409,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC409.wav,London,MarchmontGarden,-0.015165042944955381,0.19194173824159214,2,neutral,3.0,4.5,2.5,1.5
+PL108,data/raw/isd/audio/WAV_London_2/PancrasLock/PL108.wav,London,PancrasLock,0.015165042944955187,-0.10983495705504484,2,neutral,2.0,4.0,2.5,1.5
+PL109,data/raw/isd/audio/WAV_London_2/PancrasLock/PL109.wav,London,PancrasLock,0.07322330470336298,0.17677669529663675,1,neutral,2.0,4.0,2.0,1.0
+PL215,data/raw/isd/audio/WAV_London_2/PancrasLock/PL215.wav,London,PancrasLock,0.008883476483184258,-0.15533008588991065,2,neutral,1.5,4.0,2.0,2.5
+PL221,data/raw/isd/audio/WAV_London_2/PancrasLock/PL221.wav,London,PancrasLock,-0.030330085889910742,0.28033008588991076,1,neutral,2.0,3.0,2.0,3.0
+PL224,data/raw/isd/audio/WAV_London_2/PancrasLock/PL224.wav,London,PancrasLock,0.1464466094067261,-0.24999999999999992,1,neutral,2.0,4.0,2.0,3.0
+RF106,data/raw/isd/audio/WAV_London_2/RegentsParkFields/RF106.wav,London,RegentsParkFields,-0.030330085889910697,0.42677669529663687,1,neutral,2.0,1.0,4.0,3.0
+RF212,data/raw/isd/audio/WAV_London_2/RegentsParkFields/RF212.wav,London,RegentsParkFields,0.12499999999999988,0.07322330470336308,2,neutral,3.0,3.0,3.0,2.5
+RP102,data/raw/isd/audio/WAV_London_2/RegentsParkJapan/RP102.wav,London,RegentsParkJapan,0.118718433538229,0.06694173824159223,2,neutral,2.0,3.0,3.0,3.5
+RS121,data/raw/isd/audio/WAV_London_3/RussellSq/RS121.wav,London,RussellSq,0.04289321881345233,-0.24999999999999992,1,neutral,4.0,4.0,4.0,2.0
+RS123,data/raw/isd/audio/WAV_London_3/RussellSq/RS123.wav,London,RussellSq,-9.197388681172371e-17,0.25,1,neutral,1.0,3.0,2.0,2.0
+RS304,data/raw/isd/audio/WAV_London_3/RussellSq/RS304.wav,London,RussellSq,0.015165042944955118,-0.2651650429449553,2,neutral,2.5,4.5,2.5,3.0
+RS305,data/raw/isd/audio/WAV_London_3/RussellSq/RS305.wav,London,RussellSq,0.05177669529663678,0.05177669529663689,2,neutral,3.5,3.5,3.5,2.5
+RS330,data/raw/isd/audio/WAV_London_3/RussellSq/RS330.wav,London,RussellSq,0.13388347648318438,0.17677669529663692,1,neutral,2.0,4.0,2.0,3.0
+SC107,data/raw/isd/audio/WAV_London_3/StPaulsCross/SC107.wav,London,StPaulsCross,0.09344336196330344,0.17677669529663687,3,neutral,3.3333333333333335,3.6666666666666665,3.3333333333333335,3.0
+SC108,data/raw/isd/audio/WAV_London_3/StPaulsCross/SC108.wav,London,StPaulsCross,0.10355339059327358,0.0,1,neutral,4.0,4.0,4.0,3.0
+SC111,data/raw/isd/audio/WAV_London_3/StPaulsCross/SC111.wav,London,StPaulsCross,0.06694173824159205,-0.11871843353822908,2,neutral,3.0,1.5,3.5,1.5
+SC123,data/raw/isd/audio/WAV_London_3/StPaulsCross/SC123.wav,London,StPaulsCross,-0.12500000000000014,-0.0732233047033631,2,neutral,2.5,2.5,3.0,2.0
+SC136,data/raw/isd/audio/WAV_London_3/StPaulsCross/SC136.wav,London,StPaulsCross,0.14644660940672613,-0.14644660940672624,1,neutral,3.0,1.0,2.0,1.0
+SC140,data/raw/isd/audio/WAV_London_3/StPaulsCross/SC140.wav,London,StPaulsCross,0.0883883476483183,-0.14016504294495544,2,neutral,3.5,2.0,3.0,2.0
+SR101,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR101.wav,London,StPaulsRow,-0.1464466094067264,-0.08210678118654759,2,neutral,2.5,2.5,4.0,1.5
+SR117,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR117.wav,London,StPaulsRow,0.12499999999999992,0.37499999999999994,2,neutral,2.5,1.0,4.0,1.5
+SR123,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR123.wav,London,StPaulsRow,-0.12500000000000008,-0.1767766952966369,2,neutral,3.5,3.5,3.0,2.5
+SR124,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR124.wav,London,StPaulsRow,-1.3877787807814457e-17,0.7714466094067263,2,neutral,2.0,2.5,4.5,1.0
+SR146,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR146.wav,London,StPaulsRow,0.13388347648318427,0.11611652351681553,1,neutral,4.0,4.0,3.0,2.0
+TM126,data/raw/isd/audio/WAV_London_4/TateModern/TM126.wav,London,TateModern,-0.030330085889910742,0.5732233047033631,1,neutral,3.0,2.0,4.0,1.0
+TM127,data/raw/isd/audio/WAV_London_4/TateModern/TM127.wav,London,TateModern,0.13214886980224191,0.20118446353109123,3,neutral,2.3333333333333335,3.3333333333333335,3.3333333333333335,1.3333333333333333
+TM223,data/raw/isd/audio/WAV_London_4/TateModern/TM223.wav,London,TateModern,0.08838834764831835,0.1401650429449553,2,neutral,2.0,2.0,3.0,2.0
+TM229,data/raw/isd/audio/WAV_London_4/TateModern/TM229.wav,London,TateModern,-0.036611652351681664,0.13128156646177097,2,neutral,2.0,1.0,3.5,2.0
+TM303,data/raw/isd/audio/WAV_London_4/TateModern/TM303.wav,London,TateModern,0.10355339059327363,9.197388681172371e-17,1,neutral,4.0,3.0,3.0,2.0
+TM318,data/raw/isd/audio/WAV_London_4/TateModern/TM318.wav,London,TateModern,0.07322330470336298,0.17677669529663692,1,neutral,4.0,4.0,3.0,4.0
+TS210,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS210.wav,London,TorringtonSq,-0.10355339059327395,0.1893398282201787,1,neutral,3.0,2.0,4.0,3.0
+TS223,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS223.wav,London,TorringtonSq,0.10355339059327368,-9.197388681172371e-17,1,neutral,2.0,2.0,2.0,2.0
+TS229,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS229.wav,London,TorringtonSq,-0.14644660940672627,0.3535533905932737,1,neutral,4.0,2.0,4.0,1.0
+TS234,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS234.wav,London,TorringtonSq,-0.0732233047033632,0.17677669529663684,1,neutral,4.0,1.0,4.0,1.0
+TS304,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS304.wav,London,TorringtonSq,0.10355339059327358,0.0,1,neutral,4.0,4.0,3.0,3.0
+TS411,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS411.wav,London,TorringtonSq,-0.08838834764831863,-0.1616116523516816,2,neutral,4.5,4.0,3.5,2.0
+CT309,data/raw/isd/audio/WAV_London_1/CamdenTown/CT309.wav,London,CamdenTown,0.3535533905932737,0.3535533905932737,1,pleasant,3.0,3.0,2.0,1.0
+CT319,data/raw/isd/audio/WAV_London_1/CamdenTown/CT319.wav,London,CamdenTown,0.3106601717798212,0.5,1,pleasant,2.0,2.0,3.0,1.0
+ET117,data/raw/isd/audio/WAV_London_1/EustonTap/ET117.wav,London,EustonTap,0.3535533905932737,0.49999999999999983,1,pleasant,5.0,2.0,2.0,1.0
+ET221,data/raw/isd/audio/WAV_London_1/EustonTap/ET221.wav,London,EustonTap,0.16161165235168148,0.26516504294495535,2,pleasant,4.0,2.5,1.5,1.5
+MC303,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC303.wav,London,MarchmontGarden,0.42677669529663675,-0.2803300858899107,1,pleasant,2.0,2.0,3.0,2.0
+MC336,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC336.wav,London,MarchmontGarden,0.1616116523516814,-0.03661165235168168,2,pleasant,3.5,2.0,2.0,2.5
+PL114,data/raw/isd/audio/WAV_London_2/PancrasLock/PL114.wav,London,PancrasLock,0.30177669529663675,0.22855339059327368,2,pleasant,2.5,3.5,3.5,2.5
+PL202,data/raw/isd/audio/WAV_London_2/PancrasLock/PL202.wav,London,PancrasLock,0.3838834764831844,0.5303300858899108,1,pleasant,3.5,3.0,2.5,2.0
+RF105,data/raw/isd/audio/WAV_London_2/RegentsParkFields/RF105.wav,London,RegentsParkFields,0.29289321881345226,-0.10355339059327386,1,pleasant,3.0,1.0,2.0,3.0
+RF216,data/raw/isd/audio/WAV_London_2/RegentsParkFields/RF216.wav,London,RegentsParkFields,0.35355339059327356,-0.04289321881345256,1,pleasant,3.0,2.0,3.0,2.0
+RP128,data/raw/isd/audio/WAV_London_2/RegentsParkJapan/RP128.wav,London,RegentsParkJapan,0.3535533905932737,0.14644660940672624,1,pleasant,2.0,1.0,2.0,5.0
+RP219,data/raw/isd/audio/WAV_London_2/RegentsParkJapan/RP219.wav,London,RegentsParkJapan,0.49999999999999983,0.04289321881345246,1,pleasant,3.0,3.0,3.0,3.0
+RS105,data/raw/isd/audio/WAV_London_3/RussellSq/RS105.wav,London,RussellSq,0.45710678118654735,-0.14644660940672632,1,pleasant,2.0,1.0,2.0,3.0
+RS227,data/raw/isd/audio/WAV_London_3/RussellSq/RS227.wav,London,RussellSq,0.19822330470336297,0.021446609406726228,2,pleasant,4.0,2.5,4.5,3.0
+SC106,data/raw/isd/audio/WAV_London_3/StPaulsCross/SC106.wav,London,StPaulsCross,0.3535533905932736,0.3535533905932737,1,pleasant,4.0,2.0,4.0,2.0
+SC131,data/raw/isd/audio/WAV_London_3/StPaulsCross/SC131.wav,London,StPaulsCross,0.1767766952966367,-0.2803300858899107,1,pleasant,3.0,3.0,3.0,1.0
+SR118,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR118.wav,London,StPaulsRow,0.42677669529663687,-0.07322330470336316,1,pleasant,2.0,2.0,3.0,1.0
+SR125,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR125.wav,London,StPaulsRow,0.40533008588991054,0.1982233047033631,2,pleasant,3.0,2.5,3.0,1.0
+TM218,data/raw/isd/audio/WAV_London_4/TateModern/TM218.wav,London,TateModern,0.21966991411008935,0.7803300858899107,1,pleasant,4.0,4.0,5.0,2.0
+TM316,data/raw/isd/audio/WAV_London_4/TateModern/TM316.wav,London,TateModern,0.3232233047033631,0.2196699141100894,1,pleasant,3.0,1.0,4.0,2.0
+TS303,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS303.wav,London,TorringtonSq,0.35355339059327356,-0.25,1,pleasant,3.0,2.0,3.0,1.0
+TS418,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS418.wav,London,TorringtonSq,0.29462782549439476,0.4267766952966369,3,pleasant,3.3333333333333335,2.0,3.6666666666666665,3.3333333333333335
+CT101,data/raw/isd/audio/WAV_London_1/CamdenTown/CT101.wav,London,CamdenTown,-0.22977994274005967,0.28451779686442463,3,unpleasant,3.6666666666666665,2.3333333333333335,3.0,1.6666666666666667
+CT112,data/raw/isd/audio/WAV_London_1/CamdenTown/CT112.wav,London,CamdenTown,-0.16161165235168154,0.7133883476483185,2,unpleasant,5.0,4.0,4.0,1.0
+CT114,data/raw/isd/audio/WAV_London_1/CamdenTown/CT114.wav,London,CamdenTown,-0.17677669529663698,0.7803300858899107,1,unpleasant,4.0,3.0,3.0,1.0
+CT116,data/raw/isd/audio/WAV_London_1/CamdenTown/CT116.wav,London,CamdenTown,-0.27144660940672627,0.2803300858899106,2,unpleasant,3.0,2.5,2.0,1.5
+CT117,data/raw/isd/audio/WAV_London_1/CamdenTown/CT117.wav,London,CamdenTown,-0.22855339059327384,0.44822330470336313,2,unpleasant,3.5,4.0,4.0,1.5
+CT201,data/raw/isd/audio/WAV_London_1/CamdenTown/CT201.wav,London,CamdenTown,-0.19194173824159222,0.6187184335382291,2,unpleasant,4.5,3.0,3.5,1.0
+CT301,data/raw/isd/audio/WAV_London_1/CamdenTown/CT301.wav,London,CamdenTown,-0.42677669529663703,0.4267766952966369,1,unpleasant,4.0,4.0,4.0,1.0
+CT310,data/raw/isd/audio/WAV_London_1/CamdenTown/CT310.wav,London,CamdenTown,-0.42677669529663703,0.42677669529663687,1,unpleasant,4.0,2.0,3.0,1.0
+CT318,data/raw/isd/audio/WAV_London_1/CamdenTown/CT318.wav,London,CamdenTown,-0.21338834764831846,0.8383883476483185,2,unpleasant,4.0,2.5,3.5,1.5
+CT320,data/raw/isd/audio/WAV_London_1/CamdenTown/CT320.wav,London,CamdenTown,-0.29289321881345254,0.14644660940672613,1,unpleasant,4.0,2.0,2.0,1.0
+CT328,data/raw/isd/audio/WAV_London_1/CamdenTown/CT328.wav,London,CamdenTown,-0.34466991411008946,0.4267766952966369,2,unpleasant,4.0,2.5,3.0,1.0
+CT405,data/raw/isd/audio/WAV_London_1/CamdenTown/CT405.wav,London,CamdenTown,-0.41421356237309515,4.5986943405861856e-17,1,unpleasant,5.0,3.0,5.0,1.0
+CT407,data/raw/isd/audio/WAV_London_1/CamdenTown/CT407.wav,London,CamdenTown,-0.20710678118654757,0.17677669529663695,2,unpleasant,3.5,3.0,3.5,1.5
+CT415,data/raw/isd/audio/WAV_London_1/CamdenTown/CT415.wav,London,CamdenTown,-0.3964466094067264,0.29289321881345254,1,unpleasant,5.0,3.0,4.0,1.0
+ET106,data/raw/isd/audio/WAV_London_1/EustonTap/ET106.wav,London,EustonTap,-0.16161165235168176,-0.10983495705504465,2,unpleasant,4.0,2.5,2.0,1.0
+ET108,data/raw/isd/audio/WAV_London_1/EustonTap/ET108.wav,London,EustonTap,-0.28033008588991076,0.3232233047033631,1,unpleasant,3.0,1.0,2.0,1.0
+ET109,data/raw/isd/audio/WAV_London_1/EustonTap/ET109.wav,London,EustonTap,-0.4633883476483186,0.33838834764831854,2,unpleasant,3.5,2.5,2.0,1.0
+ET112,data/raw/isd/audio/WAV_London_1/EustonTap/ET112.wav,London,EustonTap,-0.4696699141100894,0.4267766952966369,1,unpleasant,5.0,3.0,1.0,1.0
+ET115,data/raw/isd/audio/WAV_London_1/EustonTap/ET115.wav,London,EustonTap,-0.4755922317655457,-0.05055014314985113,3,unpleasant,4.333333333333333,4.0,2.3333333333333335,1.0
+ET119,data/raw/isd/audio/WAV_London_1/EustonTap/ET119.wav,London,EustonTap,-0.42677669529663703,0.17677669529663675,1,unpleasant,4.0,1.0,3.0,1.0
+ET124,data/raw/isd/audio/WAV_London_1/EustonTap/ET124.wav,London,EustonTap,-0.308058261758408,-0.17049512883486584,2,unpleasant,3.5,3.0,3.0,2.0
+ET125,data/raw/isd/audio/WAV_London_1/EustonTap/ET125.wav,London,EustonTap,-0.25000000000000006,0.2500000000000001,1,unpleasant,4.0,2.0,1.0,1.0
+ET207,data/raw/isd/audio/WAV_London_1/EustonTap/ET207.wav,London,EustonTap,-0.19508252147247776,0.3674174785275223,4,unpleasant,4.25,4.0,2.75,2.0
+ET219,data/raw/isd/audio/WAV_London_1/EustonTap/ET219.wav,London,EustonTap,-0.30805826175840795,-0.03661165235168162,2,unpleasant,3.5,3.0,2.0,1.0
+ET220,data/raw/isd/audio/WAV_London_1/EustonTap/ET220.wav,London,EustonTap,-0.15900974233026824,0.01256313292354195,1,unpleasant,3.0,3.0,5.0,4.0
+ET222,data/raw/isd/audio/WAV_London_1/EustonTap/ET222.wav,London,EustonTap,-0.17677669529663703,0.5732233047033631,1,unpleasant,4.0,2.0,2.0,1.0
+ET305,data/raw/isd/audio/WAV_London_1/EustonTap/ET305.wav,London,EustonTap,-0.3232233047033633,0.012563132923541859,1,unpleasant,4.0,4.0,2.0,3.0
+ET307,data/raw/isd/audio/WAV_London_1/EustonTap/ET307.wav,London,EustonTap,-0.2702200572599405,0.45118446353109126,3,unpleasant,3.0,2.6666666666666665,2.3333333333333335,1.6666666666666667
+ET308,data/raw/isd/audio/WAV_London_1/EustonTap/ET308.wav,London,EustonTap,-0.26256313292354194,-0.07322330470336316,1,unpleasant,1.0,1.0,2.0,4.0
+ET310,data/raw/isd/audio/WAV_London_1/EustonTap/ET310.wav,London,EustonTap,-0.28661165235168173,-0.16161165235168165,2,unpleasant,3.5,4.0,2.0,2.5
+MC101,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC101.wav,London,MarchmontGarden,-0.28033008588991076,-0.030330085889910697,1,unpleasant,4.0,3.0,4.0,2.0
+MC112,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC112.wav,London,MarchmontGarden,-0.17677669529663698,0.07322330470336316,1,unpleasant,3.0,3.0,4.0,3.0
+MC116,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC116.wav,London,MarchmontGarden,-0.29549512883486606,0.32950487116513405,2,unpleasant,3.5,2.5,4.0,1.5
+MC310,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC310.wav,London,MarchmontGarden,-0.42677669529663703,0.07322330470336298,1,unpleasant,4.0,3.0,4.0,3.0
+MC312,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC312.wav,London,MarchmontGarden,-0.42677669529663703,-0.07322330470336298,1,unpleasant,5.0,4.0,4.0,3.0
+MC323,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC323.wav,London,MarchmontGarden,-0.46966991411008957,-0.38388347648318444,1,unpleasant,4.0,2.0,2.0,1.0
+MC333,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC333.wav,London,MarchmontGarden,-0.31694173824159244,-0.22227182413150287,2,unpleasant,4.0,2.0,1.0,3.5
+MC334,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC334.wav,London,MarchmontGarden,-0.28033008588991076,0.07322330470336307,1,unpleasant,4.0,4.0,4.0,2.0
+PL102,data/raw/isd/audio/WAV_London_2/PancrasLock/PL102.wav,London,PancrasLock,-0.16161165235168162,-0.19194173824159225,2,unpleasant,2.5,4.0,2.0,2.5
+PL116,data/raw/isd/audio/WAV_London_2/PancrasLock/PL116.wav,London,PancrasLock,-0.21338834764831854,0.23483495705504467,2,unpleasant,3.0,3.0,2.5,1.0
+PL203,data/raw/isd/audio/WAV_London_2/PancrasLock/PL203.wav,London,PancrasLock,-0.32322330470336325,0.16789321881345243,2,unpleasant,4.0,4.0,3.0,1.5
+RF113,data/raw/isd/audio/WAV_London_2/RegentsParkFields/RF113.wav,London,RegentsParkFields,-0.21966991411008943,0.07322330470336316,1,unpleasant,5.0,1.0,2.0,2.0
+RF115,data/raw/isd/audio/WAV_London_2/RegentsParkFields/RF115.wav,London,RegentsParkFields,-0.340990257669732,0.5125631329235418,1,unpleasant,2.0,2.0,2.0,2.0
+RF116,data/raw/isd/audio/WAV_London_2/RegentsParkFields/RF116.wav,London,RegentsParkFields,-0.44699675255657745,0.2458122890254861,3,unpleasant,4.666666666666667,2.6666666666666665,2.6666666666666665,1.6666666666666667
+RF126,data/raw/isd/audio/WAV_London_2/RegentsParkFields/RF126.wav,London,RegentsParkFields,-0.42677669529663703,-0.10355339059327368,2,unpleasant,3.0,3.0,3.0,3.0
+RF132,data/raw/isd/audio/WAV_London_2/RegentsParkFields/RF132.wav,London,RegentsParkFields,-0.4571067811865475,0.75,1,unpleasant,5.0,5.0,4.0,2.0
+RF220,data/raw/isd/audio/WAV_London_2/RegentsParkFields/RF220.wav,London,RegentsParkFields,-0.2500000000000001,0.2928932188134525,1,unpleasant,3.0,1.0,4.0,4.0
+RP132,data/raw/isd/audio/WAV_London_2/RegentsParkJapan/RP132.wav,London,RegentsParkJapan,-0.2928932188134526,0.10355339059327368,1,unpleasant,2.0,2.0,2.0,4.0
+RS114,data/raw/isd/audio/WAV_London_3/RussellSq/RS114.wav,London,RussellSq,-0.18933982822017892,-0.060660171779821394,1,unpleasant,3.0,2.0,3.0,3.0
+RS116,data/raw/isd/audio/WAV_London_3/RussellSq/RS116.wav,London,RussellSq,-0.23743686707645834,-0.030330085889910607,1,unpleasant,2.0,2.0,4.0,1.0
+RS219,data/raw/isd/audio/WAV_London_3/RussellSq/RS219.wav,London,RussellSq,-0.3232233047033632,0.17677669529663675,1,unpleasant,3.0,1.0,4.0,4.0
+SC103,data/raw/isd/audio/WAV_London_3/StPaulsCross/SC103.wav,London,StPaulsCross,-0.1767766952966369,0.4053300858899107,2,unpleasant,3.5,3.0,4.0,2.5
+SC130,data/raw/isd/audio/WAV_London_3/StPaulsCross/SC130.wav,London,StPaulsCross,-0.28033008588991076,0.3661165235168156,1,unpleasant,4.0,3.0,4.0,3.0
+SR110,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR110.wav,London,StPaulsRow,-0.21966991411008943,0.17677669529663675,1,unpleasant,3.0,2.0,3.0,1.0
+SR112,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR112.wav,London,StPaulsRow,-0.2500000000000001,0.5428932188134525,1,unpleasant,4.0,3.0,4.0,3.0
+SR128,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR128.wav,London,StPaulsRow,-0.17677669529663712,-0.05545635173699433,1,unpleasant,3.0,1.0,3.0,1.0
+SR131,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR131.wav,London,StPaulsRow,-0.3687184335382292,0.5151650429449554,2,unpleasant,4.5,3.5,3.5,1.5
+SR140,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR140.wav,London,StPaulsRow,-0.31694173824159233,-0.2348349570550448,2,unpleasant,3.5,3.5,4.5,1.0
+TM121,data/raw/isd/audio/WAV_London_4/TateModern/TM121.wav,London,TateModern,-0.17677669529663698,0.3232233047033631,1,unpleasant,2.0,2.0,4.0,2.0
+TM206,data/raw/isd/audio/WAV_London_4/TateModern/TM206.wav,London,TateModern,-0.16666666666666674,0.15236892706218252,3,unpleasant,3.3333333333333335,2.6666666666666665,2.6666666666666665,1.6666666666666667
+TM207,data/raw/isd/audio/WAV_London_4/TateModern/TM207.wav,London,TateModern,-0.20710678118654757,0.75,1,unpleasant,3.0,3.0,4.0,1.0
+TM213,data/raw/isd/audio/WAV_London_4/TateModern/TM213.wav,London,TateModern,-0.25000000000000006,0.6035533905932737,1,unpleasant,1.0,3.0,4.0,1.0
+TS206,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS206.wav,London,TorringtonSq,-0.17677669529663698,0.42677669529663675,1,unpleasant,3.0,4.0,3.0,2.0
+TS214,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS214.wav,London,TorringtonSq,-0.25000000000000017,0.14644660940672613,1,unpleasant,5.0,3.0,3.0,3.0
+TS217,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS217.wav,London,TorringtonSq,-0.30177669529663703,0.0946699141100893,2,unpleasant,4.0,2.5,3.5,1.5
+TS218,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS218.wav,London,TorringtonSq,-0.4571067811865475,0.8535533905932737,1,unpleasant,4.0,3.0,4.0,2.0
+TS220,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS220.wav,London,TorringtonSq,-0.21966991411008943,0.42677669529663687,1,unpleasant,4.0,3.0,4.0,1.0
+TS235,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS235.wav,London,TorringtonSq,-0.17677669529663698,0.42677669529663687,1,unpleasant,4.0,4.0,2.0,1.0
+TS310,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS310.wav,London,TorringtonSq,-0.18305826175840795,0.015165042944955303,2,unpleasant,3.0,4.0,2.5,2.0
+TS313,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS313.wav,London,TorringtonSq,-0.38388347648318444,0.5732233047033631,1,unpleasant,3.0,4.0,3.0,2.0
+TS315,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS315.wav,London,TorringtonSq,-0.22855339059327384,0.2196699141100893,2,unpleasant,3.5,4.5,4.0,3.0
+TS316,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS316.wav,London,TorringtonSq,-0.25000000000000017,-0.10355339059327377,1,unpleasant,4.0,1.0,3.0,2.0
+TS319,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS319.wav,London,TorringtonSq,-0.26516504294495546,0.21338834764831838,2,unpleasant,3.5,3.0,3.5,2.0
+TS413,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS413.wav,London,TorringtonSq,-0.21129449216106164,0.16493205998572427,3,unpleasant,2.0,2.6666666666666665,3.6666666666666665,1.6666666666666667
+TS414,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS414.wav,London,TorringtonSq,-0.2500000000000001,0.04289321881345237,1,unpleasant,3.0,4.0,4.0,2.0
+TS421,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS421.wav,London,TorringtonSq,-0.21966991411008943,0.5732233047033631,1,unpleasant,4.0,5.0,5.0,2.0
+TS422,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS422.wav,London,TorringtonSq,-0.17677669529663703,0.07322330470336307,1,unpleasant,2.0,3.0,3.0,1.0
+TS425,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS425.wav,London,TorringtonSq,-0.17677669529663706,0.07322330470336307,1,unpleasant,4.0,3.0,3.0,2.0
+MC110,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC110.wav,London,MarchmontGarden,0.8535533905932737,0.20710678118654735,1,very_pleasant,2.0,1.0,2.0,1.0
+MC321,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC321.wav,London,MarchmontGarden,0.6767766952966368,-0.07322330470336326,1,very_pleasant,2.0,2.0,3.0,3.0
+MC331,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC331.wav,London,MarchmontGarden,0.573223304703363,-0.38388347648318444,1,very_pleasant,2.0,3.0,2.0,1.0
+PL105,data/raw/isd/audio/WAV_London_2/PancrasLock/PL105.wav,London,PancrasLock,0.6338834764831843,0.42677669529663687,1,very_pleasant,2.0,2.0,2.0,3.0
+PL206,data/raw/isd/audio/WAV_London_2/PancrasLock/PL206.wav,London,PancrasLock,0.9267766952966369,0.23743686707645814,1,very_pleasant,3.0,2.0,3.0,3.0
+PL211,data/raw/isd/audio/WAV_London_2/PancrasLock/PL211.wav,London,PancrasLock,0.5517766952966368,-0.2196699141100895,2,very_pleasant,2.5,3.0,2.0,2.0
+RF102,data/raw/isd/audio/WAV_London_2/RegentsParkFields/RF102.wav,London,RegentsParkFields,0.5972718241315027,-0.1527281758684973,2,very_pleasant,1.5,1.5,3.5,3.0
+RF121,data/raw/isd/audio/WAV_London_2/RegentsParkFields/RF121.wav,London,RegentsParkFields,0.8901650429449552,-0.21338834764831852,2,very_pleasant,1.0,1.0,3.0,3.0
+RF203,data/raw/isd/audio/WAV_London_2/RegentsParkFields/RF203.wav,London,RegentsParkFields,0.9267766952966369,0.13388347648318427,1,very_pleasant,3.0,1.0,2.0,4.0
+RP127,data/raw/isd/audio/WAV_London_2/RegentsParkJapan/RP127.wav,London,RegentsParkJapan,0.6338834764831843,0.030330085889910423,1,very_pleasant,1.0,2.0,2.0,4.0
+RP207,data/raw/isd/audio/WAV_London_2/RegentsParkJapan/RP207.wav,London,RegentsParkJapan,0.6338834764831843,-0.2196699141100895,1,very_pleasant,2.0,2.0,2.0,4.0
+RP228,data/raw/isd/audio/WAV_London_2/RegentsParkJapan/RP228.wav,London,RegentsParkJapan,0.5088834764831843,-0.0732233047033632,2,very_pleasant,1.5,2.5,2.0,3.5
+RS124,data/raw/isd/audio/WAV_London_3/RussellSq/RS124.wav,London,RussellSq,0.5303300858899105,-0.2803300858899107,1,very_pleasant,2.0,2.0,3.0,4.0
+RS224,data/raw/isd/audio/WAV_London_3/RussellSq/RS224.wav,London,RussellSq,1.0,-9.197388681172371e-17,1,very_pleasant,1.0,1.0,3.0,4.0
+RS325,data/raw/isd/audio/WAV_London_3/RussellSq/RS325.wav,London,RussellSq,0.5669417382415921,0.06398057941386402,6,very_pleasant,3.0,1.8333333333333333,3.1666666666666665,3.3333333333333335
+RS329,data/raw/isd/audio/WAV_London_3/RussellSq/RS329.wav,London,RussellSq,0.8535533905932737,-0.07322330470336325,2,very_pleasant,1.0,1.0,2.5,4.0
+SC112,data/raw/isd/audio/WAV_London_3/StPaulsCross/SC112.wav,London,StPaulsCross,0.6035533905932737,0.24999999999999992,1,very_pleasant,3.0,2.0,4.0,2.0
+SC121,data/raw/isd/audio/WAV_London_3/StPaulsCross/SC121.wav,London,StPaulsCross,0.5303300858899106,0.15533008588991062,2,very_pleasant,1.5,1.5,4.0,4.0
+SC138,data/raw/isd/audio/WAV_London_3/StPaulsCross/SC138.wav,London,StPaulsCross,0.6035533905932737,-0.09466991411008945,2,very_pleasant,1.5,1.0,3.5,2.5
+SR103,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR103.wav,London,StPaulsRow,0.618718433538229,0.06694173824159211,2,very_pleasant,1.5,2.0,3.5,2.5
+SR108,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR108.wav,London,StPaulsRow,0.5366116523516814,-0.14016504294495544,2,very_pleasant,2.0,2.0,3.0,1.0
+SR111,data/raw/isd/audio/WAV_London_3/StPaulsRow/SR111.wav,London,StPaulsRow,0.7499999999999999,-0.20710678118654754,1,very_pleasant,1.0,1.0,3.0,2.0
+TM203,data/raw/isd/audio/WAV_London_4/TateModern/TM203.wav,London,TateModern,0.5606601717798212,0.6035533905932737,1,very_pleasant,3.0,1.0,4.0,2.0
+TM230,data/raw/isd/audio/WAV_London_4/TateModern/TM230.wav,London,TateModern,0.6035533905932736,0.14644660940672613,1,very_pleasant,2.0,1.0,5.0,3.0
+TM307,data/raw/isd/audio/WAV_London_4/TateModern/TM307.wav,London,TateModern,0.5303300858899105,0.40533008588991054,2,very_pleasant,2.0,3.5,4.5,2.5
+TS226,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS226.wav,London,TorringtonSq,0.7803300858899107,0.6338834764831843,1,very_pleasant,3.0,2.0,3.0,1.0
+TS306,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS306.wav,London,TorringtonSq,0.7499999999999999,0.20710678118654754,1,very_pleasant,3.0,2.0,3.0,1.0
+TS401,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS401.wav,London,TorringtonSq,0.6035533905932737,0.24999999999999992,1,very_pleasant,2.0,1.0,4.0,1.0
+CT119,data/raw/isd/audio/WAV_London_1/CamdenTown/CT119.wav,London,CamdenTown,-0.5606601717798214,0.7500000000000001,1,very_unpleasant,5.0,4.0,3.0,1.0
+CT308,data/raw/isd/audio/WAV_London_1/CamdenTown/CT308.wav,London,CamdenTown,-0.5151650429449554,0.18305826175840778,2,very_unpleasant,4.5,3.5,2.5,1.0
+CT402,data/raw/isd/audio/WAV_London_1/CamdenTown/CT402.wav,London,CamdenTown,-0.5303300858899106,0.5732233047033631,1,very_unpleasant,4.0,3.0,5.0,1.0
+CT404,data/raw/isd/audio/WAV_London_1/CamdenTown/CT404.wav,London,CamdenTown,-0.5,0.3964466094067262,1,very_unpleasant,5.0,5.0,3.0,2.0
+CT406,data/raw/isd/audio/WAV_London_1/CamdenTown/CT406.wav,London,CamdenTown,-0.7500000000000001,0.14644660940672624,1,very_unpleasant,4.0,1.0,4.0,1.0
+CT408,data/raw/isd/audio/WAV_London_1/CamdenTown/CT408.wav,London,CamdenTown,-0.5000000000000002,-0.1893398282201787,1,very_unpleasant,4.0,2.0,3.0,1.0
+CT414,data/raw/isd/audio/WAV_London_1/CamdenTown/CT414.wav,London,CamdenTown,-0.6481812160876687,0.26848545057899814,3,very_unpleasant,3.6666666666666665,3.0,3.3333333333333335,2.0
+ET113,data/raw/isd/audio/WAV_London_1/EustonTap/ET113.wav,London,EustonTap,-0.8535533905932738,-0.10355339059327377,1,very_unpleasant,5.0,4.0,3.0,1.0
+ET118,data/raw/isd/audio/WAV_London_1/EustonTap/ET118.wav,London,EustonTap,-0.6401650429449555,0.2821699141100894,4,very_unpleasant,4.25,4.0,2.25,2.0
+ET121,data/raw/isd/audio/WAV_London_1/EustonTap/ET121.wav,London,EustonTap,-0.676776695296637,0.340990257669732,1,very_unpleasant,4.0,2.0,1.0,1.0
+ET205,data/raw/isd/audio/WAV_London_1/EustonTap/ET205.wav,London,EustonTap,-0.5303300858899108,0.3446699141100894,2,very_unpleasant,5.0,3.0,2.5,1.0
+ET312,data/raw/isd/audio/WAV_London_1/EustonTap/ET312.wav,London,EustonTap,-0.6035533905932738,0.1893398282201787,1,very_unpleasant,5.0,3.0,3.0,1.0
+MC114,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC114.wav,London,MarchmontGarden,-0.5000000000000001,0.14644660940672624,1,very_unpleasant,3.0,4.0,4.0,2.0
+MC328,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC328.wav,London,MarchmontGarden,-0.6035533905932738,0.25,1,very_unpleasant,2.0,2.0,2.0,4.0
+MC329,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC329.wav,London,MarchmontGarden,-0.603553390593274,-0.31066017177982114,1,very_unpleasant,4.0,2.0,1.0,2.0
+MC417,data/raw/isd/audio/WAV_London_1/MarchmontGarden/MC417.wav,London,MarchmontGarden,-0.5821067811865477,0.04289321881345243,2,very_unpleasant,3.0,2.5,4.0,4.0
+PL230,data/raw/isd/audio/WAV_London_2/PancrasLock/PL230.wav,London,PancrasLock,-0.5000000000000002,-9.197388681172371e-17,1,very_unpleasant,2.0,2.0,3.0,2.0
+RP214,data/raw/isd/audio/WAV_London_2/RegentsParkJapan/RP214.wav,London,RegentsParkJapan,-0.7803300858899109,-0.6338834764831843,1,very_unpleasant,1.0,2.0,3.0,4.0
+TS233,data/raw/isd/audio/WAV_London_4/TorringtonSq/TS233.wav,London,TorringtonSq,-0.5366116523516817,0.08838834764831852,2,very_unpleasant,4.5,4.5,2.5,1.0
+MG102,data/raw/isd/audio/Venice WAV Files/MonumentoGaribaldi/MG102.wav,Venice,MonumentoGaribaldi,-0.030330085889910697,0.38388347648318427,1,neutral,1.0,1.0,2.0,4.0
+MG110,data/raw/isd/audio/Venice WAV Files/MonumentoGaribaldi/MG110.wav,Venice,MonumentoGaribaldi,-0.04289321881345256,0.20710678118654754,1,neutral,1.0,1.0,4.0,4.0
+ML101,data/raw/isd/audio/Venice WAV Files/SanMarco/ML101.wav,Venice,SanMarco,0.08838834764831832,0.3080582617584078,2,neutral,1.0,1.0,4.0,1.5
+ML103,data/raw/isd/audio/Venice WAV Files/SanMarco/ML103.wav,Venice,SanMarco,0.015165042944955234,0.5625,4,neutral,1.0,3.25,4.5,1.75
+ML130,data/raw/isd/audio/Venice WAV Files/SanMarco/ML130.wav,Venice,SanMarco,0.1401650429449553,0.5883883476483185,2,neutral,2.0,2.5,4.5,2.0
+ML131,data/raw/isd/audio/Venice WAV Files/SanMarco/ML131.wav,Venice,SanMarco,0.12499999999999986,0.34466991411008935,2,neutral,2.0,2.0,3.5,1.5
+ML133,data/raw/isd/audio/Venice WAV Files/SanMarco/ML133.wav,Venice,SanMarco,0.00758252147247758,0.3888640879342486,4,neutral,2.25,2.0,4.0,1.75
+ML203,data/raw/isd/audio/Venice WAV Files/SanMarco/ML203.wav,Venice,SanMarco,0.07322330470336298,0.3232233047033631,1,neutral,3.0,3.0,4.0,2.0
+ML204,data/raw/isd/audio/Venice WAV Files/SanMarco/ML204.wav,Venice,SanMarco,0.07322330470336298,-0.030330085889910607,1,neutral,1.0,3.0,4.0,2.0
+ML211,data/raw/isd/audio/Venice WAV Files/SanMarco/ML211.wav,Venice,SanMarco,-1.8394777362344743e-16,-9.197388681172371e-17,1,neutral,2.0,1.5,4.0,1.5
+ML212,data/raw/isd/audio/Venice WAV Files/SanMarco/ML212.wav,Venice,SanMarco,0.03033008588991057,0.3232233047033631,2,neutral,3.5,4.5,3.5,3.5
+SM301,data/raw/isd/audio/Venice WAV Files/SanMarco/SM301.wav,Venice,SanMarco,0.015165042944955187,0.19194173824159227,2,neutral,2.0,1.5,4.0,3.0
+SM303,data/raw/isd/audio/Venice WAV Files/SanMarco/SM303.wav,Venice,SanMarco,-0.063113276073393,0.5,3,neutral,2.0,1.3333333333333333,4.0,2.0
+SM304,data/raw/isd/audio/Venice WAV Files/SanMarco/SM304.wav,Venice,SanMarco,0.1187184335382291,0.8901650429449554,2,neutral,1.5,1.0,5.0,1.5
+SM305,data/raw/isd/audio/Venice WAV Files/SanMarco/SM305.wav,Venice,SanMarco,-0.1401650429449554,0.670495128834866,2,neutral,2.5,1.5,5.0,1.5
+SM306,data/raw/isd/audio/Venice WAV Files/SanMarco/SM306.wav,Venice,SanMarco,0.015165042944955277,0.6616116523516815,2,neutral,1.0,1.0,3.5,1.5
+SM308,data/raw/isd/audio/Venice WAV Files/SanMarco/SM308.wav,Venice,SanMarco,0.06903559372884914,0.5690355937288492,3,neutral,1.6666666666666667,2.6666666666666665,5.0,2.6666666666666665
+SM309,data/raw/isd/audio/Venice WAV Files/SanMarco/SM309.wav,Venice,SanMarco,-0.051776695296636914,0.6767766952966369,2,neutral,1.5,1.0,5.0,1.5
+SM313,data/raw/isd/audio/Venice WAV Files/SanMarco/SM313.wav,Venice,SanMarco,-0.03661165235168165,0.3812815664617709,2,neutral,1.5,3.0,4.0,1.0
+AM02,data/raw/isd/audio/Venice WAV Files/SanMarco/AM02.wav,Venice,SanMarco,0.4267766952966368,4.163336342344337e-17,2,pleasant,2.0,1.5,4.0,3.5
+AM06,data/raw/isd/audio/Venice WAV Files/SanMarco/AM06.wav,Venice,SanMarco,0.17677669529663675,0.10355339059327373,2,pleasant,1.0,4.0,3.5,1.5
+MG101,data/raw/isd/audio/Venice WAV Files/MonumentoGaribaldi/MG101.wav,Venice,MonumentoGaribaldi,0.368718433538229,0.04549512883486595,2,pleasant,2.5,3.0,3.0,3.5
+MG104,data/raw/isd/audio/Venice WAV Files/MonumentoGaribaldi/MG104.wav,Venice,MonumentoGaribaldi,0.4267766952966368,0.05177669529663689,2,pleasant,1.5,1.5,3.5,4.0
+MG105,data/raw/isd/audio/Venice WAV Files/MonumentoGaribaldi/MG105.wav,Venice,MonumentoGaribaldi,0.2196699141100893,-0.32322330470336313,1,pleasant,4.0,1.0,1.0,2.0
+MG109,data/raw/isd/audio/Venice WAV Files/MonumentoGaribaldi/MG109.wav,Venice,MonumentoGaribaldi,0.24371843353822895,-0.006281566461770874,2,pleasant,2.0,2.5,3.0,2.0
+MG111,data/raw/isd/audio/Venice WAV Files/MonumentoGaribaldi/MG111.wav,Venice,MonumentoGaribaldi,0.35355339059327373,0.426776695296637,2,pleasant,1.5,2.0,3.5,2.5
+MG114,data/raw/isd/audio/Venice WAV Files/MonumentoGaribaldi/MG114.wav,Venice,MonumentoGaribaldi,0.44194173824159205,-0.015165042944955354,2,pleasant,1.0,1.0,4.0,1.5
+MG116,data/raw/isd/audio/Venice WAV Files/MonumentoGaribaldi/MG116.wav,Venice,MonumentoGaribaldi,0.3017766952966368,-0.0732233047033631,2,pleasant,2.5,2.0,4.0,3.0
+MG118,data/raw/isd/audio/Venice WAV Files/MonumentoGaribaldi/MG118.wav,Venice,MonumentoGaribaldi,0.4785533905932736,-0.09466991411008945,2,pleasant,2.5,2.5,4.0,2.0
+ML104,data/raw/isd/audio/Venice WAV Files/SanMarco/ML104.wav,Venice,SanMarco,0.31694173824159205,0.23483495705504465,2,pleasant,1.0,2.0,4.0,4.0
+ML112,data/raw/isd/audio/Venice WAV Files/SanMarco/ML112.wav,Venice,SanMarco,0.300550143149851,0.32914562235881945,3,pleasant,1.25,2.0,4.75,3.5
+ML205,data/raw/isd/audio/Venice WAV Files/SanMarco/ML205.wav,Venice,SanMarco,0.4722718241315028,0.41161165235168157,2,pleasant,1.0,1.0,4.5,3.5
+ML206,data/raw/isd/audio/Venice WAV Files/SanMarco/ML206.wav,Venice,SanMarco,0.3383883476483183,0.14016504294495533,2,pleasant,1.0,2.0,4.0,3.0
+ML208,data/raw/isd/audio/Venice WAV Files/SanMarco/ML208.wav,Venice,SanMarco,0.3080582617584076,0.058058261758407816,2,pleasant,1.0,1.0,4.0,2.5
+ML209,data/raw/isd/audio/Venice WAV Files/SanMarco/ML209.wav,Venice,SanMarco,0.4053300858899106,0.375,2,pleasant,1.0,1.0,3.5,1.5
+ML213,data/raw/isd/audio/Venice WAV Files/SanMarco/ML213.wav,Venice,SanMarco,0.28033008588991054,0.7803300858899107,1,pleasant,1.0,4.0,4.0,2.0
+ML214,data/raw/isd/audio/Venice WAV Files/SanMarco/ML214.wav,Venice,SanMarco,0.4612944921610614,0.3779611588277281,3,pleasant,1.0,1.0,4.0,2.0
+SM307,data/raw/isd/audio/Venice WAV Files/SanMarco/SM307.wav,Venice,SanMarco,0.2803300858899106,0.42677669529663687,1,pleasant,1.0,2.5,3.5,2.5
+SM311,data/raw/isd/audio/Venice WAV Files/SanMarco/SM311.wav,Venice,SanMarco,0.49999999999999983,-0.10355339059327386,1,pleasant,1.0,3.0,5.0,3.0
+SM314,data/raw/isd/audio/Venice WAV Files/SanMarco/SM314.wav,Venice,SanMarco,0.28284271247461895,0.42426406871192845,5,pleasant,1.2,2.0,4.6,2.6
+ML132,data/raw/isd/audio/Venice WAV Files/SanMarco/ML132.wav,Venice,SanMarco,-0.22855339059327384,0.36611652351681556,2,unpleasant,1.0,1.0,4.0,1.5
+SM302,data/raw/isd/audio/Venice WAV Files/SanMarco/SM302.wav,Venice,SanMarco,-0.20710678118654763,0.5606601717798214,1,unpleasant,1.0,2.0,4.0,1.0
+SM310,data/raw/isd/audio/Venice WAV Files/SanMarco/SM310.wav,Venice,SanMarco,-0.2500000000000001,0.24111652351681562,2,unpleasant,1.5,1.5,4.5,2.5
+AM07,data/raw/isd/audio/Venice WAV Files/SanMarco/AM07.wav,Venice,SanMarco,0.7071067811865476,0.7071067811865476,1,very_pleasant,1.0,1.0,4.0,4.0
+MG103,data/raw/isd/audio/Venice WAV Files/MonumentoGaribaldi/MG103.wav,Venice,MonumentoGaribaldi,0.5606601717798213,-0.3535533905932738,1,very_pleasant,2.0,1.0,3.0,2.0
+MG106,data/raw/isd/audio/Venice WAV Files/MonumentoGaribaldi/MG106.wav,Venice,MonumentoGaribaldi,0.6422588984322123,-0.024407768234454483,3,very_pleasant,1.6666666666666667,2.3333333333333335,3.3333333333333335,3.6666666666666665
+MG108,data/raw/isd/audio/Venice WAV Files/MonumentoGaribaldi/MG108.wav,Venice,MonumentoGaribaldi,0.6767766952966368,0.17677669529663675,1,very_pleasant,1.0,3.0,3.0,2.0
+MG119,data/raw/isd/audio/Venice WAV Files/MonumentoGaribaldi/MG119.wav,Venice,MonumentoGaribaldi,0.6401650429449552,0.10983495705504466,2,very_pleasant,1.5,2.0,3.5,4.0
+ML105,data/raw/isd/audio/Venice WAV Files/SanMarco/ML105.wav,Venice,SanMarco,0.5606601717798212,0.6464466094067263,1,very_pleasant,1.0,1.0,5.0,3.0
+ML111,data/raw/isd/audio/Venice WAV Files/SanMarco/ML111.wav,Venice,SanMarco,0.556218433538229,0.40088834764831843,4,very_pleasant,2.0,2.0,2.5,2.0
+ML210,data/raw/isd/audio/Venice WAV Files/SanMarco/ML210.wav,Venice,SanMarco,0.743718433538229,0.2954951288348659,2,very_pleasant,1.0,1.0,3.5,2.5
+SM312,data/raw/isd/audio/Venice WAV Files/SanMarco/SM312.wav,Venice,SanMarco,0.573223304703363,0.17677669529663675,1,very_pleasant,1.0,1.0,5.0,1.0

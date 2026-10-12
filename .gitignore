@@ -14,3 +14,17 @@ clotho/selected_*.csv
 clotho/checked/
 third_party/
 soundaqnet/cache_isd/
+clotho/cache_features/
+clotho/*.log
+clotho/train*/*
+!clotho/train*/*.csv
+!clotho/train*/*/metadata.csv
+!clotho/train*/*/dataset_config.json
+isd/train/*
+!isd/train/*/metadata.csv
+!isd/train/*/dataset_config.json
+joint/train/*
+generation/train/araus_whole/*
+!generation/train/araus_whole/metadata.csv
+!generation/train/araus_whole/dataset_config.json
+!generation/train/araus_whole/chunk_info.csv
