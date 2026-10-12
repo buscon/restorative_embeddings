@@ -86,6 +86,14 @@ def main():
     ap.add_argument("--araus-caption", choices=["harmonised", "native"], default="harmonised")
     ap.add_argument("--chunk-seconds", type=float, default=10.0)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--scores", default="",
+                    help="chunk_scores.csv from joint/screen_araus_audioset.py (needed for the music filters)")
+    ap.add_argument("--max-music", type=float, default=None,
+                    help="drop a file if any of its chunks has a music score above this")
+    ap.add_argument("--max-base-music", type=float, default=None,
+                    help="drop all mixes of a base soundscape whose median music score is above this")
+    ap.add_argument("--exclude", default="",
+                    help="comma list of masker[:fg|bg] to leave out, e.g. bird:fg,construction")
     a = ap.parse_args()
     rng = random.Random(a.seed)
 
@@ -101,11 +109,48 @@ def main():
                 continue
             if masker not in MASKER_WORDS or p != p:
                 continue
+            if r["stimulus_id"].split("|")[0] in excl or (keep_m and masker not in keep_m) \
+                    or (smr < 0 and masker in no_fg):
+                continue
             cands.append({"id": r.get("export_id") or r.get("id"), "wav_path": r.get("wav_path") or "",
-                          "p": p, "bin": pleasantness_bin(p), "masker": masker, "fg": smr < 0})
+                          "p": p, "bin": pleasantness_bin(p), "masker": masker, "fg": smr < 0,
+                          "base": r["stimulus_id"].split("|")[0]})
     print(f"ARAUS candidates: {len(cands)}")
     if cands:
         print("example row:", {k: cands[0][k] for k in ("id", "wav_path")})
+
+    # ---- optional screening filters
+    n0 = len(cands)
+    if a.exclude:
+        rules = set()
+        for tok in a.exclude.split(","):
+            m, _, side = tok.strip().partition(":")
+            rules.add((m, {"fg": True, "bg": False}.get(side)))
+        cands = [c for c in cands if (c["masker"], c["fg"]) not in rules and (c["masker"], None) not in rules]
+        print(f"--exclude {a.exclude}: {n0 - len(cands)} files removed")
+    if a.max_music is not None or a.max_base_music is not None:
+        if not a.scores:
+            sys.exit("--max-music / --max-base-music need --scores")
+        import statistics
+        file_max, base_scores = {}, defaultdict(list)
+        with open(a.scores, encoding="utf-8") as f:
+            for r in csv.DictReader(f):
+                file_max[r["id"]] = max(file_max.get(r["id"], 0.0), float(r["music"]))
+                base_scores[r["base"]].append(float(r["music"]))
+        base_med = {b: statistics.median(v) for b, v in base_scores.items()}
+        keep, n_unscored = [], 0
+        for c in cands:
+            if c["id"] not in file_max:
+                n_unscored += 1          # not screened: not used
+                continue
+            if a.max_music is not None and file_max[c["id"]] > a.max_music:
+                continue
+            if a.max_base_music is not None and base_med.get(c["base"], 0.0) > a.max_base_music:
+                continue
+            keep.append(c)
+        print(f"music filter: {len(cands) - len(keep) - n_unscored} files removed, {n_unscored} unscored, "
+              f"{len(keep)} kept")
+        cands = keep
 
     by_bin = defaultdict(lambda: defaultdict(list))   # bin -> (masker, fg) -> rows
     for c in cands:
