@@ -13,6 +13,13 @@ Caption styles (--caption, see rsd/captions.py):
   place          "soundscape at Camden Town in London [ISOPleasant: x.xx]"
 The sound sources are the ones the raters reported (mean rating >= 3.5 of 5, at most two).
 
+Whole-recording mode (--whole-max S, e.g. 47): no fixed chunks. Each recording is kept as ONE training
+file of its own length (the rating belongs to the whole recording); a recording longer than S is split
+into the fewest equal pieces that are each at most S seconds (61 s -> 2 x 30.5 s). Recordings shorter than
+--min-seconds are dropped. stable-audio-tools pads each file to the model's sample_size and passes the real
+length as seconds_total, so files of different lengths are fine. S must not exceed the model's
+sample_size / sample_rate (about 47.5 s for Stable Audio Open 1.0).
+
 A recording up to --tolerance seconds short of a whole number of chunks still gets that
 many chunks (the last one zero-padded); a shorter remainder is dropped.
 
@@ -39,6 +46,11 @@ def main():
     ap.add_argument("--chunk-seconds", type=float, default=10.0)
     ap.add_argument("--caption", choices=["content", "content_place", "place"], default="content")
     ap.add_argument("--tolerance", type=float, default=0.25)
+    ap.add_argument("--whole-max", type=float, default=0.0,
+                    help="whole-recording mode: keep recordings whole, split only those longer than this many "
+                         "seconds (e.g. 47). Overrides --chunk-seconds.")
+    ap.add_argument("--min-seconds", type=float, default=10.0,
+                    help="whole-recording mode: drop recordings shorter than this")
     ap.add_argument("--no-city", action="store_true",
                     help="leave the city out of the caption (so the city cannot predict the number)")
     ap.add_argument("--bin-repeat", default="",
@@ -56,7 +68,7 @@ def main():
     step = int(round(a.chunk_seconds * SR))
     tol = int(round(a.tolerance * SR))
     rows_out, n_ok, n_fail = [], 0, 0
-    eff = {}   # bin -> [recordings, unique chunks, chunks incl. repeats]
+    eff = {}   # bin -> [recordings, unique chunks, chunks incl. repeats, unique seconds, seconds seen]
 
     with open(a.selected, encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
@@ -82,10 +94,20 @@ def main():
                       for k in ("traffic", "other_noise", "human", "natural")}
             caption = make_isd_content_caption(scores, city, p,
                                                r["LocationID"] if a.caption == "content_place" else "")
-        for i in range((len(y) + tol) // step):
-            chunk = y[i * step:(i + 1) * step]
-            if len(chunk) < step:
-                chunk = np.pad(chunk, ((0, step - len(chunk)), (0, 0)))
+        if a.whole_max:
+            n = int(np.ceil(len(y) / (a.whole_max * SR)))
+            if len(y) < a.min_seconds * SR:
+                n = 0
+            bounds = [int(round(k * len(y) / max(n, 1))) for k in range(n + 1)]
+            pieces = [y[bounds[k]:bounds[k + 1]] for k in range(n)]
+        else:
+            pieces = []
+            for i in range((len(y) + tol) // step):
+                chunk = y[i * step:(i + 1) * step]
+                if len(chunk) < step:
+                    chunk = np.pad(chunk, ((0, step - len(chunk)), (0, 0)))
+                pieces.append(chunk)
+        for i, chunk in enumerate(pieces):
             name = f"isd_{r['GroupID']}_c{i}.wav"
             sf.write(out / name, chunk, SR, subtype="PCM_16")
             rows_out.append({"file": name, "caption": caption})
@@ -95,10 +117,12 @@ def main():
                     link.unlink()
                 link.symlink_to(name)
                 rows_out.append({"file": link.name, "caption": caption})
-            e = eff.setdefault(r.get("bin", "all"), [0, 0, 0])
+            e = eff.setdefault(r.get("bin", "all"), [0, 0, 0, 0.0, 0.0])
             e[1] += 1
             e[2] += reps
-        eff.setdefault(r.get("bin", "all"), [0, 0, 0])[0] += 1
+            e[3] += len(chunk) / SR
+            e[4] += reps * len(chunk) / SR
+        eff.setdefault(r.get("bin", "all"), [0, 0, 0, 0.0, 0.0])[0] += 1
         n_ok += 1
 
     with open(out / "metadata.csv", "w", newline="", encoding="utf-8") as f:
@@ -113,10 +137,11 @@ def main():
                             "extensions": [".wav"], "custom_metadata_module": str(adapter)}]}
     (out / "dataset_config.json").write_text(json.dumps(config, indent=2))
     print(f"{n_ok} recordings -> {len(rows_out)} chunk files in {out} ({n_fail} failed)")
-    print(f"{'bin':16s}{'recordings':>11s}{'chunks':>8s}{'incl. repeats':>14s}{'hours seen':>11s}")
-    for k, (nr, nc, nt) in eff.items():
-        print(f"{k:16s}{nr:11d}{nc:8d}{nt:14d}{nt * a.chunk_seconds / 3600:11.2f}")
-    print(f"unique audio: {sum(v[1] for v in eff.values()) * a.chunk_seconds / 3600:.2f} h")
+    print(f"{'bin':16s}{'recordings':>11s}{'chunks':>8s}{'incl. repeats':>14s}{'hours seen':>11s}{'unique h':>10s}")
+    for k, (nr, nc, nt, us, ss) in eff.items():
+        print(f"{k:16s}{nr:11d}{nc:8d}{nt:14d}{ss / 3600:11.2f}{us / 3600:10.2f}")
+    print(f"unique audio: {sum(v[3] for v in eff.values()) / 3600:.2f} h in "
+          f"{sum(v[1] for v in eff.values())} files; files incl. repeats: {sum(v[2] for v in eff.values())}")
 
 
 if __name__ == "__main__":
