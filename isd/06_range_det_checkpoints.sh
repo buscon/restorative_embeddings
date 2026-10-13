@@ -11,16 +11,18 @@ set -euo pipefail
 REPO="${REPO:-$HOME/Documents/restorative_embeddings}"
 CKPT_DIR="${CKPT_DIR:-$HOME/stableaudio/runs_isd/isd_all_balanced/9185hkux/checkpoints}"
 CONFIG="${CONFIG:-$REPO/configs/model_config.json}"
+OUTROOT="${OUTROOT:-$HOME/grids}"   # use a new folder for a new run, existing files are skipped
+SECS="${SECS:-10}"   # length of the generated clips; use 30 for the whole-file models
 STEPS=("$@")
 [ ${#STEPS[@]} -eq 0 ] && STEPS=(4000 8000)
 
-cd "$REPO"
+cd "$REPO"; mkdir -p "$OUTROOT"
 for S in "${STEPS[@]}"; do
   CK=$(ls "$CKPT_DIR"/epoch=*-step=${S}.ckpt 2>/dev/null | head -1 || true)
   if [ -z "$CK" ]; then echo "no checkpoint for step $S in $CKPT_DIR"; continue; fi
-  OUT="$HOME/grids/isd_all_${S}_range_det"
+  OUT="$OUTROOT/isd_all_${S}_range_det"
   echo "=== step $S: $CK -> $OUT"
   python generation/generate_prompt_range.py \
       --ckpt "$CK" --config "$CONFIG" --out "$OUT" \
-      --sampler dpmpp-2m --evaluate 2>&1 | tee -a "$HOME/grids/isd_all_range_det_${S}.log"
+      --sampler dpmpp-2m --seconds "$SECS" --evaluate 2>&1 | tee -a "$OUTROOT/isd_all_range_det_${S}.log"
 done

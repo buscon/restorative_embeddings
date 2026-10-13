@@ -13,9 +13,10 @@ set -euo pipefail
 REPO="${REPO:-$HOME/Documents/restorative_embeddings}"
 CKPT_DIR="${CKPT_DIR:-$HOME/stableaudio/runs_isd/isd_all_balanced/9185hkux/checkpoints}"
 CONFIG="${CONFIG:-$REPO/configs/model_config.json}"
+SECS="${SECS:-10}"   # length of the generated clips; use 30 for the whole-file models
 STEPS="${STEPS:-6000 12000 19000}"
 GUIDANCE="${GUIDANCE:-7 12 15}"
-ROOT="$HOME/grids/guid"
+ROOT="${ROOT:-$HOME/grids/guid}"   # use a new folder for a new run, existing files are skipped
 mkdir -p "$ROOT"
 cd "$REPO"
 
@@ -27,7 +28,7 @@ for S in $STEPS; do
     echo "=== step $S, guidance $G -> $OUT"
     python generation/generate_prompt_range.py \
         --ckpt "$CK" --config "$CONFIG" --out "$OUT" \
-        --levels -0.7 0.0 0.7 --guidance "$G" --sampler dpmpp-2m --evaluate \
+        --levels -0.7 0.0 0.7 --guidance "$G" --sampler dpmpp-2m --seconds "$SECS" --evaluate \
         2>&1 | tee -a "$ROOT/log_${S}_g${G}.txt"
   done
 done
