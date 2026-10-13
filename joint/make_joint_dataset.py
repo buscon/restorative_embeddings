@@ -85,6 +85,16 @@ def main():
     ap.add_argument("--araus-files", type=int, default=400)
     ap.add_argument("--araus-caption", choices=["harmonised", "native"], default="harmonised")
     ap.add_argument("--chunk-seconds", type=float, default=10.0)
+    ap.add_argument("--whole-max", type=float, default=0.0,
+                    help="keep an ARAUS file whole if it is at most this many seconds long (e.g. 47, as in the "
+                         "ISD whole-file set); longer files are cut into --chunk-seconds pieces. 0 = always chunk")
+    ap.add_argument("--min-seconds", type=float, default=10.0, help="with --whole-max: shortest file kept")
+    ap.add_argument("--exclude-bases-file", default="",
+                    help="text file with one ARAUS base soundscape per line (# comments allowed); their mixes are left out")
+    ap.add_argument("--base-scores", default="",
+                    help="<out>_bases.csv written by joint/screen_araus_music.py (columns base, music_median)")
+    ap.add_argument("--max-base-median", type=float, default=None,
+                    help="drop all mixes of a base soundscape whose CLAP music_median is above this (needs --base-scores)")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--scores", default="",
                     help="chunk_scores.csv from joint/screen_araus_audioset.py (needed for the music filters)")
@@ -109,9 +119,6 @@ def main():
                 continue
             if masker not in MASKER_WORDS or p != p:
                 continue
-            if r["stimulus_id"].split("|")[0] in excl or (keep_m and masker not in keep_m) \
-                    or (smr < 0 and masker in no_fg):
-                continue
             cands.append({"id": r.get("export_id") or r.get("id"), "wav_path": r.get("wav_path") or "",
                           "p": p, "bin": pleasantness_bin(p), "masker": masker, "fg": smr < 0,
                           "base": r["stimulus_id"].split("|")[0]})
@@ -128,6 +135,21 @@ def main():
             rules.add((m, {"fg": True, "bg": False}.get(side)))
         cands = [c for c in cands if (c["masker"], c["fg"]) not in rules and (c["masker"], None) not in rules]
         print(f"--exclude {a.exclude}: {n0 - len(cands)} files removed")
+    if a.exclude_bases_file:
+        bad = {ln.split("#")[0].strip() for ln in open(a.exclude_bases_file, encoding="utf-8")} - {""}
+        n1 = len(cands)
+        cands = [c for c in cands if c["base"] not in bad]
+        print(f"--exclude-bases-file: {len(bad)} bases listed, {n1 - len(cands)} files removed")
+    if a.max_base_median is not None:
+        if not a.base_scores:
+            sys.exit("--max-base-median needs --base-scores")
+        with open(a.base_scores, encoding="utf-8") as f:
+            med = {r["base"]: float(r["music_median"]) for r in csv.DictReader(f)}
+        n1 = len(cands)
+        n_unscored = sum(c["base"] not in med for c in cands)
+        cands = [c for c in cands if c["base"] in med and med[c["base"]] <= a.max_base_median]
+        print(f"--max-base-median {a.max_base_median}: {n1 - len(cands) - n_unscored} files removed, "
+              f"{n_unscored} unscored (also removed), {len(cands)} kept")
     if a.max_music is not None or a.max_base_music is not None:
         if not a.scores:
             sys.exit("--max-music / --max-base-music need --scores")
@@ -172,6 +194,7 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     rows_out, src_rows = [], []
 
+    seen_secs = defaultdict(float)   # audio seen per epoch, by source (seconds)
     isd_dir = Path(a.isd_dir).resolve()
     with open(isd_dir / "metadata.csv", encoding="utf-8") as f:
         isd_rows = list(csv.DictReader(f))
@@ -181,6 +204,7 @@ def main():
         p = float(r["caption"].rsplit(":", 1)[1].strip(" ]"))
         rows_out.append({"file": r["file"], "caption": r["caption"]})
         src_rows.append({"file": r["file"], "source": "isd", "bin": pleasantness_bin(p), "masker": "", "foreground": ""})
+        seen_secs["isd"] += sf.info(str(src.resolve())).duration
     print(f"ISD chunk files linked: {len(isd_rows)}")
 
     n_chunks, n_missing = 0, 0
@@ -204,9 +228,14 @@ def main():
         if sr != 44100:
             print(f"warning: {src.name} has sample rate {sr}")
         step = int(round(a.chunk_seconds * sr))
-        for i in range(len(data) // step):
+        if a.whole_max > 0 and int(round(a.min_seconds * sr)) <= len(data) <= int(round(a.whole_max * sr)):
+            pieces = [data]              # whole file, as in the ISD whole-file set
+        else:
+            pieces = [data[i * step:(i + 1) * step] for i in range(len(data) // step)]
+        for i, piece in enumerate(pieces):
             name = f"araus_{c['id']}_c{i}.wav"
-            sf.write(out / name, data[i * step:(i + 1) * step], sr, subtype="PCM_16")
+            sf.write(out / name, piece, sr, subtype="PCM_16")
+            seen_secs["araus"] += len(piece) / sr
             rows_out.append({"file": name, "caption": caption})
             src_rows.append({"file": name, "source": "araus", "bin": c["bin"], "masker": c["masker"],
                              "foreground": int(c["fg"])})
@@ -247,7 +276,9 @@ def main():
     print(f"{'bin':16s}" + "".join(f"{m:>13s}" for m in maskers))
     for b in BINS:
         print(f"{b:16s}" + "".join(f"{tab[(b, m)]:13d}" for m in maskers))
-    print(f"\ntotal chunk files: {len(rows_out)} ({len(rows_out) * a.chunk_seconds / 3600:.2f} h seen per epoch)")
+    print(f"\ntotal files: {len(rows_out)}; audio seen per epoch: ISD {seen_secs['isd'] / 3600:.2f} h, "
+          f"ARAUS {seen_secs['araus'] / 3600:.2f} h, total {sum(seen_secs.values()) / 3600:.2f} h "
+          f"(ISD repeats included)")
 
 
 if __name__ == "__main__":
