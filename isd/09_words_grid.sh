@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Word-label range grids for the ISD model trained with isd/08_make_words_set.py, plus the base-model control.
 # Same settings as isd/06_range_det_checkpoints.sh (7 prompts x seeds 1-3, sampler dpmpp-2m), but the five levels
-# -0.7 -0.35 0 0.35 0.7 are written as "very unpleasant ... very pleasant". Output folders contain the wavs,
+# levels (default -0.7 0 0.7, see LEVELS) are written as "very unpleasant ... very pleasant". Output folders contain the wavs,
 # grid.csv, prompts.csv, evaluation.txt; compare them with generation/compare_grids.py.
 #
 #   source ~/Documents/stable-audio-tools/.venv/bin/activate
@@ -16,6 +16,7 @@ BASE="${BASE:-$HOME/stableaudio/models/stabilityai__stable-audio-open-1.0/model.
 CONFIG="${CONFIG:-$REPO/configs/model_config.json}"
 OUTROOT="${OUTROOT:-$HOME/grids_isd_words}"
 SECS="${SECS:-30}"
+LEVELS="${LEVELS:--0.7 0.0 0.7}"   # -0.7 very unpleasant, 0 neutral, 0.7 very pleasant; all five: LEVELS="-0.7 -0.35 0 0.35 0.7"
 cd "$REPO"; mkdir -p "$OUTROOT"
 for S in "$@"; do
   if [ "$S" = "base" ]; then CK="$BASE"; OUT="$OUTROOT/base_with_words"
@@ -27,5 +28,5 @@ for S in "$@"; do
   echo "=== $S: $CK -> $OUT"
   python generation/generate_prompt_range.py --labels \
       --ckpt "$CK" --config "$CONFIG" --out "$OUT" \
-      --sampler dpmpp-2m --seconds "$SECS" --evaluate 2>&1 | tee -a "$OUTROOT/log_${S}.txt"
+      --levels $LEVELS --sampler dpmpp-2m --seconds "$SECS" --evaluate 2>&1 | tee -a "$OUTROOT/log_${S}.txt"
 done
