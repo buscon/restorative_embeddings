@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Full fine-tune of Stable Audio Open 1.0 with stable-audio-tools.
 # Run from inside the stable-audio-tools checkout, with its venv active:
-#   source ~/stableaudio/.venv/bin/activate && cd ~/Documents/stable-audio-tools
+#   source ~/Documents/stable-audio-tools/.venv/bin/activate && cd ~/Documents/stable-audio-tools
 #   bash ~/Documents/restorative_embeddings/generation/train/03_train.sh
 #
 # Needs: configs/model_config.json (full SAO model config with a "training" section),
@@ -29,7 +29,7 @@ fi
 
 python3 train.py \
   --dataset-config "$DATASET_CONFIG" \
-  --model-config   "$REPO/configs/model_config.json" \
+  --model-config   "${MODEL_CONFIG:-$REPO/configs/model_config.json}" \
   --name "${RUN_NAME:-araus_sao_360}" \
   --save-dir "${SAVE_DIR:-$HOME/stableaudio/runs}" \
   --batch-size "${BATCH_SIZE:-1}" \

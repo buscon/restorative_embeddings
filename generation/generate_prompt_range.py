@@ -67,8 +67,14 @@ def main() -> bool:
     ap.add_argument("--config", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--seeds", type=int, nargs="+", default=[1, 2, 3])
-    ap.add_argument("--levels", type=float, nargs="+", default=[-0.7, -0.4, -0.1, 0.1, 0.4, 0.7],
-                    help="default skips 0.0, which behaved oddly in earlier grids")
+    ap.add_argument("--levels", type=float, nargs="+", default=None,
+                    help="default -0.7 -0.4 -0.1 0.1 0.4 0.7 (skips 0.0, which behaved oddly in earlier grids); "
+                         "with --labels: -0.7 -0.35 0 0.35 0.7")
+    ap.add_argument("--labels", action="store_true",
+                    help="write the pleasantness as one of five words instead of a number (models trained with "
+                         "isd/08_make_words_set.py). The numeric level only names the file and the table row; "
+                         "the word is the nearest of -0.7 very unpleasant, -0.35 unpleasant, 0 neutral, "
+                         "0.35 pleasant, 0.7 very pleasant")
     ap.add_argument("--prompts-file", default=None)
     ap.add_argument("--template", default="{item} [ISOPleasant: {p}]")
     ap.add_argument("--seconds", type=float, default=10.0)
@@ -76,10 +82,23 @@ def main() -> bool:
     ap.add_argument("--guidance", type=float, default=7.0)
     ap.add_argument("--sampler", default="dpmpp-3m-sde")
     ap.add_argument("--use-ema", action="store_true")
+    ap.add_argument("--lora-ckpt", default=None,
+                    help="LoRA checkpoint (.ckpt or .safetensors) from a stable-audio-tools LoRA run; --ckpt is then "
+                         "the BASE model (model.safetensors). EMA does not exist for LoRA runs.")
     ap.add_argument("--negative-prompt", default=None)
     ap.add_argument("--evaluate", action="store_true", help="run evaluate_grid.py on the folder at the end")
     ap.add_argument("--dry-run", action="store_true", help="write grid.csv and print the file list; no model")
     args = ap.parse_args()
+
+    if args.levels is None:
+        args.levels = [-0.7, -0.35, 0.0, 0.35, 0.7] if args.labels else [-0.7, -0.4, -0.1, 0.1, 0.4, 0.7]
+    centers = [-0.7, -0.35, 0.0, 0.35, 0.7]
+    words = ["very unpleasant", "unpleasant", "neutral", "pleasant", "very pleasant"]
+
+    def tag(p):
+        if args.labels:
+            return words[min(range(5), key=lambda i: abs(p - centers[i]))]
+        return format_pleasantness(p)
 
     prompts = read_prompts(args.prompts_file) if args.prompts_file else PROMPTS
     out = Path(args.out).expanduser()
@@ -106,7 +125,7 @@ def main() -> bool:
 
     def record(seed, pid, grp, item, p, sr):
         name = f"s{seed}_{item.replace(' ', '_')}_p{p:.2f}.wav"
-        prompt = args.template.format(item=item, p=format_pleasantness(p))
+        prompt = args.template.format(item=item, p=tag(p))
         rows[name] = {"seed": seed, "masker": item, "p": p, "file": name, "prompt": prompt,
                       "prompt_id": pid, "group": grp, "ckpt": str(Path(args.ckpt).expanduser()),
                       "step": step, "seconds": args.seconds, "diffusion_steps": args.steps,
@@ -138,6 +157,9 @@ def main() -> bool:
         return False
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = model.to(device).eval().requires_grad_(False)
+    if args.lora_ckpt:
+        from stable_audio_tools.models.lora import load_and_apply_loras
+        load_and_apply_loras(model, [str(Path(args.lora_ckpt).expanduser())], cfg["model_type"])
 
     neg = None
     if args.negative_prompt:
