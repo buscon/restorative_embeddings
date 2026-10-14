@@ -70,6 +70,10 @@ def main() -> bool:
     ap.add_argument("--levels", type=float, nargs="+", default=None,
                     help="default -0.7 -0.4 -0.1 0.1 0.4 0.7 (skips 0.0, which behaved oddly in earlier grids); "
                          "with --labels: -0.7 -0.35 0 0.35 0.7")
+    ap.add_argument("--score-cond", action="store_true",
+                    help="model with a number conditioner 'pleasantness' (isd/10_make_score_set.py + "
+                         "generation/make_score_config.py): the prompt is the item WITHOUT tag and the level is "
+                         "passed as the number. Default levels -0.7 -0.35 0 0.35 0.7.")
     ap.add_argument("--labels", action="store_true",
                     help="write the pleasantness as one of five words instead of a number (models trained with "
                          "isd/08_make_words_set.py). The numeric level only names the file and the table row; "
@@ -91,7 +95,7 @@ def main() -> bool:
     args = ap.parse_args()
 
     if args.levels is None:
-        args.levels = [-0.7, -0.35, 0.0, 0.35, 0.7] if args.labels else [-0.7, -0.4, -0.1, 0.1, 0.4, 0.7]
+        args.levels = [-0.7, -0.35, 0.0, 0.35, 0.7] if (args.labels or args.score_cond) else [-0.7, -0.4, -0.1, 0.1, 0.4, 0.7]
     centers = [-0.7, -0.35, 0.0, 0.35, 0.7]
     words = ["very unpleasant", "unpleasant", "neutral", "pleasant", "very pleasant"]
 
@@ -125,7 +129,7 @@ def main() -> bool:
 
     def record(seed, pid, grp, item, p, sr):
         name = f"s{seed}_{item.replace(' ', '_')}_p{p:.2f}.wav"
-        prompt = args.template.format(item=item, p=tag(p))
+        prompt = item if args.score_cond else args.template.format(item=item, p=tag(p))
         rows[name] = {"seed": seed, "masker": item, "p": p, "file": name, "prompt": prompt,
                       "prompt_id": pid, "group": grp, "ckpt": str(Path(args.ckpt).expanduser()),
                       "step": step, "seconds": args.seconds, "diffusion_steps": args.steps,
@@ -164,6 +168,14 @@ def main() -> bool:
     neg = None
     if args.negative_prompt:
         neg = [{"prompt": args.negative_prompt, "seconds_start": 0.0, "seconds_total": args.seconds}]
+        if args.score_cond:
+            neg[0]["pleasantness"] = 0.0
+    def cond_for(prompt, p):
+        c = {"prompt": prompt, "seconds_start": 0.0, "seconds_total": args.seconds}
+        if args.score_cond:
+            c["pleasantness"] = float(p)
+        return c
+
     for k, (seed, pid, grp, item, p) in enumerate(jobs, 1):
         name, prompt = record(seed, pid, grp, item, p, sr)
         path = out / name
@@ -174,7 +186,7 @@ def main() -> bool:
         with torch.no_grad():
             audio = generate_diffusion_cond(
                 model, steps=args.steps, cfg_scale=args.guidance,
-                conditioning=[{"prompt": prompt, "seconds_start": 0.0, "seconds_total": args.seconds}],
+                conditioning=[cond_for(prompt, p)],
                 negative_conditioning=neg, sample_size=size, sampler_type=args.sampler,
                 device=device, seed=seed)
         audio = rearrange(audio, "b d n -> d (b n)")[:, : int(args.seconds * sr)]
