@@ -45,7 +45,13 @@ def load(label: str, folder: str) -> pd.DataFrame:
 def effects(df: pd.DataFrame, metrics: list, k: float) -> pd.DataFrame:
     rows = []
     for grid, gdf in df.groupby("grid", sort=False):
-        levels = sorted(gdf.p.unique())
+        # only levels that every masker has (a folder re-run with another level set can hold a mix)
+        per_masker = [set(np.round(g.p.unique(), 4)) for _, g in gdf.groupby("masker")]
+        levels = sorted(set.intersection(*per_masker))
+        if len(levels) < 2:
+            print(f"warning: {grid}: fewer than 2 levels shared by all maskers, skipped")
+            continue
+        gdf = gdf.assign(p=np.round(gdf.p, 4))
         lo, hi = levels[0], levels[-1]
         for m in metrics:
             sd = gdf.groupby(["masker", "p"])[m].std().mean()
@@ -85,6 +91,8 @@ def main():
     ap.add_argument("grids", nargs="+", help="label=folder (folder with metrics.csv)")
     ap.add_argument("--metrics", nargs="+", default=METRICS)
     ap.add_argument("--k", type=float, default=2.0, help="effect counts as clear if |effect| >= k x seed SD")
+    ap.add_argument("--levels", type=float, nargs="+", default=None,
+                    help="use only these pleasantness levels, e.g. --levels -0.7 0 0.7")
     ap.add_argument("--detail", nargs="*", default=[], help="metrics to print per masker")
     ap.add_argument("--out", default="compare_grids.csv")
     a = ap.parse_args()
@@ -95,7 +103,10 @@ def main():
             sys.exit(f"'{item}': use label=folder")
         label, folder = item.split("=", 1)
         frames.append(load(label, folder))
-    eff = effects(pd.concat(frames, ignore_index=True), a.metrics, a.k)
+    allf = pd.concat(frames, ignore_index=True)
+    if a.levels:
+        allf = allf[np.isclose(allf.p.values[:, None], np.array(a.levels)[None, :]).any(axis=1)]
+    eff = effects(allf, a.metrics, a.k)
     eff.to_csv(a.out, index=False)
 
     pd.set_option("display.width", 200)
