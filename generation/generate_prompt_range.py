@@ -85,6 +85,11 @@ def main() -> bool:
     ap.add_argument("--steps", type=int, default=100)
     ap.add_argument("--guidance", type=float, default=7.0)
     ap.add_argument("--sampler", default="dpmpp-3m-sde")
+    ap.add_argument("--sigma-min", type=float, default=None,
+                    help="noise range of the sampler. Not set = library default (0.01 in stable-audio-tools main). "
+                         "The Stable Audio Open model card uses 0.3")
+    ap.add_argument("--sigma-max", type=float, default=None,
+                    help="not set = library default (100 in stable-audio-tools main). Model card: 500")
     ap.add_argument("--use-ema", action="store_true")
     ap.add_argument("--lora-ckpt", default=None,
                     help="LoRA checkpoint (.ckpt or .safetensors) from a stable-audio-tools LoRA run; --ckpt is then "
@@ -170,6 +175,14 @@ def main() -> bool:
         neg = [{"prompt": args.negative_prompt, "seconds_start": 0.0, "seconds_total": args.seconds}]
         if args.score_cond:
             neg[0]["pleasantness"] = 0.0
+    sigma_kw = {}
+    if args.sigma_min is not None:
+        sigma_kw["sigma_min"] = args.sigma_min
+    if args.sigma_max is not None:
+        sigma_kw["sigma_max"] = args.sigma_max
+    if sigma_kw:
+        print("sampler settings:", args.sampler, sigma_kw, flush=True)
+
     def cond_for(prompt, p):
         c = {"prompt": prompt, "seconds_start": 0.0, "seconds_total": args.seconds}
         if args.score_cond:
@@ -188,7 +201,7 @@ def main() -> bool:
                 model, steps=args.steps, cfg_scale=args.guidance,
                 conditioning=[cond_for(prompt, p)],
                 negative_conditioning=neg, sample_size=size, sampler_type=args.sampler,
-                device=device, seed=seed)
+                device=device, seed=seed, **sigma_kw)
         audio = rearrange(audio, "b d n -> d (b n)")[:, : int(args.seconds * sr)]
         audio = (audio / audio.abs().max().clamp(min=1e-8)).clamp(-1, 1).mul(32767).to(torch.int16).cpu()
         torchaudio.save(str(path), audio, sr)
