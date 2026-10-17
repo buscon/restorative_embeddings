@@ -28,6 +28,7 @@ RUNS = {
     "ISD + ARAUS":       ("nxf8qc76", 6000),
 }
 KEY = "train/mse_signal"
+STEP = "trainer/global_step"   # optimiser steps, as in the checkpoint names (W&B _step counts log calls)
 
 
 def find_run(api, entity, run_id):
@@ -61,9 +62,10 @@ def main():
             rows.append((label, f"{rid} not found in {entity}", "", "", ""))
             continue
         last = a.upto or last
-        h = run.history(keys=[KEY], samples=100000, pandas=True)
-        h = h.dropna(subset=[KEY])
-        step_col = "_step" if "_step" in h.columns else h.columns[0]
+        h = run.history(keys=[KEY, STEP], samples=100000, pandas=True)
+        h[STEP] = h[STEP].ffill().bfill()   # step column may be logged on neighbouring rows only
+        h = h.dropna(subset=[KEY, STEP])
+        step_col = STEP
         h = h[h[step_col] <= last].sort_values(step_col)
         first = h[h[step_col] < h[step_col].min() + a.window][KEY].mean()
         end = h[h[step_col] > h[step_col].max() - a.window][KEY].mean()
