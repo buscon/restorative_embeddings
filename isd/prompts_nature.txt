@@ -1,0 +1,8 @@
+# id|group|item   (item = caption text WITHOUT the pleasantness tag; the script appends it)
+natural_only|nature_vocab|soundscape with natural sounds
+birds_only|nature_free|soundscape with birdsong
+forest_birds|nature_free|soundscape in a forest with birdsong
+wind_trees|nature_free|soundscape with wind in the trees
+stream|nature_free|soundscape with a stream flowing
+rain_leaves|nature_free|soundscape with rain falling on leaves
+waves_beach|nature_free|soundscape with waves on a beach
