@@ -9,7 +9,16 @@ already uses):
   sharp      mean sharpness, acum (DIN 45692, computed from the same loudness)
   rough      mean roughness, asper (Daniel and Weber), on an excerpt of --rough-seconds (slow: ~2.5 min per 30 s)
 
-Written to <folder>/psycho.csv (resumable: files already in it are skipped) and merged into <folder>/metrics.csv
+Tonality, with the tone-to-noise ratio (TNR) and the prominence ratio (PR) of ECMA-418-1 (MoSQITo), on segments of
+0.5 s; only prominent tones count, a segment without one has TNR = PR = 0:
+
+  tnr_mean   mean over segments of the total TNR, dB (0 for segments without a prominent tone)
+  tnr_share  share of segments with at least one prominent tone (0 to 1)
+  pr_mean    same for the prominence ratio, dB
+  pr_share   same for the prominence ratio
+
+Written to <folder>/psycho.csv (resumable: finished files are skipped; files that lack the tonality columns only get those, not the slow loudness
+and roughness again; --no-tonality switches the tonality off) and merged into <folder>/metrics.csv
 (by seed, masker, p) so that compare_grids.py can use the new columns:
 
     python generation/psychoacoustics_grid.py ~/grids_3msde/score_5000 --workers 8
@@ -41,7 +50,9 @@ import soundfile as sf
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 FS = 44100
-COLS = ["loud_N50", "loud_N5", "sharp", "rough"]
+PSY = ["loud_N50", "loud_N5", "sharp", "rough"]
+TON = ["tnr_mean", "tnr_share", "pr_mean", "pr_share"]
+COLS = PSY + TON
 
 
 def _to_mono_44k(x, sr):
@@ -54,8 +65,16 @@ def _to_mono_44k(x, sr):
     return np.asarray(y, np.float64)
 
 
+def tonality(y_pa):
+    from mosqito.sq_metrics import pr_ecma_perseg, tnr_ecma_perseg
+    t = np.asarray(tnr_ecma_perseg(y_pa, FS, prominence=True)[0], float)
+    p = np.asarray(pr_ecma_perseg(y_pa, FS, prominence=True)[0], float)
+    return {"tnr_mean": float(np.mean(t)), "tnr_share": float(np.mean(t > 0)),
+            "pr_mean": float(np.mean(p)), "pr_share": float(np.mean(p > 0))}
+
+
 def measure(args):
-    path, spl, rough_seconds, do_rough = args
+    path, spl, rough_seconds, do_rough, do_psy, do_ton = args
     from mosqito.sq_metrics import loudness_zwtv, roughness_dw, sharpness_din_from_loudness
     try:  # numba version of the slow decay step of the loudness (same result), from this repository
         from soundaqnet import fast_loudness
@@ -66,15 +85,19 @@ def measure(args):
     y = _to_mono_44k(x, sr)
     rms = float(np.sqrt(np.mean(y ** 2)))
     y_pa = y * (20e-6 * 10 ** (spl / 20)) / max(rms, 1e-12)
-    n, ns, _, _ = loudness_zwtv(y_pa, FS, field_type="free")
-    s = sharpness_din_from_loudness(n, ns, weighting="din")
-    out = {"file": Path(path).name, "loud_N50": float(np.median(n)), "loud_N5": float(np.percentile(n, 95)),
-           "sharp": float(np.mean(s)), "rough": np.nan}
-    if do_rough:
-        m = int(rough_seconds * FS)
-        a = max(0, (len(y_pa) - m) // 2)
-        r = roughness_dw(y_pa[a:a + m], FS)[0]
-        out["rough"] = float(np.mean(r))
+    out = {"file": Path(path).name}
+    if do_psy:
+        n, ns, _, _ = loudness_zwtv(y_pa, FS, field_type="free")
+        s = sharpness_din_from_loudness(n, ns, weighting="din")
+        out.update({"loud_N50": float(np.median(n)), "loud_N5": float(np.percentile(n, 95)),
+                    "sharp": float(np.mean(s)), "rough": np.nan})
+        if do_rough:
+            m = int(rough_seconds * FS)
+            a = max(0, (len(y_pa) - m) // 2)
+            r = roughness_dw(y_pa[a:a + m], FS)[0]
+            out["rough"] = float(np.mean(r))
+    if do_ton:
+        out.update(tonality(y_pa))
     return out
 
 
@@ -85,6 +108,7 @@ def main():
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--rough-seconds", type=float, default=10.0, help="length of the excerpt (from the middle) for roughness")
     ap.add_argument("--no-roughness", action="store_true")
+    ap.add_argument("--no-tonality", action="store_true", help="skip TNR and PR (ECMA-418-1)")
     ap.add_argument("--limit", type=int, default=None)
     a = ap.parse_args()
 
@@ -92,20 +116,36 @@ def main():
     grid = pd.read_csv(folder / "grid.csv")
     out_csv = folder / "psycho.csv"
     done = pd.read_csv(out_csv) if out_csv.exists() else pd.DataFrame(columns=["file"] + COLS)
-    todo = [f for f in grid.file if f not in set(done.file) and (folder / f).exists()]
+    for c in COLS:
+        if c not in done.columns:
+            done[c] = np.nan
+    done[COLS] = done[COLS].apply(pd.to_numeric, errors="coerce").astype(float)
+    done = done.drop_duplicates("file", keep="last").set_index("file")
+    jobs, n_ton_only = [], 0
+    for f in grid.file:
+        if not (folder / f).exists():
+            continue
+        row = done.loc[f] if f in done.index else None
+        do_psy = row is None or pd.isna(row["loud_N50"])
+        do_ton = (not a.no_tonality) and (row is None or pd.isna(row["tnr_mean"]))
+        if do_psy or do_ton:
+            jobs.append((str(folder / f), a.spl, a.rough_seconds, not a.no_roughness, do_psy, do_ton))
+            n_ton_only += (not do_psy)
     if a.limit:
-        todo = todo[: a.limit]
-    print(f"{len(grid)} files in grid.csv, {len(done)} done, {len(todo)} to do (assumed level {a.spl:g} dB SPL)")
-    jobs = [(str(folder / f), a.spl, a.rough_seconds, not a.no_roughness) for f in todo]
-    rows = []
+        jobs = jobs[: a.limit]
+    print(f"{len(grid)} files in grid.csv, {len(jobs)} to do ({n_ton_only} of them tonality only; "
+          f"assumed level {a.spl:g} dB SPL)")
     with ProcessPoolExecutor(a.workers) as ex:
         for i, r in enumerate(ex.map(measure, jobs, chunksize=1), 1):
-            rows.append(r)
+            name = r.pop("file")
+            for k, v in r.items():
+                done.loc[name, k] = v
             if i % 5 == 0 or i == len(jobs):
-                pd.concat([done, pd.DataFrame(rows)]).to_csv(out_csv, index=False)
+                done.reset_index().to_csv(out_csv, index=False)
                 print(f"  {i}/{len(jobs)}", flush=True)
-    res = pd.concat([done, pd.DataFrame(rows)]).drop_duplicates("file", keep="last")
+    res = done.reset_index()
     res.to_csv(out_csv, index=False)
+    cols = [c for c in COLS if res[c].notna().any()]
 
     mpath = folder / "metrics.csv"
     if mpath.exists():
@@ -113,10 +153,10 @@ def main():
         g["masker"] = g.masker.astype(str).str.replace(" ", "_")
         g = g[["file", "seed", "masker", "p"]].merge(res, on="file")
         m = pd.read_csv(mpath).drop(columns=[c for c in COLS if c in pd.read_csv(mpath, nrows=0).columns])
-        m = m.merge(g[["seed", "masker", "p"] + COLS], on=["seed", "masker", "p"], how="left")
+        m = m.merge(g[["seed", "masker", "p"] + cols], on=["seed", "masker", "p"], how="left")
         m.to_csv(mpath, index=False)
-        print(f"merged {COLS} into {mpath} ({m[COLS].notna().all(axis=1).sum()} of {len(m)} rows complete)")
-    print(res[COLS].describe().round(2).to_string())
+        print(f"merged {cols} into {mpath} ({m[cols].notna().all(axis=1).sum()} of {len(m)} rows complete)")
+    print(res[cols].describe().round(2).to_string())
 
 
 if __name__ == "__main__":
