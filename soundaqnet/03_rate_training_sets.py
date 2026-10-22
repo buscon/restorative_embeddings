@@ -14,6 +14,7 @@ in _r1.wav, _r2.wav, ...) are links to the same audio and are rated once; --weig
     python soundaqnet/03_rate_training_sets.py ~/path/isd_all_whole --soundscaper third_party/SoundSCaper \
         --workers 8 --device cuda [--limit 20]
     python soundaqnet/03_rate_training_sets.py --summary-only ~/path/isd_all_whole      # reprint from the csv
+    python soundaqnet/03_rate_training_sets.py ~/path/joint_whole_clean04 --prefix araus_ ...   # only the ARAUS files
 
 Output: <out> (default ~/soundaqnet_training/<folder name>.csv, one row per audio file) and a printed summary:
 per pleasantness group (ISD thresholds) the number of files, the mean and sd of the caption rating and of the
@@ -45,7 +46,7 @@ def pleasantness_bin(p):
             "neutral" if p <= 0.15 else "pleasant" if p <= 0.5 else "very_pleasant")
 
 
-def collect(folder):
+def collect(folder, prefix=""):
     """Return (table of unique audio files with caption rating and repeat count, number of captions without a number)."""
     folder = Path(folder).expanduser()
     meta = pd.read_csv(folder / "metadata.csv")
@@ -54,7 +55,7 @@ def collect(folder):
         base = REPEAT.sub(".wav", f)
         counts[base] = counts.get(base, 0) + 1
     for f, cap in zip(meta["file"], meta["caption"]):
-        if REPEAT.search(f):
+        if REPEAT.search(f) or not f.startswith(prefix):
             continue
         m = TAG.search(str(cap))
         if not m:
@@ -120,6 +121,7 @@ def main():
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--device", default="cpu")
     ap.add_argument("--limit", type=int, default=None, help="only the first N files (test run)")
+    ap.add_argument("--prefix", default="", help="only files whose name starts with this (e.g. araus_ in the joint set)")
     ap.add_argument("--out", default=None)
     ap.add_argument("--cache", default=None, help="feature cache (default ~/soundaqnet_cache/<folder name>, outside the dataset)")
     ap.add_argument("--weighted", action="store_true", help="count repeated files as often as they are listed in training")
@@ -127,7 +129,8 @@ def main():
     a = ap.parse_args()
 
     folder = Path(a.folder).expanduser()
-    out = Path(a.out).expanduser() if a.out else Path.home() / "soundaqnet_training" / f"{folder.name}.csv"
+    tag = f"{folder.name}_{a.prefix.strip('_')}" if a.prefix else folder.name
+    out = Path(a.out).expanduser() if a.out else Path.home() / "soundaqnet_training" / f"{tag}.csv"
     out.parent.mkdir(parents=True, exist_ok=True)
 
     if a.summary_only:
@@ -135,7 +138,7 @@ def main():
         summarise(d, a.weighted)
         return
 
-    d, skipped = collect(folder)
+    d, skipped = collect(folder, a.prefix)
     if skipped:
         print(f"{skipped} captions without a number skipped")
     if a.limit:
@@ -147,7 +150,7 @@ def main():
     from concurrent.futures import ProcessPoolExecutor
     from tqdm import tqdm
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    cache = Path(a.cache).expanduser() if a.cache else Path.home() / "soundaqnet_cache" / folder.name
+    cache = Path(a.cache).expanduser() if a.cache else Path.home() / "soundaqnet_cache" / tag
     cache.mkdir(parents=True, exist_ok=True)
     jobs = [(str(folder / f), lv, str(cache)) for f in d.file for lv in a.levels]
     with ProcessPoolExecutor(a.workers) as ex:
