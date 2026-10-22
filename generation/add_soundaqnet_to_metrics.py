@@ -24,12 +24,15 @@ def merge(folder: Path) -> bool:
             return False
     g = pd.read_csv(grid)
     g["masker"] = g.masker.astype(str).str.replace(" ", "_")
-    s = pd.read_csv(sq)[["file", "rating"]].rename(columns={"rating": COL})
+    s = pd.read_csv(sq)
+    cols = {"rating": COL, "rating_eventful": "sq_isev"}   # sq_isev only in files written after the ISOEventful output was added
+    cols = {k: v for k, v in cols.items() if k in s.columns}
+    s = s[["file"] + list(cols)].rename(columns=cols)
     key = g[["file", "seed", "masker", "p"]].merge(s, on="file")
     m = pd.read_csv(met)
-    m = m.drop(columns=[COL], errors="ignore").merge(key[["seed", "masker", "p", COL]], on=["seed", "masker", "p"], how="left")
+    m = m.drop(columns=list(cols.values()), errors="ignore").merge(key[["seed", "masker", "p"] + list(cols.values())], on=["seed", "masker", "p"], how="left")
     m.to_csv(met, index=False)
-    print(f"{folder.name}: {COL} added to {int(m[COL].notna().sum())} of {len(m)} rows")
+    print(f"{folder.name}: {', '.join(cols.values())} added to {int(m[COL].notna().sum())} of {len(m)} rows")
     return True
 
 

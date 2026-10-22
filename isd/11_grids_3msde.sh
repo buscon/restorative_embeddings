@@ -10,6 +10,7 @@
 #   bash isd/11_grids_3msde.sh C          # guidance 12 and 15 for numbers 5000
 #   bash isd/11_grids_3msde.sh D          # ARAUS 6000 (guidance 7) and ARAUS prompts on the base model (generate_grid.py)
 #   bash isd/11_grids_3msde.sh E          # Clotho 5000, 4000, 2000 and the Clotho base model with the tag (generate_grid.py)
+#   GUIDANCE_DEFAULT=10 OUTROOT=$HOME/grids_g10 bash isd/11_grids_3msde.sh G   # main five grids with guidance 10 (H: base controls)
 #   bash isd/11_grids_3msde.sh A B C D E  # all (use tmux or nohup: a run takes hours)
 #   DRY=1 bash isd/11_grids_3msde.sh A    # only list what would be generated
 #
@@ -26,7 +27,7 @@ SAMPLER="${SAMPLER:-dpmpp-3m-sde}"
 SECS="${SECS:-30}"
 SEEDS="${SEEDS:-1 2 3}"
 LEVELS="${LEVELS:--0.7 0.0 0.7}"
-GUIDANCE_DEFAULT=7
+GUIDANCE_DEFAULT="${GUIDANCE_DEFAULT:-7}"   # e.g. GUIDANCE_DEFAULT=10 OUTROOT=$HOME/grids_g10 bash isd/11_grids_3msde.sh G H
 
 NUM_DIR="$RUNS/runs_isd/isd_all_whole/57jbv1r6/checkpoints"
 WORDS_DIR="$RUNS/runs_isd_words/isd_words_whole/dap9tpf4/checkpoints"
@@ -49,6 +50,7 @@ gen() {
 }
 
 ARAUS_DIR="$RUNS/runs_araus/araus_whole/l2xivkew/checkpoints"
+JOINT_DIR="$RUNS/runs_joint/joint_whole_clean04/nxf8qc76/checkpoints"
 CLOTHO_DIR="$RUNS/runs_clotho/clotho_whole_rated/487z5lmc/checkpoints"
 CLOTHO_CAPS=("The wind is blowing and the waves are flowing"
              "It is a busy day in the city and public transportation is everywhere"
@@ -107,7 +109,21 @@ for P in "$@"; do
       gridold clotho_4000 "$CLOTHO_DIR" 4000 "$CONFIG" $GUIDANCE_DEFAULT --clotho
       gridold clotho_2000 "$CLOTHO_DIR" 2000 "$CONFIG" $GUIDANCE_DEFAULT --clotho
       ;;
-    *) echo "unknown group '$P' (use A, B, C, D or E)";;
+    G)
+      # main set: the five grids of the talk (ISD numbers/words/score, joint, ARAUS); use with GUIDANCE_DEFAULT=10
+      gen numbers_5000       "$NUM_DIR"   5000 "$CONFIG"       $GUIDANCE_DEFAULT
+      gen words_5000         "$WORDS_DIR" 5000 "$CONFIG"       $GUIDANCE_DEFAULT --labels
+      gen score_5000         "$SCORE_DIR" 5000 "$CONFIG_SCORE" $GUIDANCE_DEFAULT --score-cond
+      gen joint_5000         "$JOINT_DIR" 5000 "$CONFIG"       $GUIDANCE_DEFAULT
+      gridold araus_6000 "$ARAUS_DIR" 6000 "$CONFIG" $GUIDANCE_DEFAULT
+      ;;
+    H)
+      # base-model controls for the main set
+      gen base_with_numbers  "$BASE"      -    "$CONFIG"       $GUIDANCE_DEFAULT
+      gen base_with_words    "$BASE"      -    "$CONFIG"       $GUIDANCE_DEFAULT --labels
+      gridold base_araus_prompts "$BASE" - "$CONFIG" $GUIDANCE_DEFAULT
+      ;;
+    *) echo "unknown group '$P' (use A, B, C, D, E, G or H)";;
   esac
 done
 

@@ -78,13 +78,16 @@ def main():
     rows = []
     for i, p in enumerate(tqdm(files, desc="model")):
         m = NAME.match(p.name)
-        pred = []
+        pred, pred_ev = [], []
         for j in range(len(a.levels)):
             z = np.load(paths[i, j])
             for run in runners:
-                pred.append(float(run.predict(z["mel"][None], z["loud"][None])["ISOPleasant"][0]))
+                out = run.predict(z["mel"][None], z["loud"][None])
+                pred.append(float(out["ISOPleasant"][0]))
+                pred_ev.append(float(out["ISOEventful"][0]))
         rows.append({"file": p.name, "seed": int(m["seed"]), "caption": m["cap"], "p": float(m["p"]),
-                     "rating": np.mean(pred), "rating_sd": np.std(pred, ddof=1)})
+                     "rating": np.mean(pred), "rating_sd": np.std(pred, ddof=1),
+                     "rating_eventful": np.mean(pred_ev)})
     d = pd.DataFrame(rows)
     d.to_csv(folder / "soundaqnet.csv", index=False)
 
