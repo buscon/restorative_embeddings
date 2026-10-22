@@ -12,7 +12,7 @@ label=folder, optionally with the base-model control of the same prompts after a
         "Clotho=~/grids_3msde/clotho_5000@~/grids_3msde/clotho_base_with_tag" \\
         --metrics sharp centroid_hz A_gt4k loud_N50 rough --out ~/plots/features
 
-Writes <out>_lines.png/.pdf and <out>_effects.png/.pdf and <out>_effects.csv.
+Writes <out>_lines.png/.pdf and <out>_effects.png/.pdf and <out>_effects.csv (with --slide also <out>_effects_slide.png/.pdf: large type, short labels).
 
 Figure 1 (lines): mean over seeds for every prompt (thin grey), mean over prompts (blue), and the control (orange, dashed)
 at each pleasantness value. The y axis is shared along a row, so the size of the changes can be compared between runs.
@@ -50,8 +50,23 @@ LABELS = {
     "tnr_share": "Share with prominent tone",
     "rms_db": "RMS (dB)",
     "sq_isop": "SoundAQnet ISOPleasant",
+    "sspy_LAeq": "LAeq (dB, Soundscapy)",
+    "sspy_S_perseg_avg": "Sharpness per segment (acum, Soundscapy)",
+    "sspy_S_L_avg": "Sharpness from loudness (acum, Soundscapy)",
+    "sspy_N_5": "Loudness N5 (sone, Soundscapy)",
+    "sspy_R_avg": "Roughness (asper, Soundscapy)",
+    "sspy_ZCR": "Zero-crossing rate (Hz, Soundscapy)",
+    "sspy_ACI": "Acoustic complexity index (ACI)",
+    "sspy_NDSI": "NDSI",
+    "sspy_BI": "Bioacoustic index (BI)",
+    "sspy_Ht": "Temporal entropy (Ht)",
+    "sspy_Hf": "Spectral entropy (Hf)",
 }
 DEFAULT_METRICS = ["sharp", "centroid_hz", "A_gt4k", "loud_N50", "rough"]
+SHORT = {"sharp": "Sharpness", "centroid_hz": "Centroid", "rolloff85_hz": "Roll-off", "tilt_db_oct": "Tilt",
+         "A_gt1k": "Power > 1 kHz", "A_gt4k": "Power > 4 kHz", "loud_N50": "Loudness", "loud_N5": "Loudness N5",
+         "rough": "Roughness", "flat_db": "Flatness", "sspy_ZCR": "Zero crossings", "sspy_S_perseg_avg": "Sharpness (sspy)",
+         "sq_isop": "SoundAQnet", "sspy_LAeq": "LAeq", "sspy_ACI": "ACI", "sspy_NDSI": "NDSI", "sspy_BI": "BI"}
 INK, MUTED, GRID = "#0b0b0b", "#52514e", "#e4e3df"
 BLUE, ORANGE, GREY = "#2a78d6", "#eb6834", "#9a9992"
 
@@ -121,13 +136,17 @@ def plot_lines(runs, metrics, out):
     plt.close(fig)
 
 
-def plot_effects(runs, metrics, out, k=2.0):
+def plot_effects(runs, metrics, out, k=2.0, slide=False):
     frames = [df.assign(grid=label) for label, df, _ in runs]
     metrics = [m for m in metrics if all(m in f.columns for f in frames)]
     eff = effects(pd.concat(frames, ignore_index=True), metrics, k)
     eff.to_csv(f"{out}_effects.csv", index=False)
     nc = len(runs)
-    fig, axes = plt.subplots(1, nc, figsize=(3.0 * nc + 1.6, 0.55 * len(metrics) + 1.8), sharex=True, sharey=True, squeeze=False)
+    if slide:   # large type for a beamer slide of about 11 cm width
+        plt.rcParams.update({"font.size": 14, "axes.labelsize": 13, "xtick.labelsize": 12, "ytick.labelsize": 13})
+        fig, axes = plt.subplots(1, nc, figsize=(8.6, 0.6 * len(metrics) + 1.5), sharex=True, sharey=True, squeeze=False)
+    else:
+        fig, axes = plt.subplots(1, nc, figsize=(3.0 * nc + 1.6, 0.55 * len(metrics) + 1.8), sharex=True, sharey=True, squeeze=False)
     lim = float(np.clip(np.nanpercentile(np.abs(eff.ratio), 95) * 1.15, 4.0, 20.0))  # points beyond are drawn at the edge as arrows
     for j, (label, _, _) in enumerate(runs):
         ax = axes[0, j]
@@ -154,17 +173,19 @@ def plot_effects(runs, metrics, out, k=2.0):
                     else:
                         ax.scatter(rc[m_], yy[m_], s=36, marker="o", **kw)
         ax.set_yticks(range(len(metrics)))
-        ax.set_yticklabels([LABELS.get(m, m) for m in metrics], fontsize=10)
+        ax.set_yticklabels([(SHORT if slide else LABELS).get(m, m) for m in metrics], fontsize=13 if slide else 10)
         ax.set_ylim(len(metrics) - 0.5, -0.5)
         ax.set_xlim(-lim, lim)
-        ax.set_title(label, fontsize=11, color=INK)
-        ax.set_xlabel("effect (high - low) in seed SD")
+        ax.set_title(label, fontsize=14 if slide else 11, color=INK)
+        ax.set_xlabel("change in seed SD" if slide else "effect (high - low) in seed SD")
         ax.grid(axis="y", visible=False)
-    fig.text(0.5, 0.012, "grey band: |effect| < 2 seed SD; filled: clear; open: not clear; one dot per prompt; arrow: beyond the axis",
-             ha="center", fontsize=9, color=MUTED)
-    fig.tight_layout(rect=(0, 0.07, 1, 1))
+    if not slide:
+        fig.text(0.5, 0.012, "grey band: |effect| < 2 seed SD; filled: clear; open: not clear; one dot per prompt; arrow: beyond the axis",
+                 ha="center", fontsize=9, color=MUTED)
+    fig.tight_layout(rect=(0, 0 if slide else 0.07, 1, 1))
+    name = f"{out}_effects_slide" if slide else f"{out}_effects"
     for ext in ("png", "pdf"):
-        fig.savefig(f"{out}_effects.{ext}", dpi=200)
+        fig.savefig(f"{name}.{ext}", dpi=200)
     plt.close(fig)
 
 
@@ -173,6 +194,7 @@ def main():
     ap.add_argument("runs", nargs="+", help="label=folder[@control_folder]")
     ap.add_argument("--metrics", nargs="+", default=DEFAULT_METRICS)
     ap.add_argument("--out", default="features")
+    ap.add_argument("--slide", action="store_true", help="also write <out>_effects_slide.pdf/.png: larger type, short labels, for a slide")
     a = ap.parse_args()
     style()
     out = str(Path(a.out).expanduser())
@@ -180,6 +202,8 @@ def main():
     runs = parse(a.runs)
     plot_lines(runs, a.metrics, out)
     plot_effects(runs, a.metrics, out)
+    if a.slide:
+        plot_effects(runs, a.metrics, out, slide=True)
     print(f"written {out}_lines.png/.pdf, {out}_effects.png/.pdf, {out}_effects.csv")
 
 

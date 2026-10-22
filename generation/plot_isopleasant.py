@@ -31,7 +31,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
-RAMP = ["#c6dbef", "#6baed6", "#2171b5", "#08306b", "#041a3d"]  # one hue, light -> dark
+RAMP = ["#9ecae1", "#5b9bd5", "#2171b5", "#08306b", "#041a3d"]  # one hue, light -> dark
 
 
 def load(path):
@@ -56,23 +56,30 @@ def main():
     ap.add_argument("--controls", nargs="*", default=[], help="label=folder of the control for the run with that label")
     ap.add_argument("--zoom", type=float, default=0.5)
     ap.add_argument("--out", default="isopleasant")
+    ap.add_argument("--slide", action="store_true", help="larger type and a single column of 2 x 2 panels sized for a slide (<out>_slide.pdf/.png)")
     a = ap.parse_args()
 
     import soundscapy.plotting as sp
     plt.rcParams.update({"font.size": 10, "figure.facecolor": "white", "savefig.facecolor": "white"})
+    if a.slide:
+        plt.rcParams.update({"font.size": 13, "axes.labelsize": 14, "axes.titlesize": 15, "xtick.labelsize": 12,
+                             "ytick.labelsize": 12, "legend.fontsize": 11, "legend.title_fontsize": 11})
     runs = [(it.split("=", 1)[0], load(it.split("=", 1)[1])) for it in a.runs]
     ctrl = {it.split("=", 1)[0]: load(it.split("=", 1)[1]) for it in a.controls}
 
     n = len(runs)
     ncols = 2 if n > 1 else 1
     nrows = int(np.ceil(n / ncols))
-    fig, axes = plt.subplots(nrows, ncols, figsize=(5.2 * ncols, 5.2 * nrows), squeeze=False)
+    size = 3.4 if a.slide else 5.2
+    fig, axes = plt.subplots(nrows, ncols, figsize=(size * ncols, size * nrows), squeeze=False)
     for ax in axes.ravel()[n:]:
         ax.axis("off")
     summary = []
     for ax, (label, df) in zip(axes.ravel(), runs):
         levels = sorted(df.p.unique())
         colors = {level_label(p): RAMP[int(round(i * (len(RAMP) - 1) / max(len(levels) - 1, 1)))] for i, p in enumerate(levels)}
+        if "colors_first" not in dir():
+            colors_first = colors
         d = df.rename(columns={"sq_isop": "ISOPleasant", "sq_isev": "ISOEventful"}).copy()
         d["level"] = d.p.map(level_label)
         d["level"] = pd.Categorical(d.level, [level_label(p) for p in levels])
@@ -84,13 +91,25 @@ def main():
         ax.plot(means.ISOPleasant, means.ISOEventful, color="#0b0b0b", lw=1.4, zorder=6)
         for (p, r), lv in zip(means.iterrows(), levels):
             ax.scatter([r.ISOPleasant], [r.ISOEventful], s=90, color=colors[level_label(lv)], edgecolor="#0b0b0b", lw=1.4, zorder=7)
+        if a.slide and ax.get_legend() is not None:
+            ax.get_legend().remove()
         ax.set_xlim(-a.zoom, a.zoom)
         ax.set_ylim(-a.zoom, a.zoom)
         summary.append({"run": label, "n_files": len(d), "levels": f"{levels[0]:g}..{levels[-1]:g}",
                         "pleasant_low": means.ISOPleasant.iloc[0], "pleasant_high": means.ISOPleasant.iloc[-1],
                         "eventful_low": means.ISOEventful.iloc[0], "eventful_high": means.ISOEventful.iloc[-1]})
-    fig.tight_layout()
-    out = str(Path(a.out).expanduser())
+    if a.slide:   # one shared legend below the panels instead of one inside each
+        first = [colors_first[k] for k in colors_first]
+        handles = [plt.Line2D([], [], marker="o", ls="", color=c, ms=8) for c in first]
+        names = ["lowest rating"] + ["middle"] * (len(first) - 2) + ["highest rating"] if len(first) > 1 else ["rating"]
+        if ctrl:
+            handles.append(plt.Line2D([], [], marker="o", ls="", color="#b9b8b2", ms=8))
+            names.append("base model")
+        fig.legend(handles, names, loc="lower center", ncol=len(names), frameon=False, bbox_to_anchor=(0.5, 0.0))
+        fig.tight_layout(rect=(0, 0.06, 1, 1))
+    else:
+        fig.tight_layout()
+    out = str(Path(a.out).expanduser()) + ("_slide" if a.slide else "")
     Path(out).parent.mkdir(parents=True, exist_ok=True)
     for ext in ("png", "pdf"):
         fig.savefig(f"{out}.{ext}", dpi=200)

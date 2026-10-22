@@ -11,6 +11,7 @@
 #   bash isd/11_grids_3msde.sh D          # ARAUS 6000 (guidance 7) and ARAUS prompts on the base model (generate_grid.py)
 #   bash isd/11_grids_3msde.sh E          # Clotho 5000, 4000, 2000 and the Clotho base model with the tag (generate_grid.py)
 #   GUIDANCE_DEFAULT=10 OUTROOT=$HOME/grids_g10 bash isd/11_grids_3msde.sh G   # main five grids with guidance 10 (H: base controls)
+#   bash isd/11_grids_3msde.sh I          # guidance 12 for the grids still missing (joint, Clotho, base-model controls)
 #   bash isd/11_grids_3msde.sh A B C D E  # all (use tmux or nohup: a run takes hours)
 #   DRY=1 bash isd/11_grids_3msde.sh A    # only list what would be generated
 #
@@ -123,7 +124,17 @@ for P in "$@"; do
       gen base_with_words    "$BASE"      -    "$CONFIG"       $GUIDANCE_DEFAULT --labels
       gridold base_araus_prompts "$BASE" - "$CONFIG" $GUIDANCE_DEFAULT
       ;;
-    *) echo "unknown group '$P' (use A, B, C, D, E, G or H)";;
+    I)
+      # guidance 12 for the grids that do not exist yet (numbers_5000_g12 and araus_6000_g12 are made by group C and D);
+      # outputs go to $OUTROOT with the suffix _g12. Run with the default OUTROOT (~/grids_3msde).
+      CLOTHO_LEVELS="-0.4 0.0 0.4"
+      gen joint_5000_g12            "$JOINT_DIR" 5000 "$CONFIG" 12
+      gen base_with_numbers_g12     "$BASE"      -    "$CONFIG" 12
+      gridold base_araus_prompts_g12 "$BASE" - "$CONFIG" 12
+      gridold clotho_5000_g12 "$CLOTHO_DIR" 5000 "$CONFIG" 12 --clotho
+      gridold clotho_base_with_tag_g12 "$BASE" - "$CONFIG" 12 --clotho
+      ;;
+    *) echo "unknown group '$P' (use A, B, C, D, E, G, H or I)";;
   esac
 done
 
