@@ -7,7 +7,7 @@ label=folder, optionally with the base-model control of the same prompts after a
 
     python generation/plot_grid_features.py \\
         "ARAUS=~/grids_3msde/araus_6000@~/grids_3msde/base_araus_prompts" \\
-        "ISD (numbers)=~/grids_3msde/numbers_5000@~/grids_3msde/base_with_numbers" \\
+        "ISD=~/grids_3msde/numbers_5000@~/grids_3msde/base_with_numbers" \\
         "ISD+ARAUS=~/grids_3msde/joint_5000@~/grids_3msde/base_with_numbers" \\
         "Clotho=~/grids_3msde/clotho_5000@~/grids_3msde/clotho_base_with_tag" \\
         --metrics sharp centroid_hz A_gt4k loud_N50 rough --out ~/plots/features

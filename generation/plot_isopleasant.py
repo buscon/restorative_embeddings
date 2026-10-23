@@ -7,7 +7,7 @@ only in files written after that change: rerun  MEASURES=sq bash isd/12_measure_
 cached). Each run is label=folder:
 
     python generation/plot_isopleasant.py \\
-        "ARAUS=~/grids_3msde/araus_6000" "ISD (numbers)=~/grids_3msde/numbers_5000" \\
+        "ARAUS=~/grids_3msde/araus_6000" "ISD=~/grids_3msde/numbers_5000" \\
         "ISD+ARAUS=~/grids_3msde/joint_5000" "Clotho=~/grids_3msde/clotho_5000" --out ~/plots/isopleasant
 
 One panel per run (Soundscapy scatter plot on the circumplex axes). Every dot is a generated file, coloured by the

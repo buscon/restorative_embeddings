@@ -66,15 +66,15 @@ for STEP in "$@"; do
       ;;
     plot)
       mkdir -p "$PLOTS"; O="$OUTROOT"; B="$O/common_base_g12"
-      RUNS_ARGS=("ARAUS=$O/common_araus_6000_g12@$B" "ISD (numbers)=$O/common_numbers_5000_g12@$B"
+      RUNS_ARGS=("ARAUS=$O/common_araus_6000_g12@$B" "ISD=$O/common_numbers_5000_g12@$B"
                  "ISD+ARAUS=$O/common_joint_5000_g12@$B" "Clotho=$O/common_clotho_5000_g12@$B")
       echo "+ plot_grid_features.py ... --out $PLOTS/features"
       [ -n "${DRY:-}" ] || python generation/plot_grid_features.py "${RUNS_ARGS[@]}" \
           --metrics sharp A_gt4k loud_N50 rough --out "$PLOTS/features" --slide
       echo "+ plot_isopleasant.py ... --out $PLOTS/isopleasant"
       [ -n "${DRY:-}" ] || "$SSPY_PY" generation/plot_isopleasant.py "ARAUS=$O/common_araus_6000_g12" \
-          "ISD (numbers)=$O/common_numbers_5000_g12" "ISD+ARAUS=$O/common_joint_5000_g12" \
-          "Clotho=$O/common_clotho_5000_g12" --controls "ARAUS=$B" "ISD (numbers)=$B" "ISD+ARAUS=$B" "Clotho=$B" \
+          "ISD=$O/common_numbers_5000_g12" "ISD+ARAUS=$O/common_joint_5000_g12" \
+          "Clotho=$O/common_clotho_5000_g12" --controls "ARAUS=$B" "ISD=$B" "ISD+ARAUS=$B" "Clotho=$B" \
           --out "$PLOTS/isopleasant" --slide
       echo "+ compare_grids.py (all models and the base in one table; the +-0.4 contrast is common to all)"
       for L in "-0.7 0 0.7" "-0.4 0 0.4"; do
