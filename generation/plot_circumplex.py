@@ -20,7 +20,10 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--csv"); ap.add_argument("--araus-root")
 ap.add_argument("--name", default="")
 ap.add_argument("--out", required=True)
-ap.add_argument("--size", type=float, nargs=2, default=[4.6, 4.6])
+ap.add_argument("--size", type=float, nargs=2, default=[4.6, 5.4])
+ap.add_argument("--mode", choices=["auto", "scatter", "density"], default="auto",
+                help="auto: density above 3000 points, otherwise one dot per point")
+ap.add_argument("--no-marginal", action="store_true", help="omit the ISOPleasant histogram above the plot")
 a = ap.parse_args()
 
 def araus_stimuli(root):
@@ -48,7 +51,7 @@ x, y = df.ISOPleasant.values, df.ISOEventful.values
 
 BLUE = "#003D7C"
 fig, ax = plt.subplots(figsize=a.size)
-if len(df) > 3000:
+if a.mode == "density" or (a.mode == "auto" and len(df) > 3000):
     # many points on a discrete grid (ARAUS: mostly one rating per stimulus): show density, not dots
     hb = ax.hexbin(x, y, gridsize=24, extent=(-1, 1, -1, 1), cmap="Blues", mincnt=1, linewidths=0.2,
                    edgecolors="white", zorder=2)
@@ -61,7 +64,7 @@ t = np.linspace(0, 2 * np.pi, 200)
 ax.plot(np.cos(t), np.sin(t), color="0.45", lw=0.8, zorder=4)
 r = 1.08
 lab = dict(fontsize=9, color="0.15", ha="center", va="center")
-ax.text(r, 0, "pleasant", ha="left", va="center", fontsize=9, fontweight="bold", color="0.15")
+ax.text(r, 0, "pleasant", ha="left", va="center", fontsize=9, color="0.15")
 ax.text(-r, 0, "annoying", ha="right", va="center", fontsize=9, color="0.15")
 ax.text(0, r, "eventful", **{**lab, "va": "bottom"})
 ax.text(0, -r, "uneventful", **{**lab, "va": "top"})
@@ -74,7 +77,16 @@ ax.set_xticks([-1, -0.5, 0, 0.5, 1]); ax.set_yticks([-1, -0.5, 0, 0.5, 1])
 ax.tick_params(labelsize=8)
 for s in ("top", "right"): ax.spines[s].set_visible(False)
 ttl = f"{a.name}: {len(df)} " + ("stimuli" if a.araus_root else "recordings") if a.name else ""
-if ttl: ax.set_title(ttl, fontsize=9)
+if ttl and a.no_marginal: ax.set_title(ttl, fontsize=9)
+if not a.no_marginal:
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    top = make_axes_locatable(ax).append_axes("top", size="22%", pad=0.08, sharex=ax)
+    top.hist(x, bins=np.linspace(-1, 1, 21), color=BLUE, alpha=0.75, edgecolor="white", linewidth=0.4)
+    top.axvline(0, color="0.45", lw=0.8)
+    top.axvline(x.mean(), color="#C8102E", lw=1.2)
+    top.set_yticks([]); top.tick_params(labelbottom=False, bottom=False)
+    for sp in ("top", "right", "left"): top.spines[sp].set_visible(False)
+    if ttl: top.set_title(ttl, fontsize=9)
 fig.tight_layout()
 out = Path(a.out); out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out.with_suffix(".pdf")); fig.savefig(out.with_suffix(".png"), dpi=200)
