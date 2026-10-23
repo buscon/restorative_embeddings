@@ -1,0 +1,6 @@
+# Common prompt set for all models (one item per line: id|group|item). The tag " [ISOPleasant: x]" is added by the generator.
+# Items come from the ISD caption vocabulary, so ISD and the joint model know the text; ARAUS and Clotho were trained
+# on other caption styles, so for them this also tests transfer to an unfamiliar text.
+natural|common|soundscape with birdsong and wind in the trees
+urban|common|soundscape with traffic noise and human sounds
+general|common|soundscape with no dominant sound source
