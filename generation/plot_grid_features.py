@@ -136,7 +136,7 @@ def plot_lines(runs, metrics, out):
     plt.close(fig)
 
 
-def plot_effects(runs, metrics, out, k=2.0, slide=False):
+def plot_effects(runs, metrics, out, k=2.0, slide=False, xlim=None):
     frames = [df.assign(grid=label) for label, df, _ in runs]
     metrics = [m for m in metrics if all(m in f.columns for f in frames)]
     eff = effects(pd.concat(frames, ignore_index=True), metrics, k)
@@ -147,7 +147,9 @@ def plot_effects(runs, metrics, out, k=2.0, slide=False):
         fig, axes = plt.subplots(1, nc, figsize=(8.6, 0.6 * len(metrics) + 1.5), sharex=True, sharey=True, squeeze=False)
     else:
         fig, axes = plt.subplots(1, nc, figsize=(3.0 * nc + 1.6, 0.55 * len(metrics) + 1.8), sharex=True, sharey=True, squeeze=False)
-    lim = float(np.clip(np.nanpercentile(np.abs(eff.ratio), 95) * 1.15, 4.0, 20.0))  # points beyond are drawn at the edge as arrows
+    lim = float(np.clip(np.nanpercentile(np.abs(eff.ratio), 95) * 1.15, 4.0, 20.0))
+    if xlim:
+        lim = float(xlim)  # fixed axis, so that figures of different runs share one scale  # points beyond are drawn at the edge as arrows
     for j, (label, _, _) in enumerate(runs):
         ax = axes[0, j]
         e = eff[eff.grid == label]
@@ -194,6 +196,7 @@ def main():
     ap.add_argument("runs", nargs="+", help="label=folder[@control_folder]")
     ap.add_argument("--metrics", nargs="+", default=DEFAULT_METRICS)
     ap.add_argument("--out", default="features")
+    ap.add_argument("--xlim", type=float, default=None, help="fixed x axis limit (+-) of the effects figures, in seed SD")
     ap.add_argument("--slide", action="store_true", help="also write <out>_effects_slide.pdf/.png: larger type, short labels, for a slide")
     a = ap.parse_args()
     style()
@@ -201,9 +204,9 @@ def main():
     Path(out).parent.mkdir(parents=True, exist_ok=True)
     runs = parse(a.runs)
     plot_lines(runs, a.metrics, out)
-    plot_effects(runs, a.metrics, out)
+    plot_effects(runs, a.metrics, out, xlim=a.xlim)
     if a.slide:
-        plot_effects(runs, a.metrics, out, slide=True)
+        plot_effects(runs, a.metrics, out, slide=True, xlim=a.xlim)
     print(f"written {out}_lines.png/.pdf, {out}_effects.png/.pdf, {out}_effects.csv")
 
 

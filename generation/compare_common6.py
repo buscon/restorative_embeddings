@@ -107,7 +107,7 @@ def main():
         ax.text(ref.mean(), len(labels) - 0.45, " " + a.ref, color="#C8102E", fontsize=plt.rcParams["font.size"] - 2, va="bottom")
     ax.set_yticks(range(len(labels)))
     ax.set_yticklabels(labels[::-1])
-    ax.set_xlabel("predicted ISOPleasant, +0.7 minus −0.7 (mean, 95% interval)")
+    ax.set_xlabel("predicted ISOPleasant, +0.7 minus −0.7\n(mean and 95% interval)")
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     fig.tight_layout()

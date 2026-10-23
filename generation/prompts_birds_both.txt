@@ -1,0 +1,3 @@
+# Both common prompts with birds, new wording (id|group|item), for the base model with words (common6_base_words_g12).
+natural|common|soundscape with birds chirping and wind in the trees
+natural2|common|soundscape with flowing water and birds chirping

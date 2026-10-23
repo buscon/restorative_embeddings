@@ -1,0 +1,2 @@
+# Common prompt "natural" with the new wording (id|group|item). Old text: "soundscape with birdsong and wind in the trees".
+natural|common|soundscape with birds chirping and wind in the trees

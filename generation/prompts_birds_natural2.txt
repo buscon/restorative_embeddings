@@ -1,0 +1,2 @@
+# Common prompt "natural2" with the new wording (id|group|item). Old text: "soundscape with flowing water and birdsong".
+natural2|common|soundscape with flowing water and birds chirping

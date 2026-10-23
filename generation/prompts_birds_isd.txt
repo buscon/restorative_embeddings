@@ -1,0 +1,3 @@
+# The ISD free-text prompt "birds_wind" with the new wording (id|group|item). Old text: "soundscape with birdsong and wind in the trees".
+# The tag " [ISOPleasant: x]" is added by the generator. Same id and group as in the old grids.
+birds_wind|free_text|soundscape with birds chirping and wind in the trees
