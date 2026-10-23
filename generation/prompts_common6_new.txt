@@ -1,0 +1,5 @@
+# The three NEW common prompts (id|group|item). Together with the existing generation/prompts_common.txt they form the six prompts
+# of generation/prompts_common6.txt. The tag " [ISOPleasant: x]" is added by the generator.
+natural2|common|soundscape with flowing water and birdsong
+urban2|common|soundscape with traffic noise and construction noise
+general2|common|soundscape with natural sounds and human sounds

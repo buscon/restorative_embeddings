@@ -1,0 +1,6 @@
+# The five ARAUS masker prompts (id|group|item), the same texts as in generation/generate_grid.py. The tag is added by the generator.
+birdsong|araus|park soundscape with birdsong in the background
+construction_noise|araus|park soundscape with construction noise in the background
+flowing_water|araus|park soundscape with flowing water in the background
+traffic_noise|araus|park soundscape with traffic noise in the background
+wind|araus|park soundscape with wind in the background

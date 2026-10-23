@@ -1,0 +1,9 @@
+# Six common prompts (id|group|item): two natural, two urban, two general. The first three are the existing common set
+# (generation/prompts_common.txt); the last three are new. For the fine-tuned models the tag " [ISOPleasant: x]" is added by
+# the generator; for the base model the rating is added as a word ("..., very pleasant"). Edit the new items if you prefer.
+natural|common|soundscape with birdsong and wind in the trees
+urban|common|soundscape with traffic noise and human sounds
+general|common|soundscape with no dominant sound source
+natural2|common|soundscape with flowing water and birdsong
+urban2|common|soundscape with traffic noise and construction noise
+general2|common|soundscape with natural sounds and human sounds
