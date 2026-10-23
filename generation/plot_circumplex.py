@@ -48,10 +48,17 @@ x, y = df.ISOPleasant.values, df.ISOEventful.values
 
 BLUE = "#003D7C"
 fig, ax = plt.subplots(figsize=a.size)
-ax.scatter(x, y, s=9, color=BLUE, alpha=0.35, linewidths=0, zorder=3)
+if len(df) > 3000:
+    # many points on a discrete grid (ARAUS: mostly one rating per stimulus): show density, not dots
+    hb = ax.hexbin(x, y, gridsize=24, extent=(-1, 1, -1, 1), cmap="Blues", mincnt=1, linewidths=0.2,
+                   edgecolors="white", zorder=2)
+    cb = fig.colorbar(hb, ax=ax, shrink=0.6, pad=0.02); cb.ax.tick_params(labelsize=7)
+    cb.set_label("number of stimuli", fontsize=8)
+else:
+    ax.scatter(x, y, s=9, color=BLUE, alpha=0.35, linewidths=0, zorder=3)
 ax.axhline(0, color="0.45", lw=0.8, zorder=1); ax.axvline(0, color="0.45", lw=0.8, zorder=1)
 t = np.linspace(0, 2 * np.pi, 200)
-ax.plot(np.cos(t), np.sin(t), color="0.75", lw=0.8, zorder=1)
+ax.plot(np.cos(t), np.sin(t), color="0.45", lw=0.8, zorder=4)
 r = 1.08
 lab = dict(fontsize=9, color="0.15", ha="center", va="center")
 ax.text(r, 0, "pleasant", ha="left", va="center", fontsize=9, fontweight="bold", color="0.15")
