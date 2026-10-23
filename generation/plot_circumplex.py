@@ -23,9 +23,24 @@ ap.add_argument("--out", required=True)
 ap.add_argument("--size", type=float, nargs=2, default=[4.6, 4.6])
 a = ap.parse_args()
 
+def araus_stimuli(root):
+    """Same selection as rsd.data.load_araus (folds 0-5, no attention stimuli), mean per stimulus.
+    The ISO 12913-3 formula is written out here so that soundscapy (which sets a numpy print option
+    that breaks scipy in some environments) is not imported."""
+    d = Path(root) / "data"
+    r = pd.read_csv(d / "responses.csv")
+    r = r[r.fold_r.between(0, 5) & (r.is_attention == 0)].copy()
+    P = ["pleasant", "vibrant", "eventful", "chaotic", "annoying", "monotonous", "uneventful", "calm"]
+    r = r.dropna(subset=P)
+    c, k = np.cos(np.pi / 4), 4 + np.sqrt(32)
+    r["ISOPleasant"] = ((r.pleasant - r.annoying) + c * (r.calm - r.chaotic) + c * (r.vibrant - r.monotonous)) / k
+    r["ISOEventful"] = ((r.eventful - r.uneventful) + c * (r.chaotic - r.calm) + c * (r.vibrant - r.monotonous)) / k
+    r["stimulus_id"] = r.soundscape + "|" + r.masker + "|" + r.smr.astype(int).astype(str)
+    return r.groupby("stimulus_id").agg(ISOPleasant=("ISOPleasant", "mean"), ISOEventful=("ISOEventful", "mean"),
+                                        n_ratings=("ISOPleasant", "size")).reset_index()
+
 if a.araus_root:
-    from rsd.data import load_araus
-    df = load_araus(a.araus_root)["stimuli"]
+    df = araus_stimuli(a.araus_root)
 else:
     df = pd.read_csv(a.csv)
 df = df.dropna(subset=["ISOPleasant", "ISOEventful"])
