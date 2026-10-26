@@ -10,10 +10,12 @@
 #   bash isd/19_base_ae_heatmap.sh prompts               # 0. writes generation/prompts_base_ae.txt and the label maps
 #   bash isd/19_base_ae_heatmap.sh gen                   # 1. generate (tmux or nohup; about an hour, existing files are skipped)
 #   bash isd/19_base_ae_heatmap.sh rate                  # 2. SoundAQnet, all outputs (hours on few cores; cached)
-#   bash isd/19_base_ae_heatmap.sh plot                  # 3. heatmap, matrices and similarity in $PLOTS
-# Optional reference panel (c): REF_DIR=<folder with real recordings, e.g. ARAUS stimuli as wav> bash isd/19_base_ae_heatmap.sh rate plot
-#   rated with the same settings (mono, assumed 65 dB, mean of all checkpoints), so that (a) is compared with real audio
-#   under the same rater, not with the numbers printed in the paper.
+#   bash isd/19_base_ae_heatmap.sh ref                   # 3. ARAUS baseline: N real stimuli rebuilt from data/raw/araus, rated at the true
+#                                                        #    level and at the assumed 65 dB (soundaqnet/05_rate_araus_reference.py)
+#   bash isd/19_base_ae_heatmap.sh plot                  # 4. heatmaps (events x 8 attributes + ISOPleasant/ISOEventful) with the baseline,
+#                                                        #    and scene views (radar, scatter/density, joint) in $PLOTS
+# Baseline: ARAUS_N stimuli (default 300) of fold ARAUS_FOLDS (default 0, the independent test set), equal numbers per masker type.
+# Two baselines: "65" is rated exactly like the generated clips (like for like), "true" at the calibrated ARAUS level.
 # Environment: OUTROOT (~/grids_3msde), PLOTS (~/plots_base_ae), SEEDS (1 2 3 4 5), SECS (30), GUIDANCE (12), LABELS (primary|broad),
 # WORKERS (8), DEVICE (cuda), SOUNDSCAPER (third_party/SoundSCaper), UNIT (clip|prompt), SQ_LEVELS (65).
 set -euo pipefail
@@ -33,9 +35,13 @@ WORKERS="${WORKERS:-8}"
 DEVICE="${DEVICE:-cuda}"
 SOUNDSCAPER="${SOUNDSCAPER:-third_party/SoundSCaper}"
 UNIT="${UNIT:-clip}"
+ARAUS_ROOT="${ARAUS_ROOT:-$REPO/data/raw/araus}"
+ARAUS_N="${ARAUS_N:-300}"
+ARAUS_FOLDS="${ARAUS_FOLDS:-0}"
+REF_OUT="${REF_OUT:-$OUTROOT/araus_ref}"
 SQ_LEVELS="${SQ_LEVELS:-65}"
 cd "$REPO"
-[ $# -eq 0 ] && { sed -n 2,19p "$0"; exit 0; }
+[ $# -eq 0 ] && { sed -n 2,22p "$0"; exit 0; }
 run() { echo "+ $*"; [ -n "${DRY:-}" ] || "$@"; }
 
 for STEP in "$@"; do
@@ -48,17 +54,20 @@ for STEP in "$@"; do
           --sampler "$SAMPLER" --guidance "$GUIDANCE" --seconds "$SECS" ;;
     rate)
       run python soundaqnet/04_rate_folder_full.py "$OUTROOT/$NAME" --soundscaper "$SOUNDSCAPER" --workers "$WORKERS" \
-          --device "$DEVICE" --levels $SQ_LEVELS
-      if [ -n "${REF_DIR:-}" ]; then
-        run python soundaqnet/04_rate_folder_full.py "$REF_DIR" --soundscaper "$SOUNDSCAPER" --workers "$WORKERS" \
-            --device "$DEVICE" --levels $SQ_LEVELS
-      fi ;;
+          --device "$DEVICE" --levels $SQ_LEVELS ;;
+    ref)
+      run python soundaqnet/05_rate_araus_reference.py --araus "$ARAUS_ROOT" --soundscaper "$SOUNDSCAPER" --n "$ARAUS_N" \
+          --folds $ARAUS_FOLDS --workers "$WORKERS" --device "$DEVICE" --out "$REF_OUT" ;;
     plot)
       mkdir -p "$PLOTS"
-      REFARG=()
-      [ -n "${REF_DIR:-}" ] && REFARG=(--ref "$REF_DIR/soundaqnet_full.csv" --ref-name "${REF_NAME:-reference}")
-      run python generation/plot_ae_aq_heatmap.py --grid "$OUTROOT/$NAME" --labels "generation/ae_label_${LABELS}.csv" \
-          "${REFARG[@]}" --unit "$UNIT" --out "$PLOTS/base_ae" ;;
-    *) echo "unknown step '$STEP' (use prompts, gen, rate, plot)";;
+      for COND in 65 true; do
+        REFCSV="$REF_OUT/soundaqnet_full_$COND.csv"
+        if [ -z "${DRY:-}" ] && [ ! -e "$REFCSV" ]; then echo "!! $REFCSV missing (run the ref step); plotting without baseline"; REFARG=(); else
+          REFARG=(--ref "$REFCSV" --ref-name "ARAUS ($COND)"); fi
+        run python generation/plot_ae_aq_heatmap.py --grid "$OUTROOT/$NAME" --labels "generation/ae_label_${LABELS}.csv" \
+            "${REFARG[@]}" --extra-iso --unit "$UNIT" --out "$PLOTS/base_ae_ref$COND"
+        run python generation/plot_scene_views.py --grid "$OUTROOT/$NAME" "${REFARG[@]}" --out "$PLOTS/scenes_ref$COND"
+      done ;;
+    *) echo "unknown step '$STEP' (use prompts, gen, rate, ref, plot)";;
   esac
 done

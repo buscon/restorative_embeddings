@@ -82,6 +82,8 @@ def main():
     ap.add_argument("--ref", default=None, help="soundaqnet_full.csv of a reference set of real recordings")
     ap.add_argument("--ref-name", default="reference")
     ap.add_argument("--out", required=True, help="output prefix")
+    ap.add_argument("--extra-iso", action="store_true",
+                    help="add the columns ISOPleasant and ISOEventful to the eight attributes (SoundSCaper README figures 7 and 8)")
     ap.add_argument("--unit", choices=["clip", "prompt"], default="clip")
     ap.add_argument("--correction", choices=["none", "bh", "bonferroni"], default="bh")
     ap.add_argument("--boot", type=int, default=500)
@@ -98,6 +100,9 @@ def main():
     d = g.merge(s, on="file").merge(lab, on="prompt_id")
     print(f"{len(d)} generated clips, {d.prompt_id.nunique()} prompts")
     ev, pq, lb = [f"ev_{e}" for e in EVENTS], [f"paq_{p}" for p in PAQ], [f"lab_{e}" for e in EVENTS]
+    names = list(PAQ)
+    if a.extra_iso:
+        pq, names = pq + ["ISOPleasant", "ISOEventful"], names + ["ISOPleasant", "ISOEventful"]
     if a.unit == "prompt":
         d = d.groupby("prompt_id", as_index=False)[ev + pq + lb].mean()
     sets = {"a": ("predicted events, generated", ev, d), "b": ("intended content (prompt), generated", lb, d)}
@@ -111,20 +116,24 @@ def main():
         R = rho_matrix(df[xc].to_numpy(float), df[pq].to_numpy(float))
         Q = adjust(p_matrix(R, len(df)), a.correction)
         res[k] = (title, R, Q, len(df))
-        pd.DataFrame(R, index=EVENTS, columns=PAQ).to_csv(f"{a.out}_rho_{k}.csv")
+        pd.DataFrame(R, index=EVENTS, columns=names).to_csv(f"{a.out}_rho_{k}.csv")
 
+    if "c" in res:   # difference generated minus reference, in rho units (cells with a star in neither panel are faint)
+        Rd = res["a"][1] - res["c"][1]
+        res["d"] = (f"difference (a) minus (c), in rho", Rd, np.full_like(Rd, np.nan), 0)
+        pd.DataFrame(Rd, index=EVENTS, columns=names).to_csv(f"{a.out}_rho_diff_a_minus_c.csv")
     n = len(res)
-    fig, axes = plt.subplots(1, n, figsize=(5.2 * n + 1.4, 7.4), squeeze=False)
+    fig, axes = plt.subplots(1, n, figsize=(5.4 * n + 1.4, 7.4), squeeze=False)
     for ax, (k, (title, R, Q, nn)) in zip(axes[0], res.items()):
         im = ax.imshow(R, cmap="RdBu_r", vmin=-1, vmax=1, aspect="auto")
         for i in range(len(EVENTS)):
-            for j in range(len(PAQ)):
+            for j in range(len(names)):
                 if np.isfinite(R[i, j]):
                     ax.text(j, i, f"{R[i, j]:.2f}{stars(Q[i, j])}", ha="center", va="center", fontsize=6.5,
                             color="white" if abs(R[i, j]) > 0.6 else "black")
-        ax.set_xticks(range(len(PAQ)), PAQ, rotation=45, ha="right", fontsize=8)
+        ax.set_xticks(range(len(names)), names, rotation=45, ha="right", fontsize=8)
         ax.set_yticks(range(len(EVENTS)), EVENTS if k == "a" else [""] * len(EVENTS), fontsize=8)
-        ax.set_title(f"({k}) {title}\nn = {nn} ({a.unit}s)", fontsize=9)
+        ax.set_title(f"({k}) {title}" + (f"\nn = {nn} ({a.unit}s)" if nn else ""), fontsize=9)
     fig.colorbar(im, ax=axes[0].tolist(), shrink=0.7, label="Spearman rho")
     fig.text(0.01, 0.01, f"stars: adjusted p ({a.correction}) * <0.05 ** <0.01 *** <0.001; empty cell = constant column",
              fontsize=7)
