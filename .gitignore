@@ -30,3 +30,4 @@ generation/train/araus_whole/*
 !generation/train/araus_whole/chunk_info.csv
 *notes*
 samples/
+plots/
