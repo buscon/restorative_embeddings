@@ -1,0 +1,61 @@
+# 15 audio-event classes x 4 plain prompts (generation/make_ae_prompts.py). id|group|item
+ae_silence_1|silence|an empty room with almost no sound
+ae_silence_2|silence|silence in a quiet room at night
+ae_silence_3|silence|very faint room tone
+ae_silence_4|silence|a quiet empty hall
+ae_human_sounds_1|human_sounds|footsteps of people walking on a pavement
+ae_human_sounds_2|human_sounds|people laughing and clapping
+ae_human_sounds_3|human_sounds|a crowd moving through a public square
+ae_human_sounds_4|human_sounds|children playing in a playground
+ae_wind_1|wind|wind blowing through trees
+ae_wind_2|wind|strong wind howling around a house
+ae_wind_3|wind|a gentle breeze in tall grass
+ae_wind_4|wind|wind blowing over an open field
+ae_water_1|water|waves breaking on a beach
+ae_water_2|water|a stream flowing over stones
+ae_water_3|water|rain falling on leaves
+ae_water_4|water|a fountain splashing in a park
+ae_natural_sounds_1|natural_sounds|thunder rolling over hills
+ae_natural_sounds_2|natural_sounds|leaves rustling in a forest
+ae_natural_sounds_3|natural_sounds|a quiet forest ambience
+ae_natural_sounds_4|natural_sounds|a rocky coast with the sea
+ae_traffic_1|traffic|heavy traffic on a busy road
+ae_traffic_2|traffic|cars passing on a street
+ae_traffic_3|traffic|a traffic jam with car horns
+ae_traffic_4|traffic|a busy intersection with cars and buses
+ae_sounds_of_things_1|sounds_of_things|a clock ticking in a room
+ae_sounds_of_things_2|sounds_of_things|a door closing and keys jingling
+ae_sounds_of_things_3|sounds_of_things|a washing machine running
+ae_sounds_of_things_4|sounds_of_things|a kettle boiling in a kitchen
+ae_vehicle_1|vehicle|a motorcycle passing by
+ae_vehicle_2|vehicle|a train passing at a station
+ae_vehicle_3|vehicle|a bus engine idling
+ae_vehicle_4|vehicle|an aeroplane flying overhead
+ae_bird_1|bird|birds chirping in a forest
+ae_bird_2|bird|a blackbird singing in a garden
+ae_bird_3|bird|a flock of seagulls at the coast
+ae_bird_4|bird|a dawn chorus of birds
+ae_outside_rural_or_natural_1|outside_rural_or_natural|a quiet village street in the countryside
+ae_outside_rural_or_natural_2|outside_rural_or_natural|an open meadow with distant sounds
+ae_outside_rural_or_natural_3|outside_rural_or_natural|a farm yard in the morning
+ae_outside_rural_or_natural_4|outside_rural_or_natural|a path through a park
+ae_environment_and_background_1|environment_and_background|background sounds of a city
+ae_environment_and_background_2|environment_and_background|the ambience of a large open plan office
+ae_environment_and_background_3|environment_and_background|distant background noise of a town
+ae_environment_and_background_4|environment_and_background|the general ambience of a shopping street
+ae_speech_1|speech|a man talking
+ae_speech_2|speech|two people having a conversation
+ae_speech_3|speech|a woman speaking in a room
+ae_speech_4|speech|a group of people talking in a cafe
+ae_music_1|music|a street musician playing guitar
+ae_music_2|music|a piano playing in a room
+ae_music_3|music|an orchestra playing
+ae_music_4|music|electronic music playing in a club
+ae_noise_1|noise|loud industrial machinery noise
+ae_noise_2|noise|a construction site with drilling and hammering
+ae_noise_3|noise|white noise static
+ae_noise_4|noise|a loud alarm ringing
+ae_animal_1|animal|a dog barking
+ae_animal_2|animal|cows mooing in a field
+ae_animal_3|animal|crickets chirping at night
+ae_animal_4|animal|frogs croaking by a pond
