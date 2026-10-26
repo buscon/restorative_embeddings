@@ -62,6 +62,9 @@ for STEP in "$@"; do
     ref)
       run python soundaqnet/05_rate_araus_reference.py --araus "$ARAUS_ROOT" --soundscaper "$SOUNDSCAPER" --n "$ARAUS_N" \
           --folds $ARAUS_FOLDS --workers "$WORKERS" --device "$DEVICE" --out "$REF_OUT" ;;
+    papertest)
+      run python soundaqnet/06_rate_araus_papertest.py --araus "$ARAUS_ROOT" --soundscaper "$SOUNDSCAPER" \
+          --workers "$WORKERS" --device "$DEVICE" --out "$OUTROOT/araus_papertest" ;;
     plot)
       mkdir -p "$PLOTS"
       for COND in 65 true; do
