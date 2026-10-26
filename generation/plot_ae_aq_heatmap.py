@@ -76,6 +76,7 @@ def similarity(A, B):
 
 
 def main():
+    global EVENTS, PAQ
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--grid", required=True, help="folder with grid.csv and soundaqnet_full.csv")
     ap.add_argument("--labels", required=True, help="ae_label_primary.csv or ae_label_broad.csv")
@@ -84,6 +85,12 @@ def main():
     ap.add_argument("--out", required=True, help="output prefix")
     ap.add_argument("--extra-iso", action="store_true",
                     help="add the columns ISOPleasant and ISOEventful to the eight attributes (SoundSCaper README figures 7 and 8)")
+    ap.add_argument("--event-order", default=None, help="semicolon-separated event names, top to bottom (all 15; one name contains commas). Default: the model's order")
+    ap.add_argument("--aq-order", default=None, help="comma-separated attribute names, left to right (all 8). Default: the model's order")
+    ap.add_argument("--fig7", action="store_true",
+                    help="extra figure: the attributes ISOPleasant and ISOEventful (rows) against the 15 events (columns); needs --extra-iso")
+    ap.add_argument("--fig8", default=None, metavar="EVENT1;EVENT2",
+                    help="extra figure: the named events (rows) against the 8 attributes (columns)")
     ap.add_argument("--unit", choices=["clip", "prompt"], default="clip")
     ap.add_argument("--correction", choices=["none", "bh", "bonferroni"], default="bh")
     ap.add_argument("--boot", type=int, default=500)
@@ -92,6 +99,14 @@ def main():
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    if a.event_order:
+        EVENTS = [x.strip() for x in a.event_order.split(";")]
+        assert sorted(EVENTS) == sorted(['Silence', 'Human sounds', 'Wind', 'Water', 'Natural sounds', 'Traffic', 'Sounds of things',
+                                         'Vehicle', 'Bird', 'Outside, rural or natural', 'Environment and background', 'Speech',
+                                         'Music', 'Noise', 'Animal']), "event order must list all 15 events once"
+    if a.aq_order:
+        PAQ = [x.strip() for x in a.aq_order.split(",")]
+        assert sorted(PAQ) == sorted(['pleasant', 'eventful', 'chaotic', 'vibrant', 'uneventful', 'calm', 'annoying', 'monotonous'])
 
     grid = Path(a.grid).expanduser()
     g = pd.read_csv(grid / "grid.csv")[["file", "prompt_id", "seed"]]
@@ -139,6 +154,38 @@ def main():
              fontsize=7)
     fig.savefig(f"{a.out}_heatmap.png", dpi=200, bbox_inches="tight")
     fig.savefig(f"{a.out}_heatmap.pdf", bbox_inches="tight")
+
+    def subfigure(rows, cols, fname, transpose):
+        """Sub-matrix of the panels: rows/cols are names; transpose puts the attributes on the vertical axis."""
+        keys = [k for k in ("a", "b", "c") if k in res]
+        r_idx, c_idx = [EVENTS.index(e) for e in rows], [names.index(c) for c in cols]
+        fig, axs = plt.subplots(len(keys), 1, figsize=(1.0 * (len(rows) if transpose else len(cols)) + 3.5, 2.3 * len(keys) + 1.2),
+                                squeeze=False, layout="constrained")
+        for ax, k in zip(axs[:, 0], keys):
+            title, R, Q, nn = res[k]
+            M, QQ = R[np.ix_(r_idx, c_idx)], Q[np.ix_(r_idx, c_idx)]
+            if transpose:
+                M, QQ = M.T, QQ.T
+            im = ax.imshow(M, cmap="RdBu_r", vmin=-1, vmax=1, aspect="auto")
+            for i in range(M.shape[0]):
+                for j in range(M.shape[1]):
+                    if np.isfinite(M[i, j]):
+                        ax.text(j, i, f"{M[i, j]:.2f}{stars(QQ[i, j])}", ha="center", va="center", fontsize=7,
+                                color="white" if abs(M[i, j]) > 0.6 else "black")
+            xl, yl = (rows, cols) if transpose else (cols, rows)
+            ax.set_xticks(range(len(xl)), xl, rotation=45, ha="right", fontsize=8)
+            ax.set_yticks(range(len(yl)), yl, fontsize=8)
+            ax.set_title(f"({k}) {title}, n = {nn}", fontsize=9)
+        fig.colorbar(im, ax=axs[:, 0].tolist(), shrink=0.8, label="Spearman rho")
+        fig.savefig(fname, dpi=200, bbox_inches="tight")
+
+    if a.fig7:
+        if a.extra_iso:
+            subfigure(EVENTS, ["ISOPleasant", "ISOEventful"], f"{a.out}_fig7_AQ_vs_AE.png", transpose=True)
+        else:
+            print("--fig7 needs --extra-iso; skipped")
+    if a.fig8:
+        subfigure([e.strip() for e in a.fig8.split(";")], PAQ, f"{a.out}_fig8_AE_vs_AQ.png", transpose=False)
 
     # similarity between panels, bootstrap over prompts (generated) and over clips (reference)
     rng = np.random.default_rng(a.seed)
