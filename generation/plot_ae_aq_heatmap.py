@@ -21,8 +21,12 @@ import numpy as np
 import pandas as pd
 from scipy.stats import rankdata, spearmanr, t as tdist
 
-EVENTS = ['Silence', 'Human sounds', 'Wind', 'Water', 'Natural sounds', 'Traffic', 'Sounds of things', 'Vehicle', 'Bird',
-          'Outside, rural or natural', 'Environment and background', 'Speech', 'Music', 'Noise', 'Animal']
+# row order of the SoundSCaper README Fig. 6 (top to bottom); the column order of Fig. 6 is the PAQ list below
+EVENTS = ['Bird', 'Animal', 'Wind', 'Water', 'Natural sounds', 'Vehicle', 'Traffic', 'Sounds of things',
+          'Environment and background', 'Outside, rural or natural', 'Speech', 'Human sounds', 'Music', 'Noise', 'Silence']
+DISP = {'Environment and background': 'Background', 'Outside, rural or natural': 'Outside'}      # labels as in the repo figures
+SHORT = {'pleasant': 'Plea.', 'eventful': 'Even.', 'chaotic': 'Chao.', 'vibrant': 'Vibr.', 'uneventful': 'Unev.',
+         'calm': 'Calm', 'annoying': 'Anno.', 'monotonous': 'Mono.'}
 PAQ = ['pleasant', 'eventful', 'chaotic', 'vibrant', 'uneventful', 'calm', 'annoying', 'monotonous']
 
 
@@ -87,10 +91,10 @@ def main():
                     help="add the columns ISOPleasant and ISOEventful to the eight attributes (SoundSCaper README figures 7 and 8)")
     ap.add_argument("--event-order", default=None, help="semicolon-separated event names, top to bottom (all 15; one name contains commas). Default: the model's order")
     ap.add_argument("--aq-order", default=None, help="comma-separated attribute names, left to right (all 8). Default: the model's order")
-    ap.add_argument("--fig7", action="store_true",
-                    help="extra figure: the attributes ISOPleasant and ISOEventful (rows) against the 15 events (columns); needs --extra-iso")
+    ap.add_argument("--fig7", nargs="?", const="chaotic;calm", default=None, metavar="AQ1;AQ2",
+                    help="bar figure as README fig. 7: one panel per named attribute (default chaotic;calm), bars = the 15 events")
     ap.add_argument("--fig8", default=None, metavar="EVENT1;EVENT2",
-                    help="extra figure: the named events (rows) against the 8 attributes (columns)")
+                    help="bar figure as README fig. 8: one panel per named event, bars = the 8 attributes")
     ap.add_argument("--unit", choices=["clip", "prompt"], default="clip")
     ap.add_argument("--correction", choices=["none", "bh", "bonferroni"], default="bh")
     ap.add_argument("--boot", type=int, default=500)
@@ -147,7 +151,7 @@ def main():
                     ax.text(j, i, f"{R[i, j]:.2f}{stars(Q[i, j])}", ha="center", va="center", fontsize=6.5,
                             color="white" if abs(R[i, j]) > 0.6 else "black")
         ax.set_xticks(range(len(names)), names, rotation=45, ha="right", fontsize=8)
-        ax.set_yticks(range(len(EVENTS)), EVENTS if k == "a" else [""] * len(EVENTS), fontsize=8)
+        ax.set_yticks(range(len(EVENTS)), [DISP.get(e, e) for e in EVENTS] if k == "a" else [""] * len(EVENTS), fontsize=8)
         ax.set_title(f"({k}) {title}" + (f"\nn = {nn} ({a.unit}s)" if nn else ""), fontsize=9)
     fig.colorbar(im, ax=axes[0].tolist(), shrink=0.7, label="Spearman rho")
     fig.text(0.01, 0.01, f"stars: adjusted p ({a.correction}) * <0.05 ** <0.01 *** <0.001; empty cell = constant column",
@@ -155,37 +159,63 @@ def main():
     fig.savefig(f"{a.out}_heatmap.png", dpi=200, bbox_inches="tight")
     fig.savefig(f"{a.out}_heatmap.pdf", bbox_inches="tight")
 
-    def subfigure(rows, cols, fname, transpose):
-        """Sub-matrix of the panels: rows/cols are names; transpose puts the attributes on the vertical axis."""
-        keys = [k for k in ("a", "b", "c") if k in res]
-        r_idx, c_idx = [EVENTS.index(e) for e in rows], [names.index(c) for c in cols]
-        fig, axs = plt.subplots(len(keys), 1, figsize=(1.0 * (len(rows) if transpose else len(cols)) + 3.5, 2.3 * len(keys) + 1.2),
-                                squeeze=False, layout="constrained")
-        for ax, k in zip(axs[:, 0], keys):
-            title, R, Q, nn = res[k]
-            M, QQ = R[np.ix_(r_idx, c_idx)], Q[np.ix_(r_idx, c_idx)]
-            if transpose:
-                M, QQ = M.T, QQ.T
-            im = ax.imshow(M, cmap="RdBu_r", vmin=-1, vmax=1, aspect="auto")
-            for i in range(M.shape[0]):
-                for j in range(M.shape[1]):
-                    if np.isfinite(M[i, j]):
-                        ax.text(j, i, f"{M[i, j]:.2f}{stars(QQ[i, j])}", ha="center", va="center", fontsize=7,
-                                color="white" if abs(M[i, j]) > 0.6 else "black")
-            xl, yl = (rows, cols) if transpose else (cols, rows)
-            ax.set_xticks(range(len(xl)), xl, rotation=45, ha="right", fontsize=8)
-            ax.set_yticks(range(len(yl)), yl, fontsize=8)
-            ax.set_title(f"({k}) {title}, n = {nn}", fontsize=9)
-        fig.colorbar(im, ax=axs[:, 0].tolist(), shrink=0.8, label="Spearman rho")
-        fig.savefig(fname, dpi=200, bbox_inches="tight")
+    TEAL, SALMON = "#00BFC4", "#F8766D"
 
-    if a.fig7:
-        if a.extra_iso:
-            subfigure(EVENTS, ["ISOPleasant", "ISOEventful"], f"{a.out}_fig7_AQ_vs_AE.png", transpose=True)
-        else:
-            print("--fig7 needs --extra-iso; skipped")
-    if a.fig8:
-        subfigure([e.strip() for e in a.fig8.split(";")], PAQ, f"{a.out}_fig8_AE_vs_AQ.png", transpose=False)
+    def bars(items, mode, fname, sources, compare=False):
+        """README fig. 7 / 8 style: one panel per item, bars coloured by sign (teal +, salmon -).
+        mode 'aq': items are attributes, bars = events (fig. 7); mode 'ev': items are events, bars = attributes (fig. 8).
+        compare=True draws two sources side by side in neutral colours instead (generated vs reference)."""
+        xs = EVENTS if mode == "aq" else PAQ     # fig. 8 shows the 8 attributes only
+        xlab = [DISP.get(x, x) for x in xs] if mode == "aq" else [SHORT.get(x, x) for x in xs]
+        fig, axs = plt.subplots(1, len(items), figsize=((6.6 if mode == "aq" else 5.0) * len(items), 4.6), squeeze=False,
+                                layout="constrained")
+        for p, (ax, it) in enumerate(zip(axs[0], items)):
+            vals = []
+            for k in sources:
+                R, Q = res[k][1], res[k][2]
+                if mode == "aq":
+                    j = names.index(it)
+                    vals.append((R[:, j], Q[:, j]))
+                else:
+                    i = EVENTS.index(it)
+                    vals.append((R[i, :len(PAQ)], Q[i, :len(PAQ)]))
+            x = np.arange(len(xs))
+            w = 0.8 / len(vals)
+            for q, (v, qq) in enumerate(vals):
+                off = (q - (len(vals) - 1) / 2) * w
+                col = ([TEAL if t >= 0 else SALMON for t in np.nan_to_num(v)] if not compare else ["#33658A" if q == 0 else "#BDBDBD"] * len(v))
+                ax.bar(x + off, np.nan_to_num(v), w * 0.95, color=col, label=res[sources[q]][0].split(",")[-1].strip() if compare else None)
+                if not compare:
+                    for xi, (vv, pv) in enumerate(zip(v, qq)):
+                        if np.isfinite(vv) and stars(pv):
+                            ax.text(xi, vv + (0.02 if vv >= 0 else -0.02), stars(pv), ha="center", va="bottom" if vv >= 0 else "top", fontsize=7)
+            top = np.nanmax(np.abs(np.concatenate([v for v, _ in vals])))
+            lim = 1.05 if mode == "aq" else max(0.2, np.ceil(top * 10 + 1) / 10)
+            ax.set_ylim(-lim, lim)
+            ax.axhline(0, color="#888888", lw=0.6)
+            ax.set_xticks(x, xlab, rotation=45, ha="right", fontsize=9)
+            ax.grid(axis="y", color="#E8E8E8", lw=0.8)
+            ax.set_axisbelow(True)
+            for sp in ax.spines.values():
+                sp.set_visible(False)
+            ax.set_title(SHORT.get(it, it) if mode == "aq" else DISP.get(it, it), fontsize=10)
+            ax.set_xlabel(f"({'abcdefgh'[p]})", fontsize=14)
+            if p == 0:
+                ax.set_ylabel("r", fontsize=14, rotation=0, labelpad=10)
+            if compare and p == len(items) - 1:
+                ax.legend(fontsize=8, frameon=False)
+        fig.savefig(fname, dpi=200, bbox_inches="tight")
+        plt.close(fig)
+
+    for tag, fi, mode in (("fig7", a.fig7, "aq"), ("fig8", a.fig8, "ev")):
+        if not fi:
+            continue
+        items = [x.strip() for x in fi.split(";")]
+        for src, nm in (("a", "generated"), ("b", "intended"), ("c", "ARAUS")):
+            if src in res:
+                bars(items, mode, f"{a.out}_{tag}_{nm}.png", [src])
+        if "c" in res:
+            bars(items, mode, f"{a.out}_{tag}_generated_vs_ARAUS.png", ["a", "c"], compare=True)
 
     # similarity between panels, bootstrap over prompts (generated) and over clips (reference)
     rng = np.random.default_rng(a.seed)
