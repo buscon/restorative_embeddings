@@ -161,15 +161,22 @@ def main():
 
     TEAL, SALMON = "#00BFC4", "#F8766D"
 
-    def bars(items, mode, fname, sources, compare=False):
+    def bars(items, mode, fname, sources, compare=False, ncols=None, title=None):
         """README fig. 7 / 8 style: one panel per item, bars coloured by sign (teal +, salmon -).
         mode 'aq': items are attributes, bars = events (fig. 7); mode 'ev': items are events, bars = attributes (fig. 8).
         compare=True draws two sources side by side in neutral colours instead (generated vs reference)."""
         xs = EVENTS if mode == "aq" else PAQ     # fig. 8 shows the 8 attributes only
         xlab = [DISP.get(x, x) for x in xs] if mode == "aq" else [SHORT.get(x, x) for x in xs]
-        fig, axs = plt.subplots(1, len(items), figsize=((6.6 if mode == "aq" else 5.0) * len(items), 4.6), squeeze=False,
+        ncols = ncols or len(items)
+        nrows = -(-len(items) // ncols)
+        w = (6.6 if mode == "aq" else 5.0) if nrows == 1 else (4.4 if mode == "aq" else 3.6)
+        fig, axs = plt.subplots(nrows, ncols, figsize=(w * ncols, (4.6 if nrows == 1 else 3.3) * nrows), squeeze=False,
                                 layout="constrained")
-        for p, (ax, it) in enumerate(zip(axs[0], items)):
+        for ax in axs.ravel()[len(items):]:
+            ax.axis("off")
+        if title:
+            fig.suptitle(title, fontsize=11, ha="left", x=0.01)
+        for p, (ax, it) in enumerate(zip(axs.ravel(), items)):
             vals = []
             for k in sources:
                 R, Q = res[k][1], res[k][2]
@@ -180,11 +187,11 @@ def main():
                     i = EVENTS.index(it)
                     vals.append((R[i, :len(PAQ)], Q[i, :len(PAQ)]))
             x = np.arange(len(xs))
-            w = 0.8 / len(vals)
+            bw = 0.8 / len(vals)
             for q, (v, qq) in enumerate(vals):
-                off = (q - (len(vals) - 1) / 2) * w
+                off = (q - (len(vals) - 1) / 2) * bw
                 col = ([TEAL if t >= 0 else SALMON for t in np.nan_to_num(v)] if not compare else ["#33658A" if q == 0 else "#BDBDBD"] * len(v))
-                ax.bar(x + off, np.nan_to_num(v), w * 0.95, color=col, label=res[sources[q]][0].split(",")[-1].strip() if compare else None)
+                ax.bar(x + off, np.nan_to_num(v), bw * 0.95, color=col, label=res[sources[q]][0].split(",")[-1].strip() if compare else None)
                 if not compare:
                     for xi, (vv, pv) in enumerate(zip(v, qq)):
                         if np.isfinite(vv) and stars(pv):
@@ -199,10 +206,11 @@ def main():
             for sp in ax.spines.values():
                 sp.set_visible(False)
             ax.set_title(SHORT.get(it, it) if mode == "aq" else DISP.get(it, it), fontsize=10)
-            ax.set_xlabel(f"({'abcdefgh'[p]})", fontsize=14)
-            if p == 0:
+            if nrows == 1:
+                ax.set_xlabel(f"({'abcdefgh'[p]})", fontsize=14)
+            if p % ncols == 0:
                 ax.set_ylabel("r", fontsize=14, rotation=0, labelpad=10)
-            if compare and p == len(items) - 1:
+            if compare and p == ncols - 1:
                 ax.legend(fontsize=8, frameon=False)
         fig.savefig(fname, dpi=200, bbox_inches="tight")
         plt.close(fig)
@@ -216,6 +224,14 @@ def main():
                 bars(items, mode, f"{a.out}_{tag}_{nm}.png", [src])
         if "c" in res:
             bars(items, mode, f"{a.out}_{tag}_generated_vs_ARAUS.png", ["a", "c"], compare=True)
+        # all panels, as SoundSCaper Figure/PAQ8AQs.png (all 8 attributes) and Figure/event15.png (all 15 events)
+        all_items = PAQ if mode == "aq" else EVENTS
+        ttl = "Spearman rank correlations between events and attributes"
+        for src, nm in (("a", "generated"), ("b", "intended"), ("c", "ARAUS")):
+            if src in res:
+                bars(all_items, mode, f"{a.out}_{tag}_all_{nm}.png", [src], ncols=3, title=ttl)
+        if "c" in res:
+            bars(all_items, mode, f"{a.out}_{tag}_all_generated_vs_ARAUS.png", ["a", "c"], compare=True, ncols=3, title=ttl)
 
     # similarity between panels, bootstrap over prompts (generated) and over clips (reference)
     rng = np.random.default_rng(a.seed)
