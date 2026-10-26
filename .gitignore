@@ -29,3 +29,4 @@ generation/train/araus_whole/*
 !generation/train/araus_whole/dataset_config.json
 !generation/train/araus_whole/chunk_info.csv
 *notes*
+samples/
