@@ -92,9 +92,9 @@ def job(args):
     i, araus, soundscape, masker, smr, cache = args
     import torch
     torch.set_num_threads(1)
-    p = Path(cache) / f"{i:05d}_true.npz"
-    if p.exists():
-        return str(p)
+    p_true, p_65 = Path(cache) / f"{i:05d}_true.npz", Path(cache) / f"{i:05d}_65.npz"
+    if p_true.exists() and p_65.exists():
+        return str(p_true), str(p_65)
     mx = _mixer(araus)
     if str(masker).lower().startswith("silence") or masker not in mx.m.index:
         from rsd.audio import read
@@ -103,8 +103,11 @@ def job(args):
     else:
         x, sr = mx.mix(soundscape, masker, float(smr))
     y = F.to_mono_44k(x, sr)[: F.CLIP_SECONDS * F.SR_WAV]
-    np.savez(p, mel=F.log_mel(y), loud=F.iso_loudness(y * F.ARAUS_PA_PER_DIGITAL))
-    return str(p)
+    if not p_true.exists():
+        np.savez(p_true, mel=F.log_mel(y), loud=F.iso_loudness(y * F.ARAUS_PA_PER_DIGITAL))
+    y65 = y * F.assume_level(y, rms_db_spl=65.0) / F.ARAUS_PA_PER_DIGITAL   # assumed 65 dB, as for the generated clips
+    np.savez(p_65, mel=F.log_mel(y65), loud=F.iso_loudness(y65 * F.ARAUS_PA_PER_DIGITAL))
+    return str(p_true), str(p_65)
 
 
 def rho_matrix(E, P):
@@ -163,26 +166,44 @@ def main():
     with ProcessPoolExecutor(a.workers) as ex:
         paths = list(tqdm(ex.map(job, jobs, chunksize=2), total=len(jobs), desc="features"))
 
-    from soundaqnet.model import EVENT_LABELS, PAQ_NAMES, SoundAQnetRunner
+    from soundaqnet.model import EVENT_LABELS, PAQ_NAMES, SCENE_LABELS, SoundAQnetRunner
     mdir = Path(a.soundscaper) / "Inferring_soundscape_clips_for_LLM/application/system/model"
     ckpts = sorted(mdir.glob("*.pth"))
     runners = {c.name: SoundAQnetRunner(a.soundscaper, ckpt=c.name, device=a.device) for c in ckpts}
     default = "SoundAQnet_ASC96_AEC94_PAQ1027.pth"
     print(f"{len(runners)} checkpoints, default {default}")
-    recs = []
-    for k, p in enumerate(tqdm(paths, desc="model")):
-        z = np.load(p)
-        o = {n: r.predict(z["mel"][None], z["loud"][None]) for n, r in runners.items()}
-        rec = {"id": ids_k[k]}
-        for tag, sel in (("mean", list(o)), ("def", [default])):
-            for q in PAQ_NAMES:
-                rec[f"{tag}_paq_{q}"] = float(np.mean([o[n][q][0] for n in sel]))
-            ev = np.mean([o[n]["event"][0] for n in sel], axis=0)
-            for j, e in enumerate(EVENT_LABELS):
-                rec[f"{tag}_ev_{e}"] = float(ev[j])
-        recs.append(rec)
+    iso_h = np.loadtxt(sc / "test_set_ISOP_ISOE.txt")[keep]
+    mtypes = rows.masker.astype(str).str.split("_").str[0].values
+    recs, ref = [], {"true": [], "65": []}
+    for k, pp in enumerate(tqdm(paths, desc="model")):
+        for ci, cond in enumerate(("true", "65")):
+            z = np.load(pp[ci])
+            o = {n: r.predict(z["mel"][None], z["loud"][None]) for n, r in runners.items()}
+            if cond == "true":
+                rec = {"id": ids_k[k]}
+                for tag, sel in (("mean", list(o)), ("def", [default])):
+                    for q in PAQ_NAMES:
+                        rec[f"{tag}_paq_{q}"] = float(np.mean([o[n][q][0] for n in sel]))
+                    ev = np.mean([o[n]["event"][0] for n in sel], axis=0)
+                    for j, e in enumerate(EVENT_LABELS):
+                        rec[f"{tag}_ev_{e}"] = float(ev[j])
+                recs.append(rec)
+            # reference-set row in the format of 05_rate_araus_reference.py (mean over checkpoints), for plot_ae_aq_heatmap.py --ref
+            mean = lambda key: np.mean([x[key][0] for x in o.values()], axis=0)  # noqa: E731
+            isop = [float(x["ISOPleasant"][0]) for x in o.values()]
+            row = {"file": ids_k[k], "stimulus_id": ids_k[k], "masker_type": mtypes[k], "fold": int(ids_k[k].split("_")[1]),
+                   "human_ISOPleasant": iso_h[k][0], "human_ISOEventful": iso_h[k][1], "n_ratings": 1,
+                   "ISOPleasant": float(np.mean(isop)), "ISOEventful": float(mean("ISOEventful")),
+                   "ISOPleasant_sd": float(np.std(isop, ddof=1))}
+            row.update({f"paq_{q}": float(mean(q)) for q in PAQ_NAMES})
+            evm, scm = mean("event"), mean("scene")
+            row.update({f"ev_{e}": float(evm[j]) for j, e in enumerate(EVENT_LABELS)})
+            row.update({f"p_{s_}": float(scm[j]) for j, s_ in enumerate(SCENE_LABELS)})
+            ref[cond].append(row)
     d = pd.DataFrame(recs)
     d.to_csv(out / "soundaqnet_papertest.csv", index=False)
+    for cond, rr in ref.items():
+        pd.DataFrame(rr).to_csv(out / f"soundaqnet_full_{cond}.csv", index=False)
 
     # ground truth (b) and predictions (a)
     gt = np.array([[e in ev_lab[k] for e in EVENTS] for k in keep], float)
@@ -195,7 +216,7 @@ def main():
         M = rho_matrix(E, P)
         pd.DataFrame(M, index=EVENTS, columns=AQ).to_csv(out / f"rho_a_{tag}.csv")
         compare(f"(a) predictions, {'mean of checkpoints' if tag == 'mean' else 'default checkpoint'}", M, FIG6A)
-    print(f"\nwrote {out}/soundaqnet_papertest.csv, rho_a_mean.csv, rho_a_def.csv, rho_b_groundtruth.csv")
+    print(f"\nreference csvs for the heatmap script: {out}/soundaqnet_full_true.csv and soundaqnet_full_65.csv\nwrote {out}/soundaqnet_papertest.csv, rho_a_mean.csv, rho_a_def.csv, rho_b_groundtruth.csv")
 
 
 if __name__ == "__main__":

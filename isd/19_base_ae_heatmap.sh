@@ -41,7 +41,7 @@ ARAUS_N="${ARAUS_N:-600}"
 ARAUS_FOLDS="${ARAUS_FOLDS:-0 1 2 3 4 5}"
 EVENT_ORDER="${EVENT_ORDER:-Bird;Animal;Wind;Water;Natural sounds;Vehicle;Traffic;Sounds of things;Environment and background;Outside, rural or natural;Speech;Human sounds;Music;Noise;Silence}"   # row order of the SoundSCaper README figure 6 (semicolon-separated); empty = model order
 AQ_ORDER="${AQ_ORDER:-}"         # comma-separated, all 8 attributes
-FIG8_EVENTS="${FIG8_EVENTS:-Bird;Traffic}"   # events of the figure 8 style plot (README fig. 8 shows two events; set the same ones)
+FIG8_EVENTS="${FIG8_EVENTS:-Bird;Vehicle}"   # events of the figure 8 style plot (README fig. 8 shows two events; set the same ones)
 REF_OUT="${REF_OUT:-$OUTROOT/araus_ref}"
 SQ_LEVELS="${SQ_LEVELS:-65}"
 cd "$REPO"
